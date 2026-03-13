@@ -64,7 +64,7 @@ h_hot  = ${fparse L + cp_liquid_val*(T_hot - T_liquidus)}
     type = MooseLinearVariableFVReal
     initial_condition = 0.0
   []
-  [temperature]
+  [T]
     type = MooseLinearVariableFVReal
     initial_condition = ${T_cold}
   []
@@ -96,15 +96,15 @@ h_hot  = ${fparse L + cp_liquid_val*(T_hot - T_liquidus)}
   # Output helpers (temperature & liquid fraction are *derived* from enthalpy)
   [T_from_h]
     type = FunctorAux
-    functor = temperature
-    variable = temperature
-    execute_on = 'INITIAL NONLINEAR'
+    functor = 'T_from_p_h'
+    variable = 'T'
+    execute_on = 'INITIAL TIMESTEP_END'
   []
   [fl_from_h]
     type = FunctorAux
     functor = 'liquid_fraction'
     variable = 'fl'
-    execute_on = 'NONLINEAR'
+    execute_on = 'INITIAL TIMESTEP_END'
   []
 
   [rho_out]
@@ -213,7 +213,9 @@ h_hot  = ${fparse L + cp_liquid_val*(T_hot - T_liquidus)}
     gravity = '0 -9.81 0'
     alpha_name = ${alpha_b}
     ref_temperature = ${T_cold}
-    T_fluid = temperature
+    # LinearFVMomentumBoussinesq expects a *variable* name (not a functor).
+    # Our output temperature variable is T (filled from T_from_p_h above).
+    T_fluid = T
     momentum_component = 'x'
   []
   [v_boussinesq]
@@ -223,7 +225,7 @@ h_hot  = ${fparse L + cp_liquid_val*(T_hot - T_liquidus)}
     gravity = '0 -9.81 0'
     alpha_name = ${alpha_b}
     ref_temperature = ${T_cold}
-    T_fluid = temperature
+    T_fluid = T
     momentum_component = 'y'
   []
 
@@ -336,6 +338,7 @@ h_hot  = ${fparse L + cp_liquid_val*(T_hot - T_liquidus)}
 
   # Mixture properties
   [eff_props]
+    # Use the linear-FV mixture functor material (Real-only) to avoid AD dependencies.
     type = WCNSLinearFVMixtureFunctorMaterial
     phase_2_names = 'cp_s k_s rho_s'
     phase_1_names = 'cp_l k_l rho_l'
@@ -356,50 +359,53 @@ h_hot  = ${fparse L + cp_liquid_val*(T_hot - T_liquidus)}
   [rho_l]
     type = ParsedFunctorMaterial
     property_name = 'rho_l'
-    functor_names = 'temperature'
-    functor_symbols = 'temperature'
+    # ParsedFunctorMaterial currently requires at least one functor input.
+    # Use enthalpy (the solved variable) as a dummy dependency to avoid a
+    # temperature<->cp circular dependency.
+    functor_names = 'h'
+    functor_symbols = 'h'
     expression = '${rho_liquid}'
   []
   [rho_s]
     type = ParsedFunctorMaterial
     property_name = 'rho_s'
-    functor_names = 'temperature'
-    functor_symbols = 'temperature'
+    functor_names = 'h'
+    functor_symbols = 'h'
     expression = '5905.0'
   []
   [k_l]
     type = ParsedFunctorMaterial
     property_name = 'k_l'
-    functor_names = 'temperature'
-    functor_symbols = 'temperature'
+    functor_names = 'h'
+    functor_symbols = 'h'
     expression = '15.70 + 0.031*${T_solidus} + 2.97e-5 * ${T_solidus}^2'
   []
   [k_s]
     type = ParsedFunctorMaterial
     property_name = 'k_s'
-    functor_names = 'temperature'
-    functor_symbols = 'temperature'
+    functor_names = 'h'
+    functor_symbols = 'h'
     expression = '60.66 - 0.183*${T_solidus} + 6.03e-4 * ${T_solidus}^2 - 7.136e-7 * ${T_solidus}^3'
   []
   [cp_l]
     type = ParsedFunctorMaterial
     property_name = 'cp_l'
-    functor_names = 'temperature'
-    functor_symbols = 'temperature'
+    functor_names = 'h'
+    functor_symbols = 'h'
     expression = '${cp_liquid_val}'
   []
   [cp_s]
     type = ParsedFunctorMaterial
     property_name = 'cp_s'
-    functor_names = 'temperature'
-    functor_symbols = 'T'
+    functor_names = 'h'
+    functor_symbols = 'h'
     expression = '${cp_solid_val}'
   []
   [mu_l]
     type = ParsedFunctorMaterial
     property_name = 'mu_l'
-    functor_names = 'temperature'
-    functor_symbols = 'T'
+    functor_names = 'h'
+    functor_symbols = 'h'
     expression = '${mu}'
   []
 
@@ -477,7 +483,7 @@ h_hot  = ${fparse L + cp_liquid_val*(T_hot - T_liquidus)}
   []
   [ave_T]
     type = ElementAverageValue
-    variable = 'temperature'
+    variable = 'T'
     execute_on = 'INITIAL TIMESTEP_END'
   []
   [ave_h]
