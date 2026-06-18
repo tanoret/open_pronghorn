@@ -1,0 +1,14 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md'
+  issues = '#000'
+  [f2_yield]
+    type = RunApp
+    input = 'f2_yield.i'
+    cli_args = 'Outputs/file_base=f2_yield_out'
+    max_time = 300
+    validation_test = 'f2_yield_vnv.py'
+    validation_upper_bound = 0.20
+    requirement = 'The system shall reproduce the radiolytic F2 yield (G value) for FLiBe-UF4 '
+                  'measured by Davis et al. (NSE 2022), within the validation tolerance.'
+  []
+[]

@@ -1,0 +1,13 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md MSRReaction.md'
+  issues = '#000'
+  [electron_capture]
+    type = 'CSVDiff'
+    input = 'electron_capture.i'
+    csvdiff = 'electron_capture_out.csv'
+    abs_zero = 1e-10
+    rel_err = 1e-5
+    requirement = 'The system shall integrate the metal electron-capture reaction e_sol + Zn_II -> '
+                  'Zn_I and reproduce the pseudo-first-order decay of the validated 0D radiolysis model.'
+  []
+[]

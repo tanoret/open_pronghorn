@@ -1,0 +1,16 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md MSRReaction.md'
+  issues = '#000'
+  [msr_core]
+    type = CSVDiff
+    input = 'msr_core.i'
+    csvdiff = 'msr_core_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-4
+    max_time = 600
+    requirement = 'The system shall solve a coupled MSR fuel-salt core - linear momentum, mass and '
+                  'energy conservation with k-epsilon turbulence - and transport radiolysis species '
+                  'produced by a neutron-flux-shaped source by advection and by molecular plus '
+                  'turbulent diffusion, with buoyant transport of the evolved gas.'
+  []
+[]

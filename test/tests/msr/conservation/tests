@@ -1,0 +1,15 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md MSRReaction.md'
+  issues = '#000'
+  [cr_conservation]
+    type = CSVDiff
+    input = 'cr_conservation.i'
+    csvdiff = 'cr_conservation_out.csv'
+    abs_zero = 1e-10
+    rel_err = 1e-5
+    requirement = 'The system shall conserve total chromium in a closed irradiated cell, i.e. the '
+                  'lagged-linearized reaction coupling shall be conservative when the segregated '
+                  'fixed-point iteration is converged (here total chromium is held to within 5e-5 of '
+                  'its initial value).'
+  []
+[]

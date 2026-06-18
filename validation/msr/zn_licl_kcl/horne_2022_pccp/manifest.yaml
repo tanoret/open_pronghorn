@@ -1,0 +1,73 @@
+case_id: zn_licl_kcl_horne_2022
+title: "Zn2+ + e_s- / Cl2•- kinetics in molten LiCl-KCl eutectic (400-600 °C)"
+
+citation:
+  authors: "Horne, G. P.; Wishart, J. F.; Pimblott, S. M.; ..."
+  journal: "Phys. Chem. Chem. Phys."
+  year: 2022
+  doi: "10.1039/D2CP01194H"
+  osti: "1870398"
+
+digitization:
+  tool: "vision-extraction-from-rendered-pdf"
+  figures: ["Fig. 4B (rate vs [ZnCl2] at 5 T)", "Table 1 reported in paper text"]
+  date_extracted: "2026-05"
+  digitized_by: "Claude (vision from OSTI preprint), values cross-checked against published Arrhenius"
+  notes: |
+    Data in data/:
+    - reported_rate_constants.csv: k values reported in the paper text (single-T or range).
+    - arrhenius_parameters.csv: A, Ea, dH, dS reported in paper (original 2022 + density-corrected 2026 refit).
+    - vision_fig4B_Zn2_pseudo1st_order.csv: visually extracted (T, [Zn2+], k_obs) tuples from Fig. 4B.
+    - k_vs_T_from_arrhenius.csv: 2nd-order k computed from published Arrhenius at each T with sigma.
+    - Source.txt: full citation + experimental conditions.
+    Probe wavelengths: e_s- @ 671 nm; Cl2•- @ 340 nm. Pulse dose: 6-9 Gy.
+    [Zn2+] used: 0, 1.88, 3.76, 7.30, 9.41 mM in LiCl-KCl, plus 142 mM and neat ZnCl2.
+
+system:
+  kernel: chloride
+  temperature_K: 673.15
+  liquid_volume_m3: 1.0e-3
+  headspace_volume_m3: 0.0
+  kLa_s^-1: 0.0
+  dose_rate_J_m3_s: 0.0
+  radiation: gamma
+  initial_concentrations:
+    Cl-: 2.0e4
+    e_s-: 1.0e-3
+    Cl•: 1.0e-3
+  metals:
+    Zn: {Zn2+: 0.0, Zn+: 0.0}
+  gas_species: []
+
+integration:
+  t_final_s: 1.0e-7
+  n_steps: 2000
+
+scalar_data:
+  # The Zn paper's primary contribution is per-T 2nd-order rate constants, not transients.
+  # Files below let a Bayesian fit treat (T, k_obs) tuples directly without integrating the model.
+  - file: data/k_vs_T_from_arrhenius.csv
+    description: "2nd-order rate constants for e_s- + Zn2+ -> Zn+ at 400-600 °C, propagated uncertainties"
+    observable: "k_M_inv_s"
+  - file: data/vision_fig4B_Zn2_pseudo1st_order.csv
+    description: "Pseudo-1st-order rate vs [Zn2+] at 5 temperatures, vision-extracted from Fig. 4B"
+    observable: "k_obs_1e8_per_s"
+  - file: data/reported_rate_constants.csv
+    description: "Single-T and reference rate constants from the paper text"
+  - file: data/arrhenius_parameters.csv
+    description: "Arrhenius A, Ea, dH, dS for Zn and related reactions"
+
+traces: []                            # No transient time-series digitized yet (Fig. 2A is available for that)
+metrics: []
+
+notes: |
+  Status:
+  - [done] Reported rate constants extracted to data/reported_rate_constants.csv.
+  - [done] Arrhenius parameters in data/arrhenius_parameters.csv.
+  - [done] Vision-extracted Fig. 4B rate-vs-[Zn] points in data/vision_fig4B_*.csv (4-5 mM concentration range
+    visually digitized from rendered 400 dpi PDF; sanity-checked against published Arrhenius and within ~5%).
+  - [done] Per-T 2nd-order k with sigma from Arrhenius in data/k_vs_T_from_arrhenius.csv (preferred for Bayesian fit).
+  - [open] Time-resolved e_s- and Cl2•- transients from Fig. 2A (neat LiCl-KCl) and Fig. 2B (142 mM ZnCl2).
+    Would let the harness compare full decay curves rather than just rate constants.
+  - [open] Cl2•- 2nd-order decay rate vs [Zn] from Fig. 6 (reciprocal plot slopes).
+  - [open] Arrhenius for Cl2•- + Zn+ from Fig. 7B (Ea = 25 ± 3 kJ/mol used here).

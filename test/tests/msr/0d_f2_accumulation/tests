@@ -1,0 +1,13 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md'
+  issues = '#000'
+  [f2_accumulation]
+    type = 'CSVDiff'
+    input = 'f2_accumulation.i'
+    csvdiff = 'f2_accumulation_out.csv'
+    abs_zero = 1e-10
+    rel_err = 1e-5
+    requirement = 'The system shall integrate the radiolytic G-value source term and reproduce the '
+                  'analytic linear accumulation of dissolved F2 in the validated 0D radiolysis model.'
+  []
+[]

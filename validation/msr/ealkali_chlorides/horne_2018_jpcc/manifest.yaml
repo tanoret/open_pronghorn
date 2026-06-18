@@ -1,0 +1,45 @@
+case_id: ealkali_chlorides_horne_2018
+title: "Foundational e_s- characterization in molten alkali chlorides"
+
+citation:
+  authors: "Horne, G. P.; ... (et al.)"
+  journal: "J. Phys. Chem. C"
+  year: 2018
+  doi: "10.1021/acs.jpcc.8b05716"
+
+digitization:
+  tool: "WebPlotDigitizer"
+  figures: []
+  date_extracted: ""
+  digitized_by: ""
+  notes: |
+    Reported: optical absorption spectrum, decay kinetics, and temperature
+    dependence of solvated electron in molten LiCl, NaCl, KCl, RbCl, CsCl,
+    and the LiCl-KCl eutectic. Source of e_s- molar absorptivity and lambda_max
+    that we need to convert absorbance traces to absolute concentrations.
+
+system:
+  kernel: chloride
+  temperature_K: 673.15
+  liquid_volume_m3: 1.0e-3
+  headspace_volume_m3: 0.0
+  kLa_s^-1: 0.0
+  dose_rate_J_m3_s: 0.0
+  radiation: gamma
+  initial_concentrations: {Cl-: 2.0e4, e_s-: 1.0e-3, Cl•: 1.0e-3}
+  metals: {}
+  gas_species: []
+
+integration:
+  t_final_s: 1.0e-6
+  n_steps: 2000
+
+traces: []
+metrics: []
+
+notes: |
+  STUB. Highest-priority extraction: molar absorptivity epsilon(lambda, T) for
+  e_s- and Cl2•- in LiCl-KCl. With these values, ALL absorbance-based traces
+  in the other cases can be converted to absolute mol/m^3 concentrations and
+  compared directly to model output (observable kind: "absorbance" instead of
+  "absorbance_scale_free").

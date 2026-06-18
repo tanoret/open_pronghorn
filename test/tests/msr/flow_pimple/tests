@@ -1,0 +1,15 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md MSRReaction.md'
+  issues = '#000'
+  [channel]
+    type = CSVDiff
+    input = 'channel.i'
+    csvdiff = 'channel_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-4
+    max_time = 600
+    requirement = 'The system shall couple transient molten salt radiolysis transport to a linear '
+                  'finite-volume segregated PIMPLE flow solve, advancing the advected and reacting '
+                  'dose-driven species in time.'
+  []
+[]

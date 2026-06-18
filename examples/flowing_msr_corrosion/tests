@@ -1,0 +1,17 @@
+[Tests]
+  design = 'CorrosionPlatingFlowAction.md CorrosionLinearFVButlerVolmerBC.md MoltenSaltRadiolysisAction.md'
+  issues = '#000'
+  [flowing_msr_corrosion]
+    type = CSVDiff
+    input = 'flowing_msr_corrosion.i'
+    csvdiff = 'flowing_msr_corrosion_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-4
+    max_time = 800
+    requirement = 'The system shall solve a complete flowing MSR fuel-salt core - linear momentum, '
+                  'mass and energy conservation with k-epsilon turbulence, neutron-flux-shaped '
+                  'nuclear heating and radiolysis - coupled to wall corrosion, transporting the '
+                  'chromium, iron and nickel shed by a temperature-dependent Butler-Volmer wall '
+                  'reaction up the core by the same turbulent flow.'
+  []
+[]

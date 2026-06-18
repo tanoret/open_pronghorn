@@ -107,6 +107,9 @@ build
 framework/contrib/libtorch
 test.cache
 
+# Allow the bundled application data files (e.g. the molten salt radiolysis chemistry database)
+!data/**/*.json
+
 # Allow certain files in gold directories
 !**/gold/*.e
 !**/gold/*.e-s*

@@ -1,0 +1,55 @@
+case_id: flinak_pulse_rad_akiyama_1994
+title: "Short-lived species in pulse-irradiated molten LiF-KF and LiF-NaF-KF eutectics"
+
+citation:
+  authors: "Akiyama, R.; Kitaichi, M.; Fujiwara, T.; Sawamura, S."
+  journal: "Journal of Nuclear Science and Technology"
+  year: 1994
+  volume: 31
+  pages: "250"
+  doi: ""                       # unknown - older Japanese journal
+  also: "J. Nucl. Sci. Technol. 1994, 31(3), 250"
+
+digitization:
+  tool: ""
+  figures: []
+  date_extracted: ""
+  digitized_by: ""
+  notes: |
+    HIGH PRIORITY. This is one of very few pulse-radiolysis papers on FLUORIDE melts.
+    Reports optical transient absorption in LiF-KF and FLiNaK (LiF-NaF-KF eutectic) under
+    pulse irradiation. Cited as ref. (10) in Conrad et al. PCCP 2023.
+    The paper should provide:
+    - Solvated electron e_s- absorption maximum and decay kinetics in F- melts
+    - F2•- radical anion spectrum and self-reactions
+    - Possibly F3- formation analogous to Cl3- in chloride melts
+    This is the BEST candidate for validating the fluoride kernel.
+
+system:
+  kernel: fluoride
+  temperature_K: 873.15           # FLiNaK typical operating
+  liquid_volume_m3: 1.0e-3
+  headspace_volume_m3: 0.0
+  kLa_s^-1: 0.0
+  dose_rate_J_m3_s: 0.0
+  radiation: gamma
+  initial_concentrations: {F-: 2.0e4, e_s-: 1.0e-3, F•: 1.0e-3}
+  metals: {}
+  gas_species: []
+
+integration:
+  t_final_s: 1.0e-6
+  n_steps: 2000
+
+traces: []
+metrics: []
+
+notes: |
+  STUB. Paper not yet accessible from this environment (J. Nucl. Sci. Technol. paywall).
+  Prerequisites for activation:
+  1. Obtain PDF (institutional access; INL library should have a copy).
+  2. Digitize transient absorbance traces (figure number TBD) at multiple T.
+  3. Add F2•- and F3- to the fluoride kernel in database.yaml if not already present.
+  4. Compare F2•- decay rate to chloride analog Cl2•- + Cl2•- in LiCl-KCl
+     (k = 2.2e9 M^-1 s^-1, Ea = 26 kJ/mol per Iwamatsu 2022) — fluoride is expected
+     to be slower due to higher F-F bond strength.

@@ -1,0 +1,60 @@
+case_id: eflibe_f2_yield_davis_2022
+title: "Radiolytic F2 production from MSR-relevant fluoride salts (LiF, BeF2, UF4, ThF4, FLiBe-UF4)"
+
+citation:
+  authors: "Davis, L.; Hania, R.; Boomstra, D.; Rossouw, D.; Charpin-Jacobs, F.; Uhlíř, J.; Marecek, M.; Beckers, H.; Riedel, S."
+  journal: "Nuclear Science and Engineering"
+  year: 2022
+  volume: 197
+  issue: 4
+  pages: "633-646"
+  doi: "10.1080/00295639.2022.2129951"
+
+digitization:
+  tool: ""
+  figures: []
+  date_extracted: ""
+  digitized_by: ""
+  notes: |
+    HIGH PRIORITY for fluoride kernel validation. Reports G-values for F2 gas production
+    from gamma irradiation of POWDERED fluoride salts at 40-60 °C using spent HFR Petten
+    fuel as gamma source. Reported G-values (per text snippets in search results):
+       G(LiF) ~ 0.004 molecules F2 / 100 eV
+       G(BeF2) ~ 0.009
+       G(ThF4) ~ 0.021
+       G(FLiBe-UF4) ~ 0.005   (composition 71.7 LiF - 16 BeF2 - 12.3 UF4)
+       G(UF4)   = ?  (not in search snippets — fetch from paper)
+    Caveats:
+    - Solid-phase data (not molten) at low T. Likely overestimates F2 yield in liquid melt
+      where recombination is kinetically dominant (per MSRE operating experience).
+    - Useful as low-T limit for fluoride radiolysis model.
+
+system:
+  kernel: fluoride
+  temperature_K: 333.15            # ~60 °C, paper irradiation temperature
+  liquid_volume_m3: 1.0e-3
+  headspace_volume_m3: 1.0e-4
+  kLa_s^-1: 0.01
+  dose_rate_J_m3_s: 1.0e4          # TBD from paper Section 2; HFR spent fuel gives MGy doses
+  radiation: gamma
+  G_values_override: {F2_diss: 0.005}     # FLiBe-UF4 starting point
+  initial_concentrations: {F-: 5.0e4}
+  metals: {U: {U4+: 0.1, U3+: 0.0}}
+  gas_species: ["F2"]
+
+integration:
+  t_final_s: 8.64e4                # 1 day; storage-relevant timescales
+  n_steps: 2000
+
+traces: []
+metrics: []
+
+notes: |
+  STUB. Need to fetch full paper to extract:
+  1. G-values for each composition with uncertainty bands.
+  2. Dose rate used per experiment (Gy/s).
+  3. Total absorbed dose at which F2 was measured.
+  4. Activation energy / T-dependence (if measured at multiple T).
+  5. Verify the solid-phase G is in fact directly applicable to the liquid limit.
+  This is the most concrete fluoride-radiolysis dataset publicly available; it deserves
+  a dedicated Bayesian fit comparing model F2 evolution vs measured G-values.

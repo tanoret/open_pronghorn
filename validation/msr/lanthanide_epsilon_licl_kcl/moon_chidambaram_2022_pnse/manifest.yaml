@@ -1,0 +1,57 @@
+case_id: lanthanide_epsilon_moon_2022
+title: "Molar absorption coefficients of trivalent lanthanides (Nd, Sm, Dy) in LiCl-KCl at 500 °C"
+
+context_kind: "calibration/spectroscopy"
+
+citation:
+  authors: "Moon, J.; Chidambaram, D."
+  journal: "Progress in Nuclear Energy"
+  year: 2022
+  volume: 152
+  pages: "104375"
+  doi: "10.1016/j.pnucene.2022.104375"
+  osti: "2418345"
+  url: "https://www.osti.gov/biblio/2418345"
+  also: |
+    Kim & Yun 2016 UV-Vis literature comparison values included in Table 2 of the paper.
+    Fujii and coworkers reported Nd3+ molar absorbance up to 900 nm at 600 °C.
+
+digitization:
+  tool: "PDF text extraction (pdftotext)"
+  figures: ["Table 1 (concentration mol-% conversions)", "Table 2 (molar absorption coefficients)"]
+  date_extracted: "2026-05"
+  digitized_by: "Claude (from OSTI public PDF)"
+  notes: |
+    Data in data/:
+    - epsilon_table2.csv: 20 absorption peaks for Sm3+, Nd3+, Dy3+ in LiCl-KCl at 500 °C
+      with epsilon in M^-1 cm^-1 and 1-sigma uncertainties.
+    This is the foundational reference for converting absorbance to absolute concentration
+    in any lanthanide-doped LiCl-KCl validation case (most notably Iwamatsu 2026 Inorg. Chem.
+    on Nd(II)/Nd(III) pulse radiolysis — currently stubbed in validation/nd_licl_kcl/).
+
+    Cross-references for ε of TRANSIENT species (e_s-, Cl2•-) at 400-600 °C — NOT this paper,
+    which only covers steady-state Ln3+ absorption. The transient ε values would need to come
+    from Horne et al. JPC C 2018 (still stubbed) or other dedicated pulse-radiolysis spectroscopy.
+
+system: {kernel: chloride, temperature_K: 773.15, liquid_volume_m3: 1.0e-3, headspace_volume_m3: 0.0, kLa_s^-1: 0.0, dose_rate_J_m3_s: 0.0, radiation: gamma, initial_concentrations: {Cl-: 2.0e4}, metals: {}, gas_species: []}
+integration: {t_final_s: 1.0, n_steps: 10}
+
+scalar_data:
+  - file: data/epsilon_table2.csv
+    description: "20 absorption peaks for Sm3+, Nd3+, Dy3+ at 500 °C with epsilon and sigma"
+
+traces: []
+metrics: []
+
+notes: |
+  This case is a SPECTROSCOPIC CALIBRATION reference, not a kinetic validation. It enables
+  the harness to use observable kind = "absorbance" (with epsilon and path length) in
+  lanthanide validation cases instead of `absorbance_scale_free`. Once Iwamatsu 2026 Nd
+  pulse-rad data is digitized, the Nd3+ epsilon values from this paper let us convert
+  absorbance to mol/m^3 for direct quantitative comparison.
+
+  Caveats:
+  - Paper is at 500 °C; pulse-rad temperatures (400-700 °C) may differ.
+  - For ION CHLORIDE concentration: paper uses 30-480 mM range; lower concentrations
+    (1-5 mM for radiolysis) may have somewhat different ε due to coordination changes.
+  - Sm3+, Nd3+, Dy3+ only — other lanthanides (Eu, Yb, Ce, Pr, Ho, Er) not covered.

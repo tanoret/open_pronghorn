@@ -1,0 +1,62 @@
+case_id: flibe_msre_f2_1990
+title: "F2 generation by gamma radiolysis of LiF-BeF2-ZrF4-UF4 (MSRE-composition fuel salt)"
+
+citation:
+  authors: "TBD (need full PDF — only abstract data available)"
+  journal: "Radiation Effects and Defects in Solids"
+  year: 1990
+  volume: 112
+  issue: 4
+  doi: "10.1080/10420159008213046"
+
+digitization:
+  tool: "from abstract via web search"
+  figures: []
+  date_extracted: "2026-05"
+  digitized_by: "Claude (from publisher abstract)"
+  notes: |
+    EXPERIMENTAL paper (1990) — predates the modern pulse-rad work by 30 years. Reported:
+    - Salt composition: LiF-BeF2-ZrF4-UF4 (64.5, 30.3, 5.0, 0.13 mol%) — close to MSRE fuel
+    - Dose rate: 10^7 to 10^8 R/h (~2.6e6 to 2.6e7 Gy/hr; ~700-7000 Gy/s in SI)
+    - F2 released and accumulates as overpressure
+    - Rate of F2 generation = rate of recombination with active metal sites
+    - Activation energy for the recombination = 39 kJ/mol
+    This is a higher-quality version of what the Davis 2022 NSE paper does at 40-60 °C —
+    1990 paper is at unspecified-but-relevant T with longer integration.
+
+system:
+  kernel: fluoride
+  temperature_K: 873.15            # placeholder MSRE-relevant T
+  liquid_volume_m3: 1.0e-3
+  headspace_volume_m3: 1.0e-4
+  kLa_s^-1: 0.01
+  dose_rate_J_m3_s: 1.85e5         # ~6.7e7 R/h converted (assume rho_salt = 2.0 g/cm^3)
+  radiation: gamma
+  G_values_override: {F2_diss: 0.005}
+  initial_concentrations: {F-: 5.0e4}
+  metals: {U: {U4+: 0.01, U3+: 0.0}}
+  gas_species: ["F2"]
+
+integration:
+  t_final_s: 3.6e3
+  n_steps: 200
+
+scalar_data:
+  # Pre-populate from abstract; replace with table values when PDF is obtained.
+  - description: "Activation energy for F2 recombination with metal sites: 39 kJ/mol"
+  - description: "Net F2 production rate at steady state equals recombination rate"
+  - description: "Salt composition: 64.5/30.3/5.0/0.13 mol% LiF/BeF2/ZrF4/UF4"
+
+traces: []
+metrics: []
+
+notes: |
+  STUB. Need full PDF to extract:
+  - Author names (not in search snippets)
+  - F2 generation rate per dose at different T (Arrhenius dataset)
+  - Pre-exponential factor for the 39 kJ/mol recombination
+  - Absorbed dose corresponding to F2 saturation
+  Once obtained, this becomes a HIGH-PRIORITY validation case because:
+  1. Same salt composition as historical MSRE fuel
+  2. Real (not extrapolated) F2 production kinetics
+  3. Long-time steady-state behavior — complementary to short-time pulse-rad

@@ -1,0 +1,15 @@
+[Tests]
+  design = 'CorrosionLinearFVButlerVolmerBC.md CorrosionPlatingFlowAction.md'
+  issues = '#000'
+  [linearfv_wall]
+    type = CSVDiff
+    input = 'linearfv_wall.i'
+    csvdiff = 'linearfv_wall_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-6
+    requirement = 'The linear finite-volume Butler-Volmer wall boundary condition, set up by the '
+                  'CorrosionPlatingFlow action, shall reproduce the calibrated reference dissolution '
+                  'rate (16.599 um/y for the 304L hot-fluoride-loop case) in a well-mixed salt cell, '
+                  'consistent with the finite-element Butler-Volmer implementation.'
+  []
+[]

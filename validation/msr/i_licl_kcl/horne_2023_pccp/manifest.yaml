@@ -1,0 +1,69 @@
+case_id: i_licl_kcl_horne_2023
+title: "Iodide-impurity impact on radiolytic transients in molten LiCl-KCl"
+
+citation:
+  authors: "Horne, G. P.; Conrad, J. K.; ... (et al.)"
+  journal: "Phys. Chem. Chem. Phys."
+  year: 2023
+  doi: "10.1039/D3CP01477K"
+
+digitization:
+  tool: "vision-extraction-from-rendered-pdf"
+  figures: ["Table 1 in paper text", "Fig. 5 ICl•- decay vs time (4 T)"]
+  date_extracted: "2026-05"
+  digitized_by: "Claude (vision from OSTI preprint), cross-checked with paper text"
+  notes: |
+    Data in data/:
+    - compositions_table1.csv: paper Table 1, KI wt.% -> mM at 4 temperatures (precise from text).
+    - reported_kinetics.csv: Ea, A/eps for ICl•- 2nd-order decay (text values).
+    - vision_fig5_ICl_decay.csv: vision-extracted ICl•- absorbance decay traces at 671 nm
+      for 10 wt.% KI in LiCl-KCl at 400/500/600/700 °C (approximate; original traces are noisy).
+    - Source.txt: citation + experimental setup.
+    Probe wavelengths: e_s- @ 671 nm; Cl2•- @ 340 nm; ICl•- @ 400 nm (decay studied @ 671 nm).
+    KI concentrations used: 0.054, 0.107, 0.536, 1.072, 5.107, 9.998 wt.% in LiCl-KCl, plus + 2 wt.% ZnCl2.
+
+system:
+  kernel: chloride
+  temperature_K: 673.15
+  liquid_volume_m3: 1.0e-3
+  headspace_volume_m3: 0.0
+  kLa_s^-1: 0.0
+  dose_rate_J_m3_s: 0.0
+  radiation: gamma
+  initial_concentrations:
+    Cl-: 2.0e4
+    e_s-: 1.0e-3
+    Cl•: 1.0e-3
+    I-: 0.0           # overridden per trace
+  metals: {}
+  gas_species: []
+
+integration:
+  t_final_s: 1.0e-6
+  n_steps: 2000
+
+scalar_data:
+  - file: data/compositions_table1.csv
+    description: "Paper Table 1: KI wt.% to mM conversions at 4 temperatures + ionic electron fractions"
+  - file: data/reported_kinetics.csv
+    description: "Reported activation energies and pre-factors"
+
+traces: []                            # Fig. 5 traces in vision_fig5_ICl_decay.csv but not yet runnable —
+                                      # see [open] item below for what's needed to drive the harness.
+metrics: []
+
+notes: |
+  Status:
+  - [done] Table 1 compositions (KI wt.% -> mM at 400-700 °C) in data/compositions_table1.csv.
+  - [done] Activation energy for ICl•- decay (Ea = 23.4 ± 5.7 kJ/mol) in data/reported_kinetics.csv.
+  - [done] Vision-extracted ICl•- decay traces (Fig. 5) in data/vision_fig5_ICl_decay.csv at 4 T.
+  - [open] To run this case through the harness, the chloride kernel needs iodine chemistry:
+       e_s- + I- -> (no significant scavenging; paper says rate is small) -- placeholder
+       Cl• + I- -> ICl•-
+       I• + I- -> I2•-
+       2 ICl•- -> products (with Ea = 23.4 ± 5.7 kJ/mol; A/eps = 1.6e9 cm/s, eps unknown)
+       2 I2•- -> I- + I3-
+    Until these are added to database.yaml, the manifest holds only digitized data; the harness
+    cannot integrate the model for comparison.
+  - [open] SI Table S1 (pseudo-1st-order eS- decay vs [KI] x T) is NOT in the OSTI preprint —
+    only the published paper SI has it. To complete this case digitally, fetch the SI from RSC.

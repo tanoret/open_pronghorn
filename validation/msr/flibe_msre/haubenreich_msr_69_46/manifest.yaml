@@ -1,0 +1,50 @@
+case_id: flibe_msre_f2_storage
+title: "Steady-state F2 buildup in stored MSRE fuel salt below ~150 °C"
+
+citation:
+  authors: "Haubenreich, P. N.; Williams, D. F.; Icenhour, A. S.; ..."
+  journal: "ORNL internal memorandum / report series"
+  year: 1969
+  identifier: "ORNL-MSR-69-46 (and follow-on reports through 1990s)"
+  notes: "Foundational basis for the 1989 cycle of annual reheating to ~150 °C to prevent F2 release."
+
+digitization:
+  tool: "WebPlotDigitizer"
+  figures: []
+  date_extracted: ""
+  digitized_by: ""
+  notes: |
+    Steady-state radiolysis with self-irradiation from fission products in
+    the cooled MSRE fuel salt. Recombination is kinetically suppressed at
+    low T, so F2 accumulates. Use this as a low-T limit test of the fluoride
+    kernel and Henry-law gas exchange.
+
+system:
+  kernel: fluoride
+  temperature_K: 400.0           # 127 °C - below the no-release threshold
+  liquid_volume_m3: 1.0e-3
+  headspace_volume_m3: 1.0e-3
+  kLa_s^-1: 0.0                  # TODO: realistic value for a sealed storage tank
+  dose_rate_J_m3_s: 0.0          # TODO: compute from fission-product specific activity
+  radiation: gamma
+  G_values_override: {F2_diss: 0.005}
+  initial_concentrations: {F-: 5.0e3}
+  metals: {U: {U4+: 0.1, U3+: 0.0}}
+  gas_species: ["F2"]
+
+integration:
+  t_final_s: 8.64e4              # 1 day; storage scenarios run to years
+  n_steps: 2000
+
+traces: []
+metrics: []
+
+notes: |
+  STUB. Many missing pieces compared to the pulse-radiolysis cases:
+  1. Need fission-product gamma dose rate vs time for the salt under study.
+  2. Need the recombination back-reaction (F• + F• -> F2_diss and reverse)
+     temperature dependence — currently only forward in database.yaml.
+  3. Need a "fluorine fixation" loss term (formation of UF6 etc.) to model
+     the observed bulk-salt F2 mass balance.
+  4. ORNL internal memoranda are not online — physical copies via ORNL
+     library or the flibe.com flibrary mirror.

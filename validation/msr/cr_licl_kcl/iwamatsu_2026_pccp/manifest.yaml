@@ -1,0 +1,137 @@
+case_id: cr_licl_kcl_iwamatsu_2026
+title: "Cr(II)/Cr(III) radiation-induced redox kinetics in molten LiCl-KCl eutectic"
+
+citation:
+  authors: "Iwamatsu, K.; Horne, G. P.; Ramos-Ballesteros, A.; Castro Baldivieso, S.; Conrad, J. K.; Woods, M. E.; Phillips, W. C.; LaVerne, J. A.; Pimblott, S. M.; Wishart, J. F."
+  journal: "Phys. Chem. Chem. Phys."
+  year: 2026
+  volume: 28
+  issue: 3
+  pages: "2061-2071"
+  doi: "10.1039/D4CP04190A"
+  osti: "2529388"
+
+digitization:
+  tool: "WebPlotDigitizer"
+  figures: ["Fig. 2A (Cr(II) traces)", "Fig. 3A (Cr(III) traces)"]
+  date_extracted: "2025"
+  digitized_by: "M. Tanore-Tamales (INL)"
+  notes: |
+    Time axis in the published figures is in nanoseconds (ns). CSV files
+    in data/ keep the original ns axis; the harness converts via time_units.
+    Probe wavelength: 700 nm (eS- absorption band), per paper Section 2 and
+    Fig. 2/3 captions. Cl2•- is probed at 340/400 nm separately (not used
+    here). Pulse dose: 15-30 Gy per electron pulse. The eS- molar
+    absorptivity at 700 nm in LiCl-KCl at 400 °C would let us convert
+    absorbance to absolute concentration directly — until filled in,
+    observables use `kind: absorbance_scale_free` so model and experiment
+    are compared on a common amplitude.
+    Initial Cr concentrations: paper used 2.01 mM CrCl2 and 2.02 mM CrCl3 for
+    the spectral panels (Fig. 1) plus 4 mM and 15 mM CrCl2 for follow-up
+    studies. Fig. 2B/3B (rate vs [Cr]) reports 1, 2, 3, 4, and 5 mM nominal —
+    matching the labels of our digitized CSVs.
+
+system:
+  kernel: chloride
+  temperature_K: 673.15        # 400 °C, matching the rate-constant T_ref in database.yaml
+  liquid_volume_m3: 1.0e-3
+  headspace_volume_m3: 0.0
+  kLa_s^-1: 0.0
+  dose_rate_J_m3_s: 0.0        # pulse-radiolysis: no steady source, pulse delivered via initial e_s-
+  radiation: gamma
+  initial_concentrations:
+    Cl-: 2.0e4                 # ~20 mol/L (large/constant) -> 2e4 mol/m^3
+    e_s-: 1.0e-3               # pulse inventory of solvated electrons (mol/m^3); TUNE to match measured pulse dose
+    Cl•: 1.0e-3                # pulse-generated chlorine atoms; equal to e_s- for charge balance in chloride
+  metals:
+    Cr: {Cr2+: 0.0, Cr3+: 0.0, Cr+: 0.0}   # overridden per trace
+  gas_species: []
+
+integration:
+  t_final_s: 1.0e-7            # 100 ns window covers e_s- decay across the 1-5 mM Cr range
+  n_steps: 2000
+
+traces:
+  - file: data/absorbance1mMCr2.csv
+    label: "1 mM Cr(II)"
+    observable: { kind: absorbance_scale_free, species: "e_s-" }
+    time_units: ns
+    initial_overrides: { Cr2+: 0.99 }     # 0.99 mM -> 0.99 mol/m^3
+
+  - file: data/absorbance2mMCr2.csv
+    label: "2 mM Cr(II)"
+    observable: { kind: absorbance_scale_free, species: "e_s-" }
+    time_units: ns
+    initial_overrides: { Cr2+: 1.98 }
+
+  - file: data/absorbance3mMCr2.csv
+    label: "3 mM Cr(II)"
+    observable: { kind: absorbance_scale_free, species: "e_s-" }
+    time_units: ns
+    initial_overrides: { Cr2+: 2.97 }
+
+  - file: data/absorbance4mMCr2.csv
+    label: "4 mM Cr(II)"
+    observable: { kind: absorbance_scale_free, species: "e_s-" }
+    time_units: ns
+    initial_overrides: { Cr2+: 3.96 }
+
+  - file: data/absorbance1mMCr3.csv
+    label: "1 mM Cr(III)"
+    observable: { kind: absorbance_scale_free, species: "e_s-" }
+    time_units: ns
+    initial_overrides: { Cr3+: 1.05 }
+
+  - file: data/absorbance2mMCr3.csv
+    label: "2 mM Cr(III)"
+    observable: { kind: absorbance_scale_free, species: "e_s-" }
+    time_units: ns
+    initial_overrides: { Cr3+: 2.10 }
+
+  - file: data/absorbance3mMCr3.csv
+    label: "3 mM Cr(III)"
+    observable: { kind: absorbance_scale_free, species: "e_s-" }
+    time_units: ns
+    initial_overrides: { Cr3+: 3.15 }
+
+  - file: data/absorbance4mMCr3.csv
+    label: "4 mM Cr(III)"
+    observable: { kind: absorbance_scale_free, species: "e_s-" }
+    time_units: ns
+    initial_overrides: { Cr3+: 4.20 }
+
+  - file: data/absorbance5mMCr3.csv
+    label: "5 mM Cr(III)"
+    observable: { kind: absorbance_scale_free, species: "e_s-" }
+    time_units: ns
+    initial_overrides: { Cr3+: 5.25 }
+
+scalar_data:
+  - file: data/reported_rate_constants.csv
+    description: "Single-T rate constants at 400 °C for Eqs. 5, 6, 9, 10 (with sigma)"
+  - file: data/arrhenius_parameters.csv
+    description: "Arrhenius A, Ea, Eyring dH, dS for Eqs. 5, 6 (density-corrected) + Zn(II) refit"
+  - file: data/k_vs_T_from_arrhenius.csv
+    description: "Per-T 2nd-order k for Eqs. 5, 6 across 400-600 °C with propagated sigma; for Bayesian fit"
+
+metrics:
+  - kind: rmse
+    species: e_s-
+
+notes: |
+  Status:
+  - [done] Cr Arrhenius parameters in database.yaml (Iwamatsu 2026 Eqs. 5/6).
+  - [done] Probe wavelength documented (700 nm for e_s-).
+  - [open] Need molar absorptivity of e_s- at 700 nm in LiCl-KCl at 400-600 °C
+    to switch `absorbance_scale_free` -> `absorbance` and compare absolute
+    concentrations. Source: Horne et al. JPC C 2018 (10.1021/acs.jpcc.8b05716);
+    see validation/ealkali_chlorides/horne_2018_jpcc/.
+  - [open] Pulse dose 15-30 Gy per pulse. To convert this to an initial [e_s-]
+    inventory, multiply by G_e_s- (~3-5 molecules/100 eV typical), salt density
+    (~1.65 g/cm^3 at 400 °C), and N_A. For 25 Gy with G=4: [e_s-]_0 ~ 1.7e-2 mol/m^3.
+    Currently set at 1e-3 mol/m^3 as an order-of-magnitude placeholder.
+  - [open] Cr3+ + Cl2•- mechanism (database.yaml note): paper allows either
+    Cr3+ + Cl2•- -> Cr4+ + 2Cl- or Cr3+ + Cl2•- -> Cr2+ + Cl2. Adopted (b);
+    overlay quality with (a) would test which is correct.
+  - [open] CSV labels are nominal; paper reports density-corrected concentrations
+    in Table S1 — substitute exact values when SI is parsed.

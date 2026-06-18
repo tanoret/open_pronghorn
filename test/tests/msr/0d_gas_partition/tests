@@ -1,0 +1,13 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md MSRGasExchange.md'
+  issues = '#000'
+  [gas_partition]
+    type = 'CSVDiff'
+    input = 'gas_partition.i'
+    csvdiff = 'gas_partition_out.csv'
+    abs_zero = 1e-10
+    rel_err = 1e-5
+    requirement = 'The system shall integrate the dissolved-to-headspace gas exchange and reproduce '
+                  'the Henry-law partition equilibrium of the validated 0D radiolysis model.'
+  []
+[]

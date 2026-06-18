@@ -1,0 +1,105 @@
+{
+  "_comment": "Molten salt radiolysis chemistry database. Ported from MoltenSaltRadiolysis/msr_radiolysis/data/database.yaml. Species use plain identifiers (no symbols) so they are valid MOOSE variable names. Reaction rate constants follow Arrhenius forms: A*exp(-Ea/(R T)) when 'A' and 'Ea_J_mol' are given; k_ref*exp(Ea_J_mol/R*(1/T_ref - 1/T)) when 'k_ref','T_ref','Ea_J_mol' are given; k_ref when only 'k_ref' is given. Kinetic orders default to the stoichiometric coefficients; override with an optional 'orders' object.",
+  "constants": {
+    "R_gas_J_mol_K": 8.314462618
+  },
+  "henry": {
+    "Cl2": 1.0e-5,
+    "F2": 1.0e-6
+  },
+  "gas_pairs": {
+    "Cl2": {"liquid": "Cl2_diss", "gas": "Cl2_gas"},
+    "F2": {"liquid": "F2_diss", "gas": "F2_gas"}
+  },
+  "kernels": {
+    "chloride": {
+      "species": ["e_sol", "Cl_ion", "Cl_rad", "Cl2m_rad", "Cl3_ion", "Cl2_diss"],
+      "reactions": [
+        {"name": "Cl_rad + Cl_ion -> Cl2m_rad",
+         "reactants": {"Cl_rad": 1, "Cl_ion": 1}, "products": {"Cl2m_rad": 1},
+         "k_ref": 1.0e7, "T_ref": 673.15, "Ea_J_mol": 2.0e4},
+        {"name": "e_sol + Cl_rad -> Cl_ion",
+         "reactants": {"e_sol": 1, "Cl_rad": 1}, "products": {"Cl_ion": 1},
+         "k_ref": 1.0e7, "T_ref": 673.15, "Ea_J_mol": 2.5e4},
+        {"name": "Cl_rad + Cl_rad -> Cl2_diss",
+         "reactants": {"Cl_rad": 2}, "products": {"Cl2_diss": 1},
+         "k_ref": 5.0e6, "T_ref": 673.15, "Ea_J_mol": 2.0e4},
+        {"name": "2 Cl2m_rad -> Cl3_ion + Cl_ion",
+         "reactants": {"Cl2m_rad": 2}, "products": {"Cl3_ion": 1, "Cl_ion": 1},
+         "k_ref": 2.2e6, "T_ref": 673.15, "Ea_J_mol": 2.6e4},
+        {"name": "Cl3_ion -> Cl2_diss + Cl_ion",
+         "reactants": {"Cl3_ion": 1}, "products": {"Cl2_diss": 1, "Cl_ion": 1},
+         "k_ref": 1.0, "T_ref": 673.15, "Ea_J_mol": 1.0e4}
+      ]
+    },
+    "fluoride": {
+      "species": ["e_sol", "F_ion", "F_rad", "F2_diss"],
+      "reactions": [
+        {"name": "e_sol + F_rad -> F_ion",
+         "reactants": {"e_sol": 1, "F_rad": 1}, "products": {"F_ion": 1},
+         "k_ref": 1.0e7, "T_ref": 673.15, "Ea_J_mol": 2.5e4},
+        {"name": "F_rad + F_rad -> F2_diss",
+         "reactants": {"F_rad": 2}, "products": {"F2_diss": 1},
+         "k_ref": 5.0e6, "T_ref": 673.15, "Ea_J_mol": 2.0e4}
+      ]
+    }
+  },
+  "metals": {
+    "Zn": {
+      "species": ["Zn_II", "Zn_I"],
+      "chloride_reactions": [
+        {"name": "e_sol + Zn_II -> Zn_I",
+         "reactants": {"e_sol": 1, "Zn_II": 1}, "products": {"Zn_I": 1},
+         "A": 2.4e10, "Ea_J_mol": 3.56e4},
+        {"name": "Cl2m_rad + Zn_I -> 2 Cl_ion + Zn_II",
+         "reactants": {"Cl2m_rad": 1, "Zn_I": 1}, "products": {"Cl_ion": 2, "Zn_II": 1},
+         "k_ref": 2.0e7, "T_ref": 673.15, "Ea_J_mol": 2.5e4}
+      ],
+      "fluoride_reactions": [
+        {"name": "e_sol + Zn_II -> Zn_I",
+         "reactants": {"e_sol": 1, "Zn_II": 1}, "products": {"Zn_I": 1},
+         "k_ref": 1.0e7, "T_ref": 873.15, "Ea_J_mol": 3.031e4},
+        {"name": "F2_diss + 2 Zn_I -> 2 Zn_II + 2 F_ion",
+         "reactants": {"F2_diss": 1, "Zn_I": 2}, "products": {"Zn_II": 2, "F_ion": 2},
+         "k_ref": 1.0e4, "T_ref": 873.15, "Ea_J_mol": 3.0e4}
+      ]
+    },
+    "Cr": {
+      "species": ["Cr_II", "Cr_III", "Cr_I"],
+      "chloride_reactions": [
+        {"name": "e_sol + Cr_II -> Cr_I",
+         "reactants": {"e_sol": 1, "Cr_II": 1}, "products": {"Cr_I": 1},
+         "A": 1.7e10, "Ea_J_mol": 3.35e4},
+        {"name": "e_sol + Cr_III -> Cr_II",
+         "reactants": {"e_sol": 1, "Cr_III": 1}, "products": {"Cr_II": 1},
+         "A": 2.0e10, "Ea_J_mol": 3.18e4},
+        {"name": "Cl2m_rad + Cr_II -> Cr_III + 2 Cl_ion",
+         "reactants": {"Cl2m_rad": 1, "Cr_II": 1}, "products": {"Cr_III": 1, "Cl_ion": 2},
+         "k_ref": 7.2e6, "T_ref": 673.15},
+        {"name": "Cl2m_rad + Cr_III -> Cr_II + Cl2_diss",
+         "reactants": {"Cl2m_rad": 1, "Cr_III": 1}, "products": {"Cr_II": 1, "Cl2_diss": 1},
+         "k_ref": 1.4e6, "T_ref": 673.15},
+        {"name": "Cr_III + Cr_I -> 2 Cr_II",
+         "reactants": {"Cr_III": 1, "Cr_I": 1}, "products": {"Cr_II": 2},
+         "k_ref": 1.7e7, "T_ref": 673.15}
+      ]
+    },
+    "U": {
+      "species": ["U_IV", "U_III"],
+      "fluoride_reactions": [
+        {"name": "e_sol + U_IV -> U_III",
+         "reactants": {"e_sol": 1, "U_IV": 1}, "products": {"U_III": 1},
+         "k_ref": 1.0e7, "T_ref": 873.15, "Ea_J_mol": 3.0e4},
+        {"name": "F2_diss + 2 U_III -> 2 U_IV + 2 F_ion",
+         "reactants": {"F2_diss": 1, "U_III": 2}, "products": {"U_IV": 2, "F_ion": 2},
+         "k_ref": 5.0e4, "T_ref": 873.15, "Ea_J_mol": 3.0e4}
+      ]
+    }
+  },
+  "G_values": {
+    "gamma": {
+      "chloride": {"e_sol": 0.30, "Cl_rad": 0.30, "Cl2_diss": 0.0},
+      "fluoride": {"e_sol": 0.20, "F_rad": 0.20, "F2_diss": 0.005}
+    }
+  }
+}

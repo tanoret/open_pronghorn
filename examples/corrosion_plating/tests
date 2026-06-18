@@ -1,0 +1,26 @@
+[Tests]
+  design = 'CorrosionPlatingAction.md ButlerVolmerInterface.md ButlerVolmerBC.md'
+  issues = '#000'
+  [corrosion_coupon]
+    type = CSVDiff
+    input = 'corrosion_coupon.i'
+    csvdiff = 'corrosion_coupon_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    max_time = 600
+    requirement = 'The system shall model two-block (salt + solid) corrosion of a Cr/Fe/Ni alloy '
+                  'coupon, dissolving each metal through Butler-Volmer interface kinetics while '
+                  'conserving the total chromium inventory and tracking the wall recession.'
+  []
+  [flow_coupled_corrosion]
+    type = CSVDiff
+    input = 'flow_coupled_corrosion.i'
+    csvdiff = 'flow_coupled_corrosion_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    max_time = 600
+    requirement = 'The system shall model single-domain wall corrosion in a flowing channel, with '
+                  'the chromium shed by the Butler-Volmer wall reaction advected downstream by a '
+                  'prescribed velocity field (one-way flow coupling).'
+  []
+[]
