@@ -1,0 +1,51 @@
+case_id: nd_licl_kcl_horne_2026
+title: "Nd(II)/Nd(III) influence on radiolytic transients in molten LiCl-KCl"
+
+citation:
+  authors: "Iwamatsu, K.; Horne, G. P.; ... (et al.)"
+  journal: "Inorg. Chem."
+  year: 2026
+  doi: "10.1021/acs.inorgchem.5c04788"
+
+digitization:
+  tool: "WebPlotDigitizer"
+  figures: []
+  date_extracted: ""
+  digitized_by: ""
+  notes: |
+    Reported: k(e_s- + Nd3+) = (4.54 ± 0.07)e10 M^-1 s^-1 at 673 K
+    -> 4.54e7 m^3/(mol s).
+    k(Nd2+ + Cl2•-) = (1.72 ± 0.04)e10 M^-1 s^-1 -> 1.72e7 SI.
+    Arrhenius parameters and concentration-dependent transient traces
+    likely available; check Sec. 3 / SI of the paper.
+
+system:
+  kernel: chloride
+  temperature_K: 673.15
+  liquid_volume_m3: 1.0e-3
+  headspace_volume_m3: 0.0
+  kLa_s^-1: 0.0
+  dose_rate_J_m3_s: 0.0
+  radiation: gamma
+  initial_concentrations:
+    Cl-: 2.0e4
+    e_s-: 1.0e-3
+    Cl•: 1.0e-3
+  metals: {}                          # Nd not yet in database.yaml — see notes
+  gas_species: []
+
+integration:
+  t_final_s: 1.0e-7
+  n_steps: 2000
+
+traces: []
+metrics: []
+
+notes: |
+  STUB. Prerequisites:
+  1. Add Nd to msr_radiolysis/data/database.yaml as a new metal with species
+     ["Nd3+", "Nd2+"] and the two chloride_templated_reactions:
+        e_s- + Nd3+ -> Nd2+    k_ref=4.54e7 SI @ T_ref=673.15 K
+        Cl2•- + Nd2+ -> Nd3+ + 2 Cl-   k_ref=1.72e7 SI @ T_ref=673.15 K
+  2. Digitize Fig. <n> from the paper.
+  3. Fill in traces[] using the same pattern as cr_licl_kcl/iwamatsu_2026_pccp/.

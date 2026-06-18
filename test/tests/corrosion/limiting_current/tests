@@ -1,0 +1,15 @@
+[Tests]
+  design = 'ButlerVolmerBC.md CorrosionNernstPlanckFlux.md'
+  issues = '#000'
+  [limiting_current]
+    type = CSVDiff
+    input = 'limiting_current.i'
+    csvdiff = 'limiting_current_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    requirement = 'A fast cathodic Butler-Volmer boundary on a 1D salt cell with a bulk reservoir '
+                  'shall reproduce the analytic diffusion-limited current i_lim = z F D c_bulk / L: '
+                  'the surface concentration shall be driven near zero and the computed current '
+                  'shall match i_lim to within 0.1%.'
+  []
+[]

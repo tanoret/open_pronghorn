@@ -1,0 +1,47 @@
+case_id: zncl2_neat_nguyen_2023
+title: "Excess-electron states in molten ZnCl2 (computational MD)"
+context_kind: "theoretical-computational"
+
+citation:
+  authors: "Nguyen, H. H.; Bryantsev, V. S.; Margulis, C. J."
+  journal: "J. Phys. Chem. B"
+  year: 2023
+  volume: 127
+  issue: 42
+  doi: "10.1021/acs.jpcb.3c04210"
+  pmc: "PMC10614199"
+
+digitization:
+  tool: "WebFetch PMC full-text"
+  figures: []
+  date_extracted: "2026-05"
+  digitized_by: "Claude (verified via PMC)"
+  notes: |
+    RECLASSIFICATION: Computational paper using first-principles molecular dynamics.
+    NO experimental rate constants. NO molar absorption coefficients. NO Arrhenius parameters.
+    Earlier stub mis-attributed authorship to "Gibson et al." — the correct lead authors are
+    Nguyen, Bryantsev, Margulis.
+
+    The paper identifies THREE distinct electronic states for an excess electron in molten ZnCl2:
+      (1) Delocalized electron with broad visible-to-mid-IR absorption.
+      (2) Zn2Cl5•(2-) radical anion - localized covalent state, absorbs <575 nm (peak 400-550 nm).
+      (3) ZnCl3•(2-) solvated Zn(I) species - absorption extends to 650 nm.
+
+    Simulation conditions: T = 600.15 K, 149 ZnCl2 formula units, 36.5 ps trajectory.
+
+    This is RELEVANT for our chloride kernel because it shows the e_s- description used
+    in alkali chloride melts (single solvated electron) does NOT apply to high-Lewis-acidity
+    melts like ZnCl2. If we want to model neat ZnCl2 radiolysis, the kinetic network must
+    distinguish at least two electron states with different reactivities.
+
+system: {kernel: chloride, temperature_K: 600.15, liquid_volume_m3: 1.0e-3, headspace_volume_m3: 0.0, kLa_s^-1: 0.0, dose_rate_J_m3_s: 0.0, radiation: gamma, initial_concentrations: {Cl-: 4.0e4, e_s-: 1.0e-3}, metals: {}, gas_species: []}
+integration: {t_final_s: 1.0e-7, n_steps: 2000}
+traces: []
+metrics: []
+
+notes: |
+  Mechanistic reference; not directly usable for Bayesian inference. Use to inform model design:
+  - For neat ZnCl2: tracking a single "e_s-" species is an approximation that conflates three
+    distinct electronic states with different absorption maxima and reactivities.
+  - For LiCl-KCl eutectic: single "e_s-" treatment remains valid per Horne 2018 JPC C and
+    the Iwamatsu/Conrad experimental series.

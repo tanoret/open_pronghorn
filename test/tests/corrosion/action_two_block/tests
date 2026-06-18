@@ -1,0 +1,15 @@
+[Tests]
+  design = 'CorrosionPlatingAction.md ButlerVolmerInterface.md'
+  issues = '#000'
+  [two_block]
+    type = CSVDiff
+    input = 'two_block.i'
+    csvdiff = 'two_block_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-6
+    requirement = 'The CorrosionPlating action shall set up a two-block (salt + solid) corrosion '
+                  'coupon in which the Butler-Volmer interface kernel, seeded from the calibrated '
+                  'correlation, transfers chromium from the solid into the salt while conserving '
+                  'the total chromium inventory and accumulating the metal recession.'
+  []
+[]

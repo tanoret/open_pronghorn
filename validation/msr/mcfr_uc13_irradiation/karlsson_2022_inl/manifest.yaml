@@ -1,0 +1,64 @@
+case_id: mcfr_naclucl3_phillips_2022
+title: "Gamma irradiation of NaCl-UCl3 salt for the Molten Chloride Fast Reactor (MCFR) — NULL Cl2 benchmark"
+
+citation:
+  authors: "Phillips, W. C.; Cao, G.; Warmann, S. A.; Mohr, B. C.; Lovel, E. R.; Core, G. M."
+  publication: "INL Technical Report"
+  year: 2022
+  identifier: "INL/RPT-22-66727-Rev000"
+  osti: "1874817"
+  url: "https://www.osti.gov/biblio/1874817"
+  also: |
+    Karlsson, T. M. follow-up GAIN 2025 presentation: "Initial Investigations of an Irradiated
+    Chloride Fuel Salt: NaCl-UCl3" (https://gain.inl.gov/.../11.-Initial-Investigations-...-Karlsson.pdf).
+
+digitization:
+  tool: "PDF text extraction (pdftotext) + manual review"
+  figures: ["Fig. 15 (dose rate vs time)", "Fig. 17 (GASR pressure)", "Fig. 18 (gas volume)", "Fig. 19 (Cl2 spectrometer)"]
+  date_extracted: "2026-05"
+  digitized_by: "Claude (from OSTI public PDF)"
+  notes: |
+    Data in data/:
+    - experimental_conditions.csv: 4 capsules x (T, phase, dose, Cl2_detected)
+    - Source.txt: full report metadata, detection-limit details, conclusion
+    This is a "below detection limit" case — the value of this benchmark is as a
+    NULL: model predictions must show Cl2 partial pressure < ~1000 ppm under these
+    conditions (~31 MGy, max ~13,000 Gy/hr, 75-600 °C in NaCl-UCl3).
+
+system:
+  kernel: chloride
+  temperature_K: 873.15            # 600 °C - liquid case (most relevant for MCFR)
+  liquid_volume_m3: 1.0e-5         # ~9 g of salt per capsule, density ~2.6 g/cm^3
+  headspace_volume_m3: 1.0e-6      # small gas volume per Fig. 18 (TBD from PDF text)
+  kLa_s^-1: 0.01                   # low mass-transfer in sealed quartz cuvette
+  dose_rate_J_m3_s: 3.6e3          # 13,000 Gy/hr = 3.6 Gy/s; convert to J/m^3/s using density
+  radiation: gamma
+  G_values_override: {Cl2_diss: 0.001}   # placeholder until UCl3 chemistry added
+  initial_concentrations: {Cl-: 2.0e4}
+  metals: {U: {U4+: 0.0, U3+: 1.0}}     # 33 mol% UCl3 -> [U3+] significant
+  gas_species: ["Cl2"]
+
+integration:
+  t_final_s: 9.5e6                 # 2638 hours = 9.5e6 s
+  n_steps: 200
+
+traces: []                          # No transient data in this case — scalar benchmarks only.
+scalar_data:
+  - file: data/experimental_conditions.csv
+    description: "4 capsules x (T, phase, dose, Cl2_detected) — NULL benchmark"
+
+metrics: []
+
+notes: |
+  Status: [done] Conditions and conclusions extracted. NULL benchmark established.
+
+  Open items for full activation:
+  - [open] Need U3+/U4+ redox chemistry under irradiation. Minimum reactions:
+      Cl2•- + U3+ -> U4+ + 2 Cl-        (electron-transfer oxidation by Cl2•-)
+      e_s- + U4+ -> U3+                  (electron capture restoring lower oxidation state)
+    Currently UCl3 in database.yaml has only the fluoride-system reactions; chloride
+    templated reactions for U are not yet defined.
+  - [open] Convert experimental detection threshold (~1000 ppm in headspace) to a model
+    constraint on integrated Cl2 partial pressure given the capsule geometry.
+  - [open] Multi-T runs across 75, 150, 300, 600 °C with appropriate dose rate
+    schedule (the 20% increase on 11 May 2021) to reproduce the experimental dose profile.

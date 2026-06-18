@@ -1,0 +1,116 @@
+//* This file is part of OpenPronghorn.
+//* https://github.com/idaholab/open_pronghorn
+//* https://mooseframework.inl.gov/open_pronghorn
+//*
+//* OpenPronghorn is powered by the MOOSE Framework
+//* https://mooseframework.inl.gov
+//*
+//* Licensed under LGPL 2.1, please see LICENSE for details
+//* https://www.gnu.org/licenses/lgpl-2.1.html
+//*
+//* Copyright 2025, Battelle Energy Alliance, LLC
+//* ALL RIGHTS RESERVED
+//*
+
+#include "gtest/gtest.h"
+#include "MoltenSaltCorrosionData.h"
+#include "CorrosionChemistry.h"
+#include "DataFileUtils.h"
+
+#include <cmath>
+
+// These tests verify that the bundled corrosion database reproduces the engineering tables and the
+// calibrated parameter set of the validated reference model (msr_corrosion_bv/chemistry.py and
+// msr_corrosion_plating_model/results/parameters.json), and that the Faradaic conversions are exact
+// inverses.
+
+namespace
+{
+Corrosion::MoltenSaltCorrosionDatabase
+loadDatabase()
+{
+  return Corrosion::MoltenSaltCorrosionDatabase(
+      Moose::DataFileUtils::getPath("corrosion_database.json").path);
+}
+}
+
+TEST(MoltenSaltCorrosionData, elementValencesAndMolarMasses)
+{
+  const auto db = loadDatabase();
+
+  // Valences match chemistry.py VALENCE.
+  EXPECT_DOUBLE_EQ(db.element("Cr").valence, 2.0);
+  EXPECT_DOUBLE_EQ(db.element("Fe").valence, 2.0);
+  EXPECT_DOUBLE_EQ(db.element("Ni").valence, 2.0);
+  EXPECT_DOUBLE_EQ(db.element("Mo").valence, 3.0);
+  EXPECT_DOUBLE_EQ(db.element("Nb").valence, 4.0);
+  EXPECT_DOUBLE_EQ(db.element("Tc").valence, 4.0);
+  EXPECT_DOUBLE_EQ(db.element("Ru").valence, 3.0);
+  EXPECT_DOUBLE_EQ(db.element("Ag").valence, 1.0);
+  EXPECT_DOUBLE_EQ(db.element("Sb").valence, 3.0);
+  EXPECT_DOUBLE_EQ(db.element("Te").valence, 2.0);
+
+  // Molar masses match chemistry.py MOLAR_MASS_G_MOL.
+  EXPECT_DOUBLE_EQ(db.element("Cr").molar_mass_g_mol, 51.9961);
+  EXPECT_DOUBLE_EQ(db.element("Ni").molar_mass_g_mol, 58.6934);
+  EXPECT_DOUBLE_EQ(db.element("Ag").molar_mass_g_mol, 107.8682);
+
+  // Case-insensitive lookup (MultiMooseEnum upper-cases its values).
+  EXPECT_DOUBLE_EQ(db.element("cr").valence, 2.0);
+
+  // An unknown element falls back to the generic-metal entry (z = 2, M = 55).
+  EXPECT_FALSE(db.hasElement("Xx"));
+  EXPECT_DOUBLE_EQ(db.element("Xx").valence, 2.0);
+  EXPECT_DOUBLE_EQ(db.element("Xx").molar_mass_g_mol, 55.0);
+}
+
+TEST(MoltenSaltCorrosionData, densityAndChromiumFractionTables)
+{
+  const auto db = loadDatabase();
+
+  // Densities and chromium weight fractions match chemistry.py.
+  EXPECT_DOUBLE_EQ(db.density("hastelloy_n"), 8.89);
+  EXPECT_DOUBLE_EQ(db.density("stainless_304"), 8.00);
+  EXPECT_DOUBLE_EQ(db.density("graphite"), 1.80);
+  EXPECT_DOUBLE_EQ(db.crWeightFraction("hastelloy_n"), 0.07);
+  EXPECT_DOUBLE_EQ(db.crWeightFraction("stainless_304"), 0.19);
+  EXPECT_DOUBLE_EQ(db.crWeightFraction("in625"), 0.215);
+
+  // Unknown classes fall back to generic_metal (rho = 8.30, Cr fraction = 0.12).
+  EXPECT_DOUBLE_EQ(db.density("unobtanium"), 8.30);
+  EXPECT_DOUBLE_EQ(db.crWeightFraction("unobtanium"), 0.12);
+}
+
+TEST(MoltenSaltCorrosionData, calibratedParameterLookups)
+{
+  const auto db = loadDatabase();
+
+  // A spot-check of the verbatim fitted parameters from results/parameters.json.
+  EXPECT_DOUBLE_EQ(db.parameter("log_rate0_um_y"), 0.37629905691853827);
+  EXPECT_DOUBLE_EQ(db.parameter("redox_oxidizing_fef2"), 1.4885081752315936);
+  EXPECT_DOUBLE_EQ(db.parameter("mat_stainless_304"), 1.5243957749733648);
+  EXPECT_DOUBLE_EQ(db.parameter("Ea_Dcr_kJ_mol"), 240.0);
+  EXPECT_DOUBLE_EQ(db.parameter("log_Dcr_ref_cm2_s"), -30.84989694079675);
+  EXPECT_EQ(db.calibratedParameters().size(), 61u);
+}
+
+TEST(MoltenSaltCorrosionData, faradaicConversionsRoundTrip)
+{
+  using namespace Corrosion;
+  // Chromium in Hastelloy N: z = 2, M = 51.9961 g/mol, rho = 8.89 g/cm^3.
+  const Real z = 2.0, M = 51.9961, rho = 8.89;
+
+  // The current<->rate conversions are exact inverses.
+  const Real rate = 25.0; // um/y
+  const Real current = umYToCorrosionCurrent(rate, z, M, rho);
+  EXPECT_NEAR(corrosionCurrentToUmY(current, z, M, rho), rate, rate * 1.0e-12);
+
+  // Closed-form check against chemistry.py: cm_per_s = rate / (1e4 * SEC_PER_YEAR).
+  const Real cm_per_s = rate / (1.0e4 * seconds_per_year);
+  const Real expected_current = cm_per_s * z * faraday * rho / M;
+  EXPECT_NEAR(current, expected_current, std::abs(expected_current) * 1.0e-12);
+
+  // Mass<->thickness conversion: 1 um of Hastelloy N is rho * 0.1 mg/cm^2.
+  EXPECT_NEAR(umToMgCm2(1.0, rho), rho * 0.1, 1.0e-12);
+  EXPECT_NEAR(mgCm2ToUm(umToMgCm2(3.0, rho), rho), 3.0, 1.0e-12);
+}

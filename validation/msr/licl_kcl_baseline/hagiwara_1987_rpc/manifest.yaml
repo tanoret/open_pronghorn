@@ -1,0 +1,49 @@
+case_id: licl_kcl_baseline_hagiwara_1987
+title: "Baseline pulse radiolysis study of LiCl-KCl eutectic at 400 °C"
+
+citation:
+  authors: "Hagiwara, H.; Sawamura, S.; Sumiyoshi, T.; Katayama, M."
+  journal: "Radiation Physics and Chemistry"
+  year: 1987
+  volume: 30
+  issue: 2
+  pages: "143"
+  also: "Cited as ref. (8) in Conrad et al. PCCP 2023"
+
+digitization:
+  tool: ""
+  figures: []
+  date_extracted: ""
+  digitized_by: ""
+  notes: |
+    The first pulse-radiolysis kinetic study of LiCl-KCl eutectic.
+    Reports:
+    - e_s- lifetime of ~250 ns in LiCl-KCl at 400 °C (background, impurity-limited)
+    - Cl2•- disproportionation Ea ≈ 24 kJ/mol (confirmed within ~10 % by Iwamatsu 2022 at 26 ± 2)
+    Important historical baseline against which Iwamatsu et al.'s modern values are compared.
+
+system:
+  kernel: chloride
+  temperature_K: 673.15
+  liquid_volume_m3: 1.0e-3
+  headspace_volume_m3: 0.0
+  kLa_s^-1: 0.0
+  dose_rate_J_m3_s: 0.0
+  radiation: gamma
+  initial_concentrations: {Cl-: 2.0e4, e_s-: 1.0e-3, Cl•: 1.0e-3}
+  metals: {}
+  gas_species: []
+
+integration:
+  t_final_s: 1.0e-6
+  n_steps: 2000
+
+traces: []
+metrics: []
+
+notes: |
+  STUB. Add observed quantities from the paper text once accessible:
+  - eS- lifetime 250 ns (impurity-limited; corresponds to k_decay ≈ 4e6 s^-1)
+  - Cl2•- 2nd-order disproportionation rate at 400 °C
+  - Cl2•- decay Ea = 24 kJ/mol
+  These already appear in the Zn paper reported_rate_constants.csv as comparison values.

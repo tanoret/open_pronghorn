@@ -1,0 +1,49 @@
+case_id: cl3_chlorobasicity_nguyen_2025
+title: "Cl2 vs Cl3- branching by chlorobasicity (computational, MD only)"
+context_kind: "theoretical-computational"
+
+citation:
+  authors: "Nguyen, H. H.; Gibson, L. D.; Emerson, M. S.; Borah, B.; Roy, S.; Bryantsev, V. S.; Margulis, C. J."
+  journal: "Phys. Chem. Chem. Phys."
+  year: 2025
+  volume: 27
+  pages: "4290-4297"
+  doi: "10.1039/D4CP03285C"
+  osti: "2513520"
+
+digitization:
+  tool: "WebFetch full-paper HTML"
+  figures: []
+  date_extracted: "2026-05"
+  digitized_by: "Claude (verified via RSC HTML)"
+  notes: |
+    IMPORTANT RECLASSIFICATION: This is a first-principles molecular dynamics study,
+    NOT an experimental kinetics paper. It contains NO measured rate constants,
+    NO Arrhenius parameters, and NO digitizable experimental data.
+
+    Its scientific contribution is qualitative branching of Cl2•- decay:
+    - In ZnCl2 melt: 2 Cl2•- -> Cl2 + 2 Cl-  (vehicular transport of Cl2)
+    - In LiCl-KCl eutectic: 2 Cl2•- -> Cl3- + Cl-  (Grotthuss-like exchange to form Cl3-)
+
+    Simulations performed at 673 K (bulk) and 773 K (interfacial). 149 ZnCl2 formula units,
+    36.5 ps trajectories.
+
+    This case is therefore best treated as a STRUCTURAL/MECHANISTIC reference for
+    parametrizing the branching ratio in the kinetic model — not a data source for
+    Bayesian inference. The branching parameter (fraction_to_Cl3 vs fraction_to_Cl2)
+    is what the user might extract from a fit to multiple kinetic experiments (e.g.,
+    Iwamatsu 2022 in LiCl-KCl gives fraction_to_Cl3 ~ 1; Iwamatsu Zn paper Section
+    on neat ZnCl2 gives fraction_to_Cl2 ~ 1).
+
+system: {kernel: chloride, temperature_K: 673.15, liquid_volume_m3: 1.0e-3, headspace_volume_m3: 0.0, kLa_s^-1: 0.0, dose_rate_J_m3_s: 0.0, radiation: gamma, initial_concentrations: {Cl-: 2.0e4, e_s-: 1.0e-3, Cl•: 1.0e-3}, metals: {}, gas_species: []}
+integration: {t_final_s: 1.0e-6, n_steps: 2000}
+traces: []
+metrics: []
+
+notes: |
+  Treat this as a MECHANISTIC reference, not a data point. To use it:
+  - Adopt the qualitative branching: in LiCl-KCl chemistry, the Cl2•- + Cl2•- -> Cl- + Cl3- channel dominates.
+  - In high-Lewis-acidity ZnCl2 melts, the Cl2•- + Cl2•- -> Cl2_diss + 2 Cl- channel dominates.
+  - The numerical value of the branching ratio still needs experimental fit (against Iwamatsu 2022
+    Cl2•- decay data, which the current Cl2•- -> Cl3- + Cl- reaction in database.yaml already
+    captures for LiCl-KCl).

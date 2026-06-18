@@ -1,0 +1,15 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md MSRReaction.md'
+  issues = '#000'
+  [zn_capture_rate]
+    type = RunApp
+    input = 'zn_pulse.i'
+    cli_args = 'Outputs/file_base=zn_pulse_out'
+    max_time = 300
+    validation_test = 'zn_vnv.py'
+    validation_upper_bound = 0.15
+    requirement = 'The system shall reproduce the pseudo-first-order rate of solvated-electron '
+                  'capture by Zn(II) measured by Iwamatsu/Horne et al. (PCCP 2022) in molten '
+                  'LiCl-KCl, within the validation tolerance.'
+  []
+[]

@@ -59,7 +59,7 @@ APPLICATION_DIR    := $(CURDIR)
 APPLICATION_NAME   := open_pronghorn
 BUILD_EXEC         := yes
 GEN_REVISION       := yes
-INSTALLABLE_DIRS   := test/tests->tests validation
+INSTALLABLE_DIRS   := test/tests->tests validation examples
 include            $(FRAMEWORK_DIR)/app.mk
 
 ###############################################################################

@@ -1,0 +1,16 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md MSRReaction.md'
+  issues = '#000'
+  [corrosion_channel]
+    type = CSVDiff
+    input = 'corrosion_channel.i'
+    csvdiff = 'corrosion_channel_out.csv'
+    abs_zero = 1e-8
+    rel_err = 1e-4
+    max_time = 600
+    requirement = 'The system shall model radiation-driven chromium corrosion in a flowing molten '
+                  'chloride salt, coupling a segregated SIMPLE flow solve to the radiolysis species '
+                  'transport and chemistry with a spatially varying dose, and conserve total '
+                  'chromium through the channel.'
+  []
+[]

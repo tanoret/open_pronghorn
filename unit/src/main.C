@@ -19,6 +19,7 @@
 #include "Moose.h"
 #include "MooseInit.h"
 #include "AppFactory.h"
+#include "Registry.h"
 
 #include <fstream>
 #include <string>
@@ -31,6 +32,9 @@ main(int argc, char ** argv)
 
   MooseInit init(argc, argv);
   registerApp(OpenPronghornApp);
+  // Register the application data directory so unit tests can resolve bundled data files
+  // (e.g. the molten salt radiolysis chemistry database) by name.
+  registerAppDataFilePath("open_pronghorn");
   Moose::_throw_on_error = true;
   Moose::_throw_on_warning = true;
 

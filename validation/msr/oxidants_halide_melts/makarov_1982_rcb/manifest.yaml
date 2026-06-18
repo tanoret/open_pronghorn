@@ -1,0 +1,48 @@
+case_id: oxidants_halide_melts_makarov_1982
+title: "Oxidizing agents produced by radiolysis of alkali-metal halide melts"
+
+citation:
+  authors: "Makarov, I. E.; Zhukova, T. N.; Pikaev, A. K.; Spitzyn, V. I."
+  journal: "Bulletin of the Academy of Sciences USSR, Division of Chemical Science (English Translation)"
+  year: 1982
+  volume: 31
+  issue: 4
+  pages: "662"
+  doi: "10.1007/BF00949993"
+
+digitization:
+  tool: ""
+  figures: []
+  date_extracted: ""
+  digitized_by: ""
+  notes: |
+    Companion to Pikaev 1982 (RPC). Identifies and quantifies oxidants produced in
+    radiolyzed alkali halide melts (X2•-, X3-, possibly X2). Provides yield estimates
+    that complement the rate-constant data from the kinetic studies. Reports:
+    - X2•- and X3- production yields under gamma irradiation
+    - Reactivity vs reducing agents
+    - Likely G-values for X2 or X3- equivalent to F2 production in fluorides.
+
+system:
+  kernel: chloride
+  temperature_K: 1000.0
+  liquid_volume_m3: 1.0e-3
+  headspace_volume_m3: 0.0
+  kLa_s^-1: 0.0
+  dose_rate_J_m3_s: 1.0e5
+  radiation: gamma
+  initial_concentrations: {Cl-: 2.0e4}
+  metals: {}
+  gas_species: []
+
+integration:
+  t_final_s: 1.0e0
+  n_steps: 1000
+
+traces: []
+metrics: []
+
+notes: |
+  STUB. To activate, fetch the paper (or its Russian original in Izvestiya Akademii Nauk SSSR)
+  and extract yield/G-value data per halide system. Cross-validate Cl3- yields against
+  Iwamatsu et al.'s modern measurements.

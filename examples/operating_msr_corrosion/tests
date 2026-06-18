@@ -1,0 +1,17 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md CorrosionPlatingFlowAction.md CorrosionLinearFVButlerVolmerBC.md'
+  issues = '#000'
+  [operating_msr_corrosion]
+    type = CSVDiff
+    input = 'operating_msr_corrosion.i'
+    csvdiff = 'operating_msr_corrosion_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    max_time = 600
+    requirement = 'The system shall couple radiolysis and corrosion over an MSR power cycle through '
+                  'the dissolved chromium redox couple: the Butler-Volmer wall reaction shall release '
+                  'Cr(II) into the salt and the radiolytic oxidant shall oxidize it to Cr(III), so '
+                  'the salt oxidation state Cr(III)/Cr(II) tracks the reactor power while the total '
+                  'chromium inventory grows from corrosion.'
+  []
+[]

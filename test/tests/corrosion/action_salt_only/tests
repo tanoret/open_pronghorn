@@ -1,0 +1,16 @@
+[Tests]
+  design = 'CorrosionPlatingAction.md ButlerVolmerBC.md'
+  issues = '#000'
+  [salt_only]
+    type = CSVDiff
+    input = 'salt_only.i'
+    csvdiff = 'salt_only_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-6
+    requirement = 'The CorrosionPlating action shall set up a single-domain (salt-only) corrosion '
+                  'problem in which the Butler-Volmer boundary, seeded from the calibrated '
+                  'correlation, reproduces the reference dissolution rate (16.599 um/y for the 304L '
+                  'hot-fluoride-loop case) at the initial state, and shall accumulate the resulting '
+                  'metal recession over time.'
+  []
+[]

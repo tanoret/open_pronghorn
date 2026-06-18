@@ -1,0 +1,13 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md MSRReaction.md'
+  issues = '#000'
+  [disproportionation]
+    type = 'CSVDiff'
+    input = 'disproportionation.i'
+    csvdiff = 'disproportionation_out.csv'
+    abs_zero = 1e-10
+    rel_err = 1e-5
+    requirement = 'The system shall integrate the second-order Cl2.- disproportionation reaction '
+                  'and reproduce the analytic half-value time of the validated 0D radiolysis model.'
+  []
+[]

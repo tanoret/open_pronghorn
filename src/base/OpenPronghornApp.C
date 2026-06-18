@@ -43,7 +43,20 @@ OpenPronghornApp::registerAll(Factory & f, ActionFactory & af, Syntax & syntax)
   Registry::registerObjectsTo(f, {"OpenPronghornApp"});
   Registry::registerActionsTo(af, {"OpenPronghornApp"});
 
-  /* register custom execute flags, action syntax, etc. here */
+  // Register the application data directory so that DataFileName parameters (e.g. the molten salt
+  // radiolysis chemistry database) resolve against open_pronghorn/data.
+  registerAppDataFilePath("open_pronghorn");
+
+  // Molten salt radiolysis action: builds species variables and chemistry kernels
+  registerSyntax("MoltenSaltRadiolysisAction", "MoltenSaltRadiolysis");
+
+  // Molten salt corrosion and plating action: builds species variables, transport, the electric
+  // potential equation and the Butler-Volmer electrode kinetics (finite-element / Newton)
+  registerSyntax("CorrosionPlatingAction", "CorrosionPlating");
+
+  // Flow-coupled corrosion action: salt-side corrosion products as linear finite-volume passive
+  // scalars with a Butler-Volmer wall reaction, for coupling into a flowing MSR (SIMPLE/PIMPLE)
+  registerSyntax("CorrosionPlatingFlowAction", "CorrosionPlatingFlow");
 }
 
 void

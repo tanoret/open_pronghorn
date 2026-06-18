@@ -1,0 +1,14 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md MSRReaction.md'
+  issues = '#000'
+  [channel]
+    type = 'CSVDiff'
+    input = 'channel.i'
+    csvdiff = 'channel_out.csv'
+    abs_zero = 1e-10
+    rel_err = 1e-5
+    requirement = 'The system shall transport molten salt radiolysis species through a flow field by '
+                  'advection and diffusion while integrating the radiolytic source and mass-action '
+                  'chemistry, producing downstream accumulation of the reaction products.'
+  []
+[]

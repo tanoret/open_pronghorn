@@ -1,0 +1,23 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md MSRDegassingBC.md MSRGasExchange.md'
+  issues = '#000'
+  [degassing]
+    type = CSVDiff
+    input = 'degassing.i'
+    csvdiff = 'degassing_out.csv'
+    abs_zero = 1e-10
+    rel_err = 1e-5
+    requirement = 'The system shall remove a dissolved species through a free surface at the '
+                  'convective mass-transfer rate (MSRDegassingBC), reproducing the analytic '
+                  'first-order surface-outgassing decay.'
+  []
+  [buoyant_column]
+    type = CSVDiff
+    input = 'buoyant_column.i'
+    csvdiff = 'buoyant_column_out.csv'
+    abs_zero = 1e-10
+    rel_err = 1e-5
+    requirement = 'The system shall transport the evolved gas phase by buoyant advection and '
+                  'dispersion and vent it through the top boundary, clearing the lower column first.'
+  []
+[]

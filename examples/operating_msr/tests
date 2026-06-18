@@ -1,0 +1,16 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md MSRGasExchange.md MSRDegassingBC.md'
+  issues = '#000'
+  [operating_msr]
+    type = CSVDiff
+    input = 'operating_msr.i'
+    csvdiff = 'operating_msr_out.csv'
+    abs_zero = 1e-10
+    rel_err = 1e-4
+    max_time = 300
+    requirement = 'The system shall model radiolytic fluorine off-gassing over a reactor power '
+                  'cycle (ramp-up, steady operation, ramp-down), with the dissolved and gas-phase '
+                  'F2 inventories building during operation and clearing after shutdown by gas '
+                  'exchange, buoyant venting and surface degassing.'
+  []
+[]

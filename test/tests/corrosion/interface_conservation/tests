@@ -1,0 +1,15 @@
+[Tests]
+  design = 'ButlerVolmerInterface.md CorrosionNernstPlanckFlux.md'
+  issues = '#000'
+  [interface_conservation]
+    type = CSVDiff
+    input = 'interface_conservation.i'
+    csvdiff = 'interface_conservation_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-6
+    requirement = 'The Butler-Volmer interface kernel shall conserve total chromium across a '
+                  'two-block metal/salt interface: every mole of chromium that leaves the solid '
+                  'shall appear in the salt, so the combined inventory stays constant while the '
+                  'metal dissolves anodically into the salt.'
+  []
+[]

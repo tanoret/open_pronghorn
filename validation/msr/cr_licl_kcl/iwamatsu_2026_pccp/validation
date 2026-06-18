@@ -1,0 +1,106 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md MSRReaction.md'
+  issues = '#000'
+  # Solvated-electron decay by Cr(II)/Cr(III) capture vs the digitized Iwamatsu et al. PCCP 2026
+  # transient-absorption traces. The absorbance is proportional to [e_sol] up to a scale factor;
+  # the validation bounds the scale-free relative RMSE between the modeled decay and each trace.
+  [cr2_1mM]
+    type = RunApp
+    input = cr_pulse.i
+    cli_args = 'Cr_II_initial=0.99 Outputs/file_base=cr2_1mM'
+    max_time = 300
+    validation_test = 'cr_vnv.py'
+    validation_data_file = 'data/absorbance1mMCr2.csv'
+    validation_model_file = 'cr2_1mM.csv'
+    validation_upper_bound = 0.20
+    requirement = 'The system shall reproduce the e_sol decay by 1 mM Cr(II) capture.'
+  []
+  [cr2_2mM]
+    type = RunApp
+    input = cr_pulse.i
+    cli_args = 'Cr_II_initial=1.98 Outputs/file_base=cr2_2mM'
+    max_time = 300
+    validation_test = 'cr_vnv.py'
+    validation_data_file = 'data/absorbance2mMCr2.csv'
+    validation_model_file = 'cr2_2mM.csv'
+    validation_upper_bound = 0.20
+    requirement = 'The system shall reproduce the e_sol decay by 2 mM Cr(II) capture.'
+  []
+  [cr2_3mM]
+    type = RunApp
+    input = cr_pulse.i
+    cli_args = 'Cr_II_initial=2.97 Outputs/file_base=cr2_3mM'
+    max_time = 300
+    validation_test = 'cr_vnv.py'
+    validation_data_file = 'data/absorbance3mMCr2.csv'
+    validation_model_file = 'cr2_3mM.csv'
+    validation_upper_bound = 0.20
+    requirement = 'The system shall reproduce the e_sol decay by 3 mM Cr(II) capture.'
+  []
+  [cr2_4mM]
+    type = RunApp
+    input = cr_pulse.i
+    cli_args = 'Cr_II_initial=3.96 Outputs/file_base=cr2_4mM'
+    max_time = 300
+    validation_test = 'cr_vnv.py'
+    validation_data_file = 'data/absorbance4mMCr2.csv'
+    validation_model_file = 'cr2_4mM.csv'
+    validation_upper_bound = 0.20
+    requirement = 'The system shall reproduce the e_sol decay by 4 mM Cr(II) capture.'
+  []
+  [cr3_1mM]
+    type = RunApp
+    input = cr_pulse.i
+    cli_args = 'Cr_III_initial=1.05 Outputs/file_base=cr3_1mM'
+    max_time = 300
+    validation_test = 'cr_vnv.py'
+    validation_data_file = 'data/absorbance1mMCr3.csv'
+    validation_model_file = 'cr3_1mM.csv'
+    validation_upper_bound = 0.20
+    requirement = 'The system shall reproduce the e_sol decay by 1 mM Cr(III) capture.'
+  []
+  [cr3_2mM]
+    type = RunApp
+    input = cr_pulse.i
+    cli_args = 'Cr_III_initial=2.1 Outputs/file_base=cr3_2mM'
+    max_time = 300
+    validation_test = 'cr_vnv.py'
+    validation_data_file = 'data/absorbance2mMCr3.csv'
+    validation_model_file = 'cr3_2mM.csv'
+    validation_upper_bound = 0.20
+    requirement = 'The system shall reproduce the e_sol decay by 2 mM Cr(III) capture.'
+  []
+  [cr3_3mM]
+    type = RunApp
+    input = cr_pulse.i
+    cli_args = 'Cr_III_initial=3.15 Outputs/file_base=cr3_3mM'
+    max_time = 300
+    validation_test = 'cr_vnv.py'
+    validation_data_file = 'data/absorbance3mMCr3.csv'
+    validation_model_file = 'cr3_3mM.csv'
+    validation_upper_bound = 0.20
+    requirement = 'The system shall reproduce the e_sol decay by 3 mM Cr(III) capture.'
+  []
+  [cr3_4mM]
+    type = RunApp
+    input = cr_pulse.i
+    cli_args = 'Cr_III_initial=4.2 Outputs/file_base=cr3_4mM'
+    max_time = 300
+    validation_test = 'cr_vnv.py'
+    validation_data_file = 'data/absorbance4mMCr3.csv'
+    validation_model_file = 'cr3_4mM.csv'
+    validation_upper_bound = 0.20
+    requirement = 'The system shall reproduce the e_sol decay by 4 mM Cr(III) capture.'
+  []
+  [cr3_5mM]
+    type = RunApp
+    input = cr_pulse.i
+    cli_args = 'Cr_III_initial=5.25 Outputs/file_base=cr3_5mM'
+    max_time = 300
+    validation_test = 'cr_vnv.py'
+    validation_data_file = 'data/absorbance5mMCr3.csv'
+    validation_model_file = 'cr3_5mM.csv'
+    validation_upper_bound = 0.20
+    requirement = 'The system shall reproduce the e_sol decay by 5 mM Cr(III) capture.'
+  []
+[]

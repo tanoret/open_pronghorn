@@ -1,0 +1,53 @@
+case_id: kcl_mgcl2_solid_ramos_ballesteros_2022
+title: "Long-lived radiation-induced transients and metal particle formation in solid KCl-MgCl2"
+
+citation:
+  authors: "Ramos-Ballesteros, A.; (et al.)"
+  journal: "J. Phys. Chem. C"
+  year: 2022
+  volume: 126
+  pages: "9820-9830"
+  doi: "10.1021/acs.jpcc.2c01725"
+  also: |
+    Companion paper: Ramos-Ballesteros et al. "Gamma radiation-induced defects in KCl, MgCl2, and ZnCl2
+    salts at room temperature." Phys. Chem. Chem. Phys. 2021, 23, 10384-10394. DOI: 10.1039/d1cp00520k.
+    OSTI: 1785948.
+
+digitization:
+  tool: ""
+  figures: []
+  date_extracted: ""
+  digitized_by: ""
+  notes: |
+    Solid-phase room-temperature radiation-induced defects in KCl, MgCl2, ZnCl2, and KCl-MgCl2 mixtures.
+    Characterized via diffuse reflectance + EPR up to 100 kGy. Reports:
+    - Color centers (F-centers, X2- centers)
+    - Long-lived radical species observable post-irradiation
+    - Metal nanoparticle nucleation from radiolytically-produced metal atoms in KCl-MgCl2
+
+system:
+  kernel: chloride
+  temperature_K: 298.15           # room temperature solid - explicitly OUT of our liquid kernel regime
+  liquid_volume_m3: 1.0e-3
+  headspace_volume_m3: 0.0
+  kLa_s^-1: 0.0
+  dose_rate_J_m3_s: 1.0e3
+  radiation: gamma
+  initial_concentrations: {Cl-: 2.0e4}
+  metals: {}
+  gas_species: []
+
+integration:
+  t_final_s: 1.0e2
+  n_steps: 100
+
+traces: []
+metrics: []
+
+notes: |
+  STUB. Solid-phase data — primarily diagnostic, not directly applicable to the molten kinetic model.
+  However:
+  1. EPR-identified species can inform what species the molten model should track.
+  2. KCl-MgCl2 is the matrix for MCFR fuel salts — this data informs about frozen-salt risk.
+  3. Long-lived transient inventory (after radiolysis stops) tests the model's quasi-stationary limit.
+  Consider whether a "solid-phase" companion model is in scope.

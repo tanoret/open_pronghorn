@@ -1,0 +1,47 @@
+case_id: libr_kbr_pulse_rad_sawamura_1990
+title: "Pulse radiolysis of LiBr-KBr melts - transient absorption spectra"
+
+citation:
+  authors: "Sawamura, S.; Gebicki, J. L.; Mayer, J.; Kroh, J."
+  journal: "Radiation Physics and Chemistry"
+  year: 1990
+  volume: 46
+  issue: 2
+  pages: "433"
+  also: "Cited as ref. (9) in Conrad et al. PCCP 2023"
+
+digitization:
+  tool: ""
+  figures: []
+  date_extracted: ""
+  digitized_by: ""
+  notes: |
+    Extends the alkali-halide pulse-rad inventory to BROMIDE melts. Provides
+    e_s-, Br•, Br2•- (and possibly Br3-) absorption spectra and decay kinetics.
+    Mostly relevant as a cross-validation for the halide-melt mechanism: shifts
+    in λ_max, decay rates with anion identity, comparison to Cl2•- in LiCl-KCl.
+
+system:
+  kernel: chloride               # placeholder; needs bromide kernel
+  temperature_K: 873.15
+  liquid_volume_m3: 1.0e-3
+  headspace_volume_m3: 0.0
+  kLa_s^-1: 0.0
+  dose_rate_J_m3_s: 0.0
+  radiation: gamma
+  initial_concentrations: {Cl-: 0.0, e_s-: 1.0e-3}
+  metals: {}
+  gas_species: []
+
+integration:
+  t_final_s: 1.0e-6
+  n_steps: 2000
+
+traces: []
+metrics: []
+
+notes: |
+  STUB. To activate, add a bromide kernel to database.yaml with:
+    - species: Br-, Br•, Br2•-, Br3-, Br2_diss
+    - reactions analogous to chloride: Br• + Br- -> Br2•-,
+      2 Br2•- -> Br- + Br3-, etc.
