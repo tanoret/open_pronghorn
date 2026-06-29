@@ -85,13 +85,14 @@ TEST(MoltenSaltCorrosionData, calibratedParameterLookups)
 {
   const auto db = loadDatabase();
 
-  // A spot-check of the verbatim fitted parameters from results/parameters.json.
+  // A spot-check of the fitted parameters from results/parameters.json and validation corrections.
   EXPECT_DOUBLE_EQ(db.parameter("log_rate0_um_y"), 0.37629905691853827);
   EXPECT_DOUBLE_EQ(db.parameter("redox_oxidizing_fef2"), 1.4885081752315936);
   EXPECT_DOUBLE_EQ(db.parameter("mat_stainless_304"), 1.5243957749733648);
   EXPECT_DOUBLE_EQ(db.parameter("Ea_Dcr_kJ_mol"), 240.0);
   EXPECT_DOUBLE_EQ(db.parameter("log_Dcr_ref_cm2_s"), -30.84989694079675);
-  EXPECT_EQ(db.calibratedParameters().size(), 61u);
+  EXPECT_DOUBLE_EQ(db.parameter("log_ncl16_cr_inventory_bonus"), 1.0250787771220031);
+  EXPECT_EQ(db.calibratedParameters().size(), 62u);
 }
 
 TEST(MoltenSaltCorrosionData, faradaicConversionsRoundTrip)

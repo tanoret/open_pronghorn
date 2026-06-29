@@ -1,0 +1,17 @@
+[Tests]
+  design = 'CorrosionPlatingFlowAction.md CorrosionLinearFVButlerVolmerBC.md MoltenSaltRadiolysisAction.md'
+  issues = '#000'
+  [chloride_msr]
+    type = CSVDiff
+    input = 'chloride_msr.i'
+    csvdiff = 'chloride_msr_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-4
+    max_time = 1000
+    requirement = 'The system shall model a complete molten chloride fast reactor fuel channel, '
+                  'integrating turbulent Navier-Stokes flow, neutron-flux-shaped fission heating with '
+                  'energy conservation, k-epsilon turbulence, chloride radiolysis and wall corrosion '
+                  'coupled through the dissolved-chromium redox, and shall close the energy balance '
+                  '(nuclear heat equal to the enthalpy rise to within 1%).'
+  []
+[]

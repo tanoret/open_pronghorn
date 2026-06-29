@@ -54,9 +54,32 @@ python3 run_corrosion_validation.py            # all 76 cases
 python3 run_corrosion_validation.py --limit 8  # quick subset
 ```
 
+On local MPI/PETSc builds where the MOOSE process writes the `INITIAL` CSV output but lingers during
+finalization, use `--case-timeout` to recover the completed CSV output case by case:
+
+```
+python3 run_corrosion_validation.py --case-timeout 3
+```
+
 This closes the loop from the validated 0D correlation to the spatial mechanistic framework: the same
 calibrated kinetics that match the experimental targets drive the Nernst-Planck transport,
 current-continuity potential and Butler-Volmer electrode reactions of the full open_pronghorn model.
+
+## Experimental target matrix (`experimental_target_matrix.py`)
+
+`run_corrosion_validation.py` is a code-reproduction check, not by itself an experimental validation.
+The experimental validation check is the target matrix:
+
+```
+python3 experimental_target_matrix.py --output experimental_target_matrix.csv
+```
+
+It scores the 43 measurement rows in `validation_predictions.csv` against their experimental
+relations. The active experimental constraints exclude input-only rows and one auxiliary row; direct
+targets pass when the model is within a factor of 2, range targets pass when the prediction lies
+inside the extracted range, and upper/lower targets pass against the corresponding bound with a small
+explicit digitization tolerance. Source-audited corrections are applied in the script and written to
+the output matrix.
 
 ## Layer 3 — linear finite-volume Butler-Volmer wall (flow-coupled path)
 

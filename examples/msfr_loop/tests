@@ -1,0 +1,20 @@
+[Tests]
+  design = 'CorrosionPlatingFlowAction.md CorrosionLinearFVButlerVolmerBC.md MoltenSaltRadiolysisAction.md'
+  issues = '#000'
+  [msfr_loop]
+    type = CSVDiff
+    input = 'msfr_loop.i'
+    csvdiff = 'msfr_loop_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-4
+    max_time = 600
+    heavy = true
+    requirement = 'The system shall model a closed pump-driven molten salt fast reactor primary loop '
+                  'with solid reflector/vessel subdomains, integrating turbulent flow driven by a pump '
+                  'momentum source and buoyancy, conjugate heat transfer between the salt and the '
+                  'solid structures, fission heating and heat-exchanger cooling, chloride radiolysis, '
+                  'and Butler-Volmer corrosion at the fluid-solid interfaces; it shall conserve energy '
+                  '(fission power equal to heat-exchanger removal within 1%) and couple radiolysis and '
+                  'corrosion through the dissolved-chromium redox.'
+  []
+[]
