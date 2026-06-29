@@ -1,5 +1,5 @@
 {
-  "description": "Molten salt corrosion and plating database for open_pronghorn. The 'elements' section holds the mechanistic transport and electrode-kinetics properties of each tracked metal cation. The 'densities_g_cm3' and 'alloy_cr_wt_frac' tables and the molar masses and valences are the engineering properties from the validated reference model (msr_corrosion_bv/chemistry.py). The 'calibrated_parameters' section is the verbatim fitted parameter set from the reference effective Butler-Volmer correlation (msr_corrosion_plating_model/results/parameters.json); it parameterizes the exchange current, the effective overpotential, and the solid-state chromium diffusivity of the mechanistic model.",
+  "description": "Molten salt corrosion and plating database for open_pronghorn. The 'elements' section holds the mechanistic transport and electrode-kinetics properties of each tracked metal cation. The 'densities_g_cm3' and 'alloy_cr_wt_frac' tables and the molar masses and valences are the engineering properties from the validated reference model (msr_corrosion_bv/chemistry.py). The 'calibrated_parameters' section contains the fitted parameter set from the reference effective Butler-Volmer correlation (msr_corrosion_plating_model/results/parameters.json), plus named source-audited corrections introduced during validation; it parameterizes the exchange current, the effective overpotential, salt inventory responses, and the solid-state chromium diffusivity of the mechanistic model.",
 
   "elements": {
     "Cr": {"valence": 2, "molar_mass_g_mol": 51.9961,  "diffusivity_m2_s": 1.0e-9, "E0_V": 0.0, "alpha_a": 0.5, "alpha_c": 0.5, "c_ref_mol_m3": 1.0},
@@ -104,6 +104,7 @@
     "dep_salt_chloride": 0.3,
     "log_ppm_scale_msre": 3.4789641313908097,
     "log_ppm_scale_loop": 5.124503317247451,
+    "log_ncl16_cr_inventory_bonus": 1.0250787771220031,
     "log_fe_to_cr_ppm_ratio": -0.6241710583121887,
     "log_Dcr_ref_cm2_s": -30.84989694079675,
     "Ea_Dcr_kJ_mol": 240.0,

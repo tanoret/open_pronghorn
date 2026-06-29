@@ -26,6 +26,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -39,7 +40,7 @@ def read_csv(path):
 
 def find_executable(explicit):
     if explicit:
-        return explicit
+        return str(Path(explicit).expanduser().resolve())
     root = HERE.parents[1]
     for name in ("open_pronghorn-opt", "open_pronghorn-dbg", "open_pronghorn-devel"):
         candidate = root / name
@@ -48,8 +49,22 @@ def find_executable(explicit):
     raise FileNotFoundError("Could not find an open_pronghorn executable; pass --exe.")
 
 
-def run_case(exe, case, workdir):
-    """Run the 0D cell for one case and return the mechanistic corrosion rate [um/y]."""
+def output_has_rate(output):
+    try:
+        rows = read_csv(output)
+    except (FileNotFoundError, OSError, csv.Error):
+        return False
+    return bool(rows) and rows[0].get("corrosion_rate_um_y") not in ("", None)
+
+
+def run_case(exe, case, workdir, timeout):
+    """Run the 0D cell for one case and return the mechanistic corrosion rate [um/y].
+
+    On some local MPI/PETSc builds the MOOSE process can linger during finalization even though the
+    INITIAL CSV output has already been written. Treat that as recoverable only when the expected CSV
+    exists and contains the requested corrosion-rate postprocessor.  This covers both Python-level
+    timeouts and SIGTERM-style return codes observed during local finalization.
+    """
     temperature = float(case.get("temperature_K") or 923.15)
     overrides = [
         f"CorrosionPlating/material_class={case['material_class']}",
@@ -63,10 +78,53 @@ def run_case(exe, case, workdir):
         f"Outputs/file_base={workdir}/case",
     ]
     cmd = [exe, "-i", str(HERE / "case_0d.i")] + overrides
-    subprocess.run(cmd, cwd=workdir, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
-    rows = read_csv(Path(workdir) / "case.csv")
+    output = Path(workdir) / "case.csv"
+    output.unlink(missing_ok=True)
+    timed_out = False
+    proc = subprocess.Popen(
+        cmd,
+        cwd=workdir,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    deadline = time.monotonic() + timeout
+    recovered_from_lingering_process = False
+    recovered_rows = None
+    while proc.poll() is None:
+        if output_has_rate(output):
+            recovered_rows = read_csv(output)
+            proc.terminate()
+            recovered_from_lingering_process = True
+            break
+        if time.monotonic() >= deadline:
+            if output_has_rate(output):
+                recovered_rows = read_csv(output)
+                proc.terminate()
+                recovered_from_lingering_process = True
+                break
+            proc.kill()
+            proc.wait()
+            raise subprocess.TimeoutExpired(cmd, timeout)
+        time.sleep(0.05)
+
+    if recovered_from_lingering_process:
+        timed_out = True
+        try:
+            return_code = proc.wait(timeout=2.0)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            return_code = proc.wait()
+    else:
+        return_code = proc.wait()
+
+    if return_code != 0:
+        if recovered_from_lingering_process or (return_code in (-15, 143) and output_has_rate(output)):
+            timed_out = True
+        else:
+            raise subprocess.CalledProcessError(return_code, cmd)
+    rows = recovered_rows if recovered_rows is not None else read_csv(output)
     # The INITIAL row carries the reference-state rate.
-    return float(rows[0]["corrosion_rate_um_y"])
+    return float(rows[0]["corrosion_rate_um_y"]), timed_out
 
 
 def main():
@@ -79,6 +137,12 @@ def main():
         default=1.0e-4,
         help="maximum allowed relative error reproducing the reference rate",
     )
+    parser.add_argument(
+        "--case-timeout",
+        type=float,
+        default=10.0,
+        help="seconds to wait for each MOOSE subprocess before reading completed INITIAL CSV output",
+    )
     args = parser.parse_args()
 
     exe = find_executable(args.exe)
@@ -90,12 +154,15 @@ def main():
     n = 0
     within_factor_2 = 0
     within_factor_5 = 0
+    timed_out_cases = []
     failures = []
 
     with tempfile.TemporaryDirectory() as workdir:
         for case in cases:
             reference_rate = float(case["pred_corrosion_rate_um_y"])
-            moose_rate = run_case(exe, case, workdir)
+            moose_rate, timed_out = run_case(exe, case, workdir, args.case_timeout)
+            if timed_out:
+                timed_out_cases.append(case["case_id"])
             n += 1
             rel = abs(moose_rate - reference_rate) / max(abs(reference_rate), 1.0e-30)
             max_rel_error = max(max_rel_error, rel)
@@ -109,6 +176,7 @@ def main():
             print(
                 f"  {case['case_id']:<16} ref={reference_rate:11.5g} um/y  "
                 f"moose={moose_rate:11.5g} um/y  rel_err={rel:.2e}"
+                f"{'  timeout_csv' if timed_out else ''}"
             )
 
     print("\n=== Corrosion validation summary ===")
@@ -116,6 +184,9 @@ def main():
     print(f"max relative error:        {max_rel_error:.3e}")
     print(f"within factor 2 of ref:    {within_factor_2}/{n}")
     print(f"within factor 5 of ref:    {within_factor_5}/{n}")
+    print(f"recovered timeouts:        {len(timed_out_cases)}/{n}")
+    if timed_out_cases:
+        print("timeout case IDs:          " + ", ".join(timed_out_cases))
 
     if failures:
         print(f"\nFAILED: {len(failures)} case(s) exceeded the reproduction tolerance "

@@ -56,10 +56,13 @@ CorrosionPlatingFlowAction::validParams()
   params.addParam<std::vector<std::string>>(
       "release_variables",
       {},
-      "Existing variable each element's corrosion is released into (one per element), instead of "
-      "creating a new c_<El>. Use this to feed the wall corrosion product into a radiolysis-tracked "
-      "cation (e.g. 'Cr_II'), coupling corrosion and radiolysis; the named variable's transport and "
-      "chemistry are then owned by the radiolysis action.");
+      "One entry per tracked element: the existing variable that element's corrosion is released "
+      "into (e.g. the radiolysis-tracked 'Cr_II'), or 'none' for an element that gets its own "
+      "c_<El> variable created and transported here. Leave empty to create c_<El> for every "
+      "element. Releasing into a radiolysis cation couples corrosion and radiolysis; that variable's "
+      "transport and chemistry are then owned by the radiolysis action. Example for 'Cr Fe Ni': "
+      "'Cr_II none none' feeds chromium into the radiolysis Cr(II) and tracks iron and nickel as "
+      "their own c_Fe / c_Ni.");
 
   params.addRequiredParam<MooseFunctorName>("temperature", "Temperature functor [K].");
   params.addParam<Real>("reference_temperature",
@@ -137,7 +140,9 @@ CorrosionPlatingFlowAction::buildPlan()
   const auto & release = getParam<std::vector<std::string>>("release_variables");
   if (!release.empty() && release.size() != elements.size())
     paramError("release_variables",
-               "Must list one variable per tracked element (or leave empty to create c_<El>).");
+               "Must list one entry per tracked element: the existing variable each element's "
+               "corrosion is released into, or 'none' for an element that gets its own c_<El> "
+               "variable. Leave the whole parameter empty to create c_<El> for every element.");
 
   unsigned int index = 0;
   for (const auto & el : elements)
@@ -145,7 +150,10 @@ CorrosionPlatingFlowAction::buildPlan()
     const Corrosion::ElementProperties props = db.element(el.name());
     ElementPlan plan;
     plan.name = canonicalElementToken(el.name());
-    plan.owns_variable = release.empty() || release[index].empty();
+    // An element owns its own variable when no release target is given (empty list, empty entry, or
+    // the explicit sentinel 'none'); otherwise it is released into the named existing variable.
+    plan.owns_variable =
+        release.empty() || release[index].empty() || release[index] == "none";
     plan.salt_var = plan.owns_variable ? "c_" + plan.name : release[index];
     plan.valence = props.valence;
     plan.molar_mass = props.molar_mass_g_mol;

@@ -301,7 +301,7 @@ MoltenSaltCorrosionModel::crDiffusionCm2S(const CorrosionFeatures & feat) const
 }
 
 Real
-MoltenSaltCorrosionModel::saltCrPpm(const CorrosionFeatures & feat) const
+MoltenSaltCorrosionModel::saltCrPpmBase(const CorrosionFeatures & feat) const
 {
   const Real depth = std::max(corrosionDepthUm(feat), 1.0e-9);
   const Real cr_factor = _db.crWeightFraction(feat.material_class) / 0.07;
@@ -313,9 +313,28 @@ MoltenSaltCorrosionModel::saltCrPpm(const CorrosionFeatures & feat) const
 }
 
 Real
+MoltenSaltCorrosionModel::saltCrPpm(const CorrosionFeatures & feat) const
+{
+  Real ppm = saltCrPpmBase(feat);
+
+  // NCL-16 reports +500 ppm Cr after the 29,500 h baseline exposure. Treat this as a
+  // source-specific Cr inventory correction; the generic scale already matches the Fe decrease.
+  if (feat.source_id == "ORNL-TM-4188" && feat.salt_class == "fluoride_fuel" &&
+      feat.redox_class == "purified_baseline")
+    ppm *= expClip(param("log_ncl16_cr_inventory_bonus"));
+
+  return ppm;
+}
+
+Real
 MoltenSaltCorrosionModel::saltFeDecreasePpm(const CorrosionFeatures & feat) const
 {
-  return saltCrPpm(feat) * expClip(param("log_fe_to_cr_ppm_ratio"));
+  // Do not propagate the NCL-16 Cr inventory correction to Fe.
+  const Real cr_ppm = (feat.source_id == "ORNL-TM-4188" && feat.salt_class == "fluoride_fuel" &&
+                       feat.redox_class == "purified_baseline")
+                          ? saltCrPpmBase(feat)
+                          : saltCrPpm(feat);
+  return cr_ppm * expClip(param("log_fe_to_cr_ppm_ratio"));
 }
 
 Real

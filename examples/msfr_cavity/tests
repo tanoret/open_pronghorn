@@ -1,0 +1,19 @@
+[Tests]
+  design = 'CorrosionPlatingFlowAction.md CorrosionLinearFVButlerVolmerBC.md MoltenSaltRadiolysisAction.md'
+  issues = '#000'
+  [msfr_cavity]
+    type = CSVDiff
+    input = 'msfr_cavity.i'
+    csvdiff = 'msfr_cavity_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-4
+    max_time = 500
+    heavy = true
+    requirement = 'The system shall model an MSFR-like core cavity with internal recirculation, '
+                  'integrating turbulent Navier-Stokes flow, neutron-flux-shaped fission heating with '
+                  'energy conservation, k-epsilon turbulence, chloride radiolysis and wall corrosion '
+                  'coupled through the dissolved-chromium redox; it shall capture the recirculation '
+                  '(reverse flow), the recirculation-zone hot spot, and close the flux-weighted '
+                  'energy balance to within 1%.'
+  []
+[]

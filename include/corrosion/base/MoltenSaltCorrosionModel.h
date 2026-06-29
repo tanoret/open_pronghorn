@@ -126,6 +126,7 @@ public:
   // --- Auxiliary submodels --------------------------------------------------------------------
   Real redoxAccelerationRatio(const CorrosionFeatures & feat) const;
   Real crDiffusionCm2S(const CorrosionFeatures & feat) const;
+  Real saltCrPpmBase(const CorrosionFeatures & feat) const;
   Real saltCrPpm(const CorrosionFeatures & feat) const;
   Real saltFeDecreasePpm(const CorrosionFeatures & feat) const;
   Real offgasFractionPercent() const;

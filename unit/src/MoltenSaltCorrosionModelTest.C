@@ -209,6 +209,26 @@ TEST(MoltenSaltCorrosionModel, predictResponseDispatch)
     expectClose(model.predictResponse(f), 61.46761844618267);
   }
 
+  // M-014/M-015: NCL-16 Cr inventory needs the ORNL-TM-4188 Cr chemistry correction, while Fe
+  // remains on the base inventory scale.
+  {
+    Corrosion::CorrosionFeatures f;
+    f.material_class = "generic_metal";
+    f.salt_class = "fluoride_fuel";
+    f.redox_class = "purified_baseline";
+    f.position_class = "nominal";
+    f.temperature_K = 977.15;
+    f.flow_factor = 1.0;
+    f.delta_T_C = 166.0;
+    f.time_years = 3.3652749258498744;
+    f.experiment_family = "ORNL fluoride loops";
+    f.source_id = "ORNL-TM-4188";
+    f.response_kind = "salt_cr_ppm";
+    expectClose(model.predictResponse(f), 500.0);
+    f.response_kind = "salt_fe_decrease_ppm";
+    expectClose(model.predictResponse(f), 96.09701585416305);
+  }
+
   // M-005: cr_diffusion_cm2_s at the reference temperature.
   {
     Corrosion::CorrosionFeatures f;

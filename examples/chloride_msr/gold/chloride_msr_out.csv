@@ -1,0 +1,3 @@
+time,Cl2m_rad_max,Cr_III_outlet,Cr_II_outlet,T_outlet,corrosion_rate_wall_max,delta_T,energy_balance_error,expected_delta_T,mu_t_max,nuclear_power,redox_ratio_CrIII_CrII
+0,0,0,0,0,0,0,0,0,0,0,0
+1,7.1640281857847e-10,0.013328823390827,2.98664664952,925.16193691444,152.46547201879,52.011936914441,0.0041372011835304,52.228014718749,5.801523718374,129264336.4289,0.0044628055993733
