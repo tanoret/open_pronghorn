@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "open-pronghorn-msr-corrosion-calibration"
+version = "0.1.0"
+description = "Reproducible calibration package for OpenPronghorn molten-salt corrosion and plating"
+requires-python = ">=3.10"
+dependencies = [
+  "matplotlib>=3.7",
+  "numpy>=1.26",
+  "openpyxl>=3.1",
+  "pandas>=2.0",
+  "scipy>=1.10",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
