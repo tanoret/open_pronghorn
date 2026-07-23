@@ -1,0 +1,14 @@
+priority,source_id,case_ids,specific_tables_or_figures_to_digitize,why_it_matters,status
+1,ORNL-4865,MSRE-FP-01 to MSRE-FP-04,Tables 6.x salt samples; 7.x pump bowl exposures; 9.x surveillance deposition profiles; 10.x off-gas deposits; 11.x component surface deposits; Table 12.2 deposition intensities,Converts MSRE plating/deposition from narrative to model-ready species/surface/flow arrays.,not yet digitized
+1,ORNL-TM-3063,MSRE-SURV-07 to MSRE-SURV-10,"Metallographic tables, salt chromium discussion, mechanical/property tables, specimen histories",Longest in-core Hastelloy N corrosion and Cr depletion benchmark.,partially extracted
+1,ORNL-TM-4286,ORNL-FL-01 to ORNL-FL-12,Table 1 loop matrix; per-loop weight-change and metallography tables/figures; salt chemistry tables,Master ORNL thermal loop matrix for fluoride mass transfer.,partially extracted
+1,ORNL-TM-4188,ORNL-FL-04 to ORNL-FL-05,"Weight-change tables before/after FeF2, salt analyses, micrographs, specimen-position temperatures",Best redox-perturbation loop validation case.,partially extracted
+1,ORNL-TM-6002,MSRE-TE-01; TE-01 to TE-06,Tables 1-4; Fig. 4 Te penetration vs time; Fig. 12 cracking vs U(IV)/U(III),Needed to parameterize Te penetration/cracking and redox threshold.,partially extracted
+2,ORNL-TM-4189,ORNL-FL-13 to ORNL-FL-14,Salt analysis table; insert specimen metallography; oxide thickness table,Longest ORNL loop and external oxidation control.,partially extracted
+2,ORNL-TM-5782,ORNL-FL-15 to ORNL-FL-16,Weight-change tables and voltammetry/redox data before/after Be additions,Critical 316 SS redox mitigation pair; OCR rate needs verification.,partially extracted
+2,ORNL-TM-4221; ORNL-TM-3863; ORNL-TM-4271,FB-01 to FB-03,"Forced loop flow/temperature maps, specimen weight changes, thermal loop corrosion tables",Needed for secondary coolant fluoroborate validation.,not yet digitized
+2,JNM-316H-FLINAK-2022,MOD-F-01,"Loop geometry, specimen positions, temperature data, TRANSFORM input/output, salt ICP table",Modern model-ready flowing FLiNaK validation.,abstract-level extracted
+2,ORNL-FLIBE-316H-2022 and HTCM-FLIBE-316H-2025,MOD-F-02 to MOD-F-03,"Static/flowing mass changes, salt chemistry, Be-addition data",Modern FLiBe counterpart and redox effect.,abstract-level extracted
+2,NATCOMM-TRACER-2024,MOD-C-04,Activity time series by loop section; attack depth conversion; precipitation locations,Best transient/in-situ chloride mass-transport dataset.,abstract-level extracted
+3,Modern chloride papers,MOD-C-01 to MOD-C-10,Corrosion depth/weight change/ICP/electrochemical kinetic curves,Expands validation to chloride MSR concepts.,abstract-level extracted
+3,RAIMAN-LEE-2018,DB-01,Supplemental aggregated dataset if available,Completeness audit and statistical priors across historical literature.,source indexed

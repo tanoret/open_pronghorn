@@ -1,0 +1,15 @@
+# Recalibration products are intentionally regenerated, not versioned.  The
+# frozen benchmark used by the tests lives in reference/.
+generated/
+figures/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# The repository's root ignore file excludes generic CSV, JSON, and TXT
+# outputs.  These calibration files are curated inputs/reference artifacts,
+# not disposable solver output, so keep the exceptions local to this folder.
+!requirements.txt
+!data/workbook_exports/*.csv
+!reference/*.csv
+!reference/*.json

@@ -1,0 +1,19 @@
+field,description,validation_use,data_type_or_units
+case_id,Unique identifier assigned in this workbook.,Join key to measurements and source index.,text
+validation_priority,"Critical/High/Medium/Low priority assigned by relevance, realism, and data density.",Prioritizes validation cases.,category
+experiment_family,"Broad family: MSRE reactor evidence, ORNL fluoride loops, ORNL fluoroborate loops, modern fluoride/chloride tests, databases.",Group validation campaigns.,category
+experiment_class,"Specific test type such as reactor surveillance, thermal convection loop, forced circulation loop, static capsule, electrochemical, database.",Maps cases to model physics and boundary conditions.,category
+salt_composition_mol_percent,Mole percent composition where available; OCR-uncertain entries are flagged.,Salt thermodynamics and transport inputs.,text
+temperature_C_hot_or_nominal,"Hot-leg or nominal temperature. For multi-temperature cases, list values or use notes.",Thermal boundary condition.,degC or text
+temperature_C_cold,Cold-leg temperature when available.,Mass-transfer gradient.,degC or text
+delta_T_C,Temperature gradient when available or calculated from source.,Thermal-gradient mass transfer driving force.,degC or text
+exposure_h,Exposure time in hours when known; otherwise source-specific.,Time integration.,h or text
+circulation_or_flow,"Static, stirred, thermal convection, forced circulation, reactor primary circulation, gas/off-gas.",Transport regime.,category/text
+velocity_or_flow_rate,Velocity or flow rate when extracted.,Hydrodynamic mass transfer and deposition.,text
+redox_impurity_chemistry,"Redox and impurity state including FeF2, Be, Mg, water, U(IV)/U(III), Te additives.",Chemical potential and corrosion driving force.,text
+measured_outputs_available,Measurement types in the source.,Select validation observable.,text
+key_numeric_outputs_extracted,Numerical outputs already extracted into this workbook.,Quick model calibration/validation values.,text
+recommended_validation_observable,Suggested observable for validation from the case.,Model validation target.,text
+data_quality,"A means primary, well-conditioned data; B means useful but requires extraction or caveats; C means screening or secondary.",Weight validation evidence.,category
+extraction_status,How ready the row is for direct numerical validation.,Triage remaining work.,text
+source_url,Plain URL to source.,Traceability.,URL text
