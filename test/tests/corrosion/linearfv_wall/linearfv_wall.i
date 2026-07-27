@@ -2,7 +2,7 @@
 # reaction (no flow, no diffusion), so the cell concentration rises only by the wall source. The
 # CorrosionPlatingFlow action seeds the exchange current from the calibrated correlation, so the
 # wall flux at the initial reference concentration reproduces the reference dissolution rate. This is
-# the ORNL-FL-01 case (304L stainless, hot fluoride loop, reference rate 16.599 um/y) -- the same
+# the ORNL-FL-01 case (304L stainless, hot fluoride loop, reference rate 16.761 um/y) -- the same
 # case validated through the finite-element path in test/tests/corrosion/action_salt_only.
 #
 # The corrosion current and the equivalent penetration rate are reported as postprocessors. The

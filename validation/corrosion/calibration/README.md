@@ -11,7 +11,7 @@ Everything needed by the calculation is local:
   measurements, cases, variable definitions, completeness assessment, and digitization queue.
 - `src/msr_corrosion_bv/` contains data ingestion, unit conversion, model, optimizer, and plotting
   code.
-- `reference/` is the frozen output of the original 61-parameter calibration.
+- `reference/` is the frozen output of the source-corrected 61-parameter calibration.
 - `scripts/run_calibration.py` reruns the fit and checks it against the frozen reference.
 - `tests/test_calibration.py` tests workbook ingestion, source traceability, numerical
   reproducibility, and the relationship between the 61 fitted parameters and the production
@@ -88,4 +88,3 @@ file `data/corrosion_database.json` contains those same 61 values plus
 `log_ncl16_cr_inventory_bonus`, a source-specific correction introduced after the original fit.
 The calibration runner never overwrites the production database. Promoting a new fit must be an
 explicit, reviewed action.
-

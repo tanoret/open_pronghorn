@@ -88,5 +88,5 @@ The corrosion framework also provides a linear finite-volume path (`[CorrosionPl
 flow solve as the radiolysis and energy — the way corrosion couples into a flowing MSR
 (`examples/flowing_msr_corrosion`). The linear-FV Butler-Volmer wall uses the identical kinetics and
 exchange-current seeding as the finite-element path, so it reproduces the same calibrated rates:
-`test/tests/corrosion/linearfv_wall` confirms the 304L hot-fluoride-loop case (16.599 um/y) in a
+`test/tests/corrosion/linearfv_wall` confirms the 304L hot-fluoride-loop case (16.761 um/y) in a
 well-mixed cell, matching the finite-element `action_salt_only` result.
