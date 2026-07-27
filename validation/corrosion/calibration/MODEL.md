@@ -104,18 +104,18 @@ The fit uses `scipy.optimize.least_squares` with:
 - a default maximum of 4000 function evaluations; and
 - deterministic initial values.
 
-The frozen run terminated successfully after 31 function evaluations. Because the fit is
+The frozen run terminated successfully after 24 function evaluations. Because the fit is
 deterministic, no random seed is involved.
 
 ## Interpretation of reported performance
 
-The original fit used 43 measurement rows, 38 active constraint rows, and 61 fitted parameters plus
+The current fit used 43 measurement rows, 38 active constraint rows, and 61 fitted parameters plus
 priors. Its frozen metrics were:
 
 | Metric | Value |
 |---|---:|
 | Direct/range targets | 28 |
-| Median direct/range factor error | 1.114 |
+| Median direct/range factor error | 1.117 |
 | Direct/range targets within factor 2 | 92.9% |
 | Direct/range targets within factor 5 | 100% |
 | Active constraint pass fraction | 92.1% |
@@ -123,4 +123,3 @@ priors. Its frozen metrics were:
 These are in-sample calibration diagnostics. They are not an independent test-set accuracy claim.
 The OpenPronghorn 0D replay is a separate software-verification test showing that the C++ model
 reproduces this correlation.
-
