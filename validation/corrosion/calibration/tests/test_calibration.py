@@ -91,7 +91,7 @@ class CalibrationFitTests(unittest.TestCase):
     def test_optimizer_converges(self) -> None:
         metrics = self.outputs["metrics"]
         self.assertTrue(metrics["optimizer_success"])
-        self.assertEqual(metrics["optimizer_nfev"], 24)
+        self.assertEqual(metrics["optimizer_nfev"], 21)
 
     def test_fitted_parameters_reproduce_frozen_vector(self) -> None:
         observed = self.outputs["model"].params
@@ -128,4 +128,3 @@ class CalibrationFitTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

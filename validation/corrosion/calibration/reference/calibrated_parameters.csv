@@ -1,60 +1,60 @@
 parameter,value,prior,prior_sigma,lower,upper,description
-log_rate0_um_y,0.2738425584281219,1.3862943611198906,1.5,-3.912023005428146,5.298317366548036,"Reference anodic dissolution rate for Hastelloy N in fuel fluoride at 650 C, um/y."
-Ea_corr_kJ_mol,54.97826172028175,60.0,30.0,20.0,180.0,Apparent activation energy for anodic dissolution.
-gamma_flow_corr,0.15000000000000002,0.35,0.45,0.15,2.0,Power-law exponent for circulation/mass-transfer effect on corrosion.
+log_rate0_um_y,0.2653718349421312,1.3862943611198906,1.5,-3.912023005428146,5.298317366548036,"Reference anodic dissolution rate for Hastelloy N in fuel fluoride at 650 C, um/y."
+Ea_corr_kJ_mol,54.83553514725915,60.0,30.0,20.0,180.0,Apparent activation energy for anodic dissolution.
+gamma_flow_corr,0.1500000000000001,0.35,0.45,0.15,2.0,Power-law exponent for circulation/mass-transfer effect on corrosion.
 theta_dT_corr,0.05000000000000001,0.25,0.6,0.05,3.0,Thermal-gradient enhancement of corrosion/mass transfer.
-hot_leg_bonus,1.4271492775107296e-19,0.15,0.55,0.0,1.8,Additional log-rate offset for hot-leg/hottest specimens.
-cold_leg_corrosion_penalty,-1.5050960272289962,-0.25,0.7,-2.5,1.0,Log-rate offset for cold-leg corrosion before deposition.
-log_mt_cap_um_y,8.112535201603642,6.907755278982137,1.8,2.302585092994046,11.512925464970229,Reference transport-capacity rate; kinetic and transport rates are combined harmonically.
-Ea_mt_kJ_mol,27.34394633072878,25.0,35.0,0.0,120.0,Apparent activation energy for transport-capacity branch.
-gamma_flow_mt,0.6033602337830424,0.75,0.7,-0.5,2.5,Power-law flow exponent for transport capacity.
-theta_dT_mt,0.6034855411310579,0.6,0.9,-1.0,3.0,Thermal-gradient enhancement of transport capacity.
+hot_leg_bonus,5.7980379953933925e-15,0.15,0.55,0.0,1.8,Additional log-rate offset for hot-leg/hottest specimens.
+cold_leg_corrosion_penalty,-1.3968804206964676,-0.25,0.7,-2.5,1.0,Log-rate offset for cold-leg corrosion before deposition.
+log_mt_cap_um_y,8.1149241388428,6.907755278982137,1.8,2.302585092994046,11.512925464970229,Reference transport-capacity rate; kinetic and transport rates are combined harmonically.
+Ea_mt_kJ_mol,27.352811709236185,25.0,35.0,0.0,120.0,Apparent activation energy for transport-capacity branch.
+gamma_flow_mt,0.6028527843887175,0.75,0.7,-0.5,2.5,Power-law flow exponent for transport capacity.
+theta_dT_mt,0.6035133325630236,0.6,0.9,-1.0,3.0,Thermal-gradient enhancement of transport capacity.
 mat_modified_hastelloy_n,-0.2,-0.2,0.8,-2.5,2.0,Modified Hastelloy N log-rate offset.
-mat_gh3535,1.6215932131684239,0.05,0.8,-2.0,2.0,GH3535 log-rate offset.
-mat_stainless_304,1.5106172470262285,1.2,0.85,-1.5,4.0,304/304L stainless log-rate offset.
-mat_stainless_316,2.045383015191839,1.05,0.85,-1.5,4.0,316/316H/316L stainless log-rate offset.
-mat_alloy_x750,3.3242599795036196,2.4,1.2,-1.0,7.0,Alloy X750 log-rate offset.
+mat_gh3535,1.619847744932658,0.05,0.8,-2.0,2.0,GH3535 log-rate offset.
+mat_stainless_304,1.5121011893045204,1.2,0.85,-1.5,4.0,304/304L stainless log-rate offset.
+mat_stainless_316,2.0428901889535274,1.05,0.85,-1.5,4.0,316/316H/316L stainless log-rate offset.
+mat_alloy_x750,3.3243364506580115,2.4,1.2,-1.0,7.0,Alloy X750 log-rate offset.
 mat_in625,0.7,0.7,1.0,-2.0,3.5,IN625 log-rate offset.
 mat_ni_alloy,0.4,0.4,1.0,-2.0,3.5,Generic high-Ni alloy log-rate offset.
-mat_generic_metal,-1.9998298028937276,0.7,1.2,-2.0,3.5,Generic metal log-rate offset.
-salt_flinak,1.3081119641300911,0.7,0.9,-2.0,4.0,FLiNaK log-rate offset.
-salt_flibe,0.4749482741271101,-0.35,0.9,-3.0,3.0,FLiBe log-rate offset.
-salt_fluoroborate,1.7228542827960809,0.95,1.0,-2.0,4.5,Fluoroborate coolant log-rate offset.
-salt_chloride,1.1316465123867934,1.65,1.05,-1.0,5.5,Chloride salt log-rate offset.
+mat_generic_metal,-1.8937852172296537,0.7,1.2,-2.0,3.5,Generic metal log-rate offset.
+salt_flinak,1.3096917701656603,0.7,0.9,-2.0,4.0,FLiNaK log-rate offset.
+salt_flibe,0.4804294112322437,-0.35,0.9,-3.0,3.0,FLiBe log-rate offset.
+salt_fluoroborate,1.7223961955958456,0.95,1.0,-2.0,4.5,Fluoroborate coolant log-rate offset.
+salt_chloride,1.138795887283214,1.65,1.05,-1.0,5.5,Chloride salt log-rate offset.
 salt_generic_salt,0.4,0.4,1.25,-2.0,4.0,Generic/unspecified salt log-rate offset.
 salt_no_salt,-8.0,-8.0,1.5,-15.0,-2.0,No-salt control offset; keeps molten-salt corrosion near zero.
-redox_purified_baseline,-0.3949376722294351,0.0,0.35,-1.0,1.0,Purified baseline redox offset.
-redox_msre_or_fuel_baseline,0.7196402313346296,-0.35,0.8,-3.0,2.0,MSRE/fuel baseline redox offset.
-redox_oxidizing_fef2,1.4907034651481712,1.8,0.8,-0.5,5.0,FeF2 oxidizing perturbation offset.
-redox_reducing_be,-2.3217083266252643,-2.0,0.9,-6.0,0.5,Be-reduced salt offset.
-redox_impure_moisture,2.5102018303499847,1.75,0.9,-0.5,5.0,Moisture/impure salt oxidizing offset.
+redox_purified_baseline,-0.3852616482919378,0.0,0.35,-1.0,1.0,Purified baseline redox offset.
+redox_msre_or_fuel_baseline,0.7309173701151611,-0.35,0.8,-3.0,2.0,MSRE/fuel baseline redox offset.
+redox_oxidizing_fef2,1.5026092214000561,1.8,0.8,-0.5,5.0,FeF2 oxidizing perturbation offset.
+redox_reducing_be,-2.316746592403382,-2.0,0.9,-6.0,0.5,Be-reduced salt offset.
+redox_impure_moisture,2.515485605163133,1.75,0.9,-0.5,5.0,Moisture/impure salt oxidizing offset.
 redox_chloride_unspecified,0.65,0.65,1.0,-1.5,3.5,Unspecified chloride redox/impurity offset.
-redox_tellurium,-1.1684701390300123,0.4,1.1,-2.0,4.0,Tellurium-bearing salt offset.
-redox_stressed,3.5274581681472856,1.4,1.0,-0.5,5.0,Stress-assisted corrosion offset.
-redox_multi_alloy,2.0220925926158997,1.25,1.1,-0.5,6.0,Multi-alloy/plating/galvanic interaction offset.
+redox_tellurium,-1.378863001609465,0.4,1.1,-2.0,4.0,Tellurium-bearing salt offset.
+redox_stressed,3.5348132984185274,1.4,1.0,-0.5,5.0,Stress-assisted corrosion offset.
+redox_multi_alloy,2.029280738841021,1.25,1.1,-0.5,6.0,Multi-alloy/plating/galvanic interaction offset.
 redox_fission_product,-0.2,-0.2,1.0,-3.0,3.0,Fission-product/noble-metal environment offset.
 redox_gas_control,-6.0,-6.0,1.4,-12.0,-1.0,Gas control offset.
-damage_base_log,0.7667215564855421,0.1,0.7,-1.5,2.5,Base multiplier for void/IGC damage depth beyond uniform recession.
-damage_chloride_log,0.14914571689658165,0.7,1.0,-1.0,4.0,Additional chloride IGC/void damage multiplier.
-damage_tellurium_log,4.100794799603302,2.0,1.0,0.0,5.5,Tellurium IGC multiplier.
+damage_base_log,0.757205812149341,0.1,0.7,-1.5,2.5,Base multiplier for void/IGC damage depth beyond uniform recession.
+damage_chloride_log,0.15697856944276867,0.7,1.0,-1.0,4.0,Additional chloride IGC/void damage multiplier.
+damage_tellurium_log,3.4185235287793843,2.0,1.0,0.0,5.5,Tellurium IGC multiplier.
 damage_stress_log,1.1,1.1,1.0,-0.5,4.5,Stress-assisted cracking multiplier.
-damage_multi_alloy_log,2.026022452364038,1.0,1.0,-0.5,4.5,Multi-alloy galvanic/plating damage multiplier.
-log_dep0_um_y,-0.3295710236823131,1.6094379124341003,1.7,-4.605170185988091,5.991464547107982,"Reference deposition/plating rate, um/y."
-Ea_dep_kJ_mol,44.20189819939262,20.0,45.0,-40.0,120.0,Apparent temperature coefficient for deposition branch.
-gamma_flow_dep,0.668666569427346,0.6,0.7,0.15,2.5,Flow exponent for plating/deposition.
-theta_dT_dep,0.22873701763634183,0.95,0.85,0.0,4.0,Thermal-gradient/cold-leg deposition enhancement.
-dep_cold_bonus,0.2852599060002177,0.8,0.9,-1.0,4.0,Cold-leg deposition bonus.
+damage_multi_alloy_log,2.035074161005053,1.0,1.0,-0.5,4.5,Multi-alloy galvanic/plating damage multiplier.
+log_dep0_um_y,-0.32783153619595645,1.6094379124341003,1.7,-4.605170185988091,5.991464547107982,"Reference deposition/plating rate, um/y."
+Ea_dep_kJ_mol,44.18334089297553,20.0,45.0,-40.0,120.0,Apparent temperature coefficient for deposition branch.
+gamma_flow_dep,0.6686624895872291,0.6,0.7,0.15,2.5,Flow exponent for plating/deposition.
+theta_dT_dep,0.22914182840558311,0.95,0.85,0.0,4.0,Thermal-gradient/cold-leg deposition enhancement.
+dep_cold_bonus,0.2856745030804348,0.8,0.9,-1.0,4.0,Cold-leg deposition bonus.
 dep_graphite_offset,-0.6,-0.6,0.9,-3.5,1.5,Graphite surface deposition offset relative to metal.
 dep_turbulent_bonus,0.45,0.45,0.7,-1.0,2.5,Turbulent metal deposition offset.
-dep_laminar_bonus,-7.296366240990918e-20,0.0,0.6,-1.5,1.5,Laminar metal deposition offset.
+dep_laminar_bonus,-8.574801628404291e-20,0.0,0.6,-1.5,1.5,Laminar metal deposition offset.
 dep_multi_alloy_bonus,0.9,0.9,1.0,-1.0,4.0,Multi-alloy donor/plating source enhancement.
-dep_salt_flinak,2.556273592966095,0.4,1.1,-3.0,4.0,Deposition-only FLiNaK offset relative to fuel fluoride.
+dep_salt_flinak,2.556082157810312,0.4,1.1,-3.0,4.0,Deposition-only FLiNaK offset relative to fuel fluoride.
 dep_salt_flibe,-0.2,-0.2,1.1,-3.0,4.0,Deposition-only FLiBe offset relative to fuel fluoride.
 dep_salt_fluoroborate,0.2,0.2,1.1,-3.0,4.0,Deposition-only fluoroborate offset relative to fuel fluoride.
 dep_salt_chloride,0.3,0.3,1.2,-3.0,4.0,Deposition-only chloride offset relative to fuel fluoride.
-log_ppm_scale_msre,3.5366940067611945,2.1972245773362196,1.5,-4.605170185988091,6.214608098422191,Cr ppm per effective um source depth for MSRE-scale inventory closure.
-log_ppm_scale_loop,5.100701590461957,4.787491742782046,1.8,-2.3025850929940455,8.517193191416238,Cr ppm per effective um source depth for small loop inventory closure.
-log_fe_to_cr_ppm_ratio,-0.6122473738640052,-1.3862943611198906,1.2,-4.605170185988091,0.6931471805599453,Magnitude ratio of Fe decrease to Cr increase in NCL inventory closure.
+log_ppm_scale_msre,3.4300309384150953,2.1972245773362196,1.5,-4.605170185988091,6.214608098422191,Cr ppm per effective um source depth for MSRE-scale inventory closure.
+log_ppm_scale_loop,4.999479718581705,4.787491742782046,1.8,-2.3025850929940455,8.517193191416238,Cr ppm per effective um source depth for small loop inventory closure.
+log_fe_to_cr_ppm_ratio,-0.6170079209473885,-1.3862943611198906,1.2,-4.605170185988091,0.6931471805599453,Magnitude ratio of Fe decrease to Cr increase in NCL inventory closure.
 log_Dcr_ref_cm2_s,-30.84989694079675,-30.84989694079675,0.75,-36.841361487904734,-26.021583203494448,Chromium diffusion coefficient at 650 C.
 Ea_Dcr_kJ_mol,240.0,240.0,95.0,50.0,450.0,Activation energy for solid-state Cr diffusion.
 logit_offgas_fraction,-6.906754778648554,-6.906754778648554,2.0,-13.815509557963773,-1.3862943611198906,Noble-metal off-gas escape fraction as a logit.

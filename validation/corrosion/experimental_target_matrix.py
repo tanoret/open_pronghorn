@@ -21,23 +21,6 @@ DATA = HERE / "data"
 ROOT = HERE.parents[1]
 
 
-SOURCE_AUDIT_CORRECTIONS = {
-    "M-041": {
-        "fit_role": "direct",
-        "target_low": "19.7",
-        "target_mid": "19.7",
-        "target_high": "19.7",
-        "target_relation": "exact",
-        "time_h": "1079",
-        "time_years": str(1079.0 / (24.0 * 365.25)),
-        "usage_reason": "Source-audited from ORNL-TM-6002 Table 3: first standard Hastelloy N "
-        "Ni3Te2 salt-capsule specimen, 1079 h, average crack depth 19.7 um.",
-        "audit_correction_note": "Replaces qualitative lower-bound extraction with Table 3 direct "
-        "average crack depth.",
-    }
-}
-
-
 def read_csv(path: Path) -> list[dict[str, str]]:
     with path.open(newline="", encoding="utf-8") as f:
         return list(csv.DictReader(f))
@@ -60,16 +43,9 @@ def factor_error(prediction: float | None, target: float | None) -> float | None
     return max(prediction / target, target / prediction)
 
 
-def apply_source_audit(row: dict[str, str]) -> dict[str, str]:
-    corrected = dict(row)
-    corrected.setdefault("audit_correction_note", "")
-    if row["measurement_id"] in SOURCE_AUDIT_CORRECTIONS:
-        corrected.update(SOURCE_AUDIT_CORRECTIONS[row["measurement_id"]])
-    return corrected
-
-
 def apply_current_model_corrections(row: dict[str, str], parameters: dict[str, float]) -> dict[str, str]:
     corrected = dict(row)
+    corrected.setdefault("audit_correction_note", "")
 
     if (
         row["measurement_id"] == "M-014"
@@ -166,7 +142,7 @@ def main() -> int:
 
     parameters = read_parameters()
     rows = [
-        score(apply_current_model_corrections(apply_source_audit(row), parameters), args.bound_relative_tol)
+        score(apply_current_model_corrections(row, parameters), args.bound_relative_tol)
         for row in read_csv(args.predictions)
     ]
     active = [row for row in rows if row["active_constraint"] == "yes"]
