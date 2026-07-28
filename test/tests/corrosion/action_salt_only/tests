@@ -9,7 +9,7 @@
     rel_err = 1e-6
     requirement = 'The CorrosionPlating action shall set up a single-domain (salt-only) corrosion '
                   'problem in which the Butler-Volmer boundary, seeded from the calibrated '
-                  'correlation, reproduces the reference dissolution rate (16.761 um/y for the 304L '
+                  'correlation, reproduces the reference dissolution rate (16.821 um/y for the 304L '
                   'hot-fluoride-loop case) at the initial state, and shall accumulate the resulting '
                   'metal recession over time.'
   []

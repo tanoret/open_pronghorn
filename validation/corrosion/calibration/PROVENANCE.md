@@ -46,19 +46,18 @@ Full titles, URLs, extraction status, and source-quality classifications are ret
 
 ## Current fit and source-audit changes
 
-The frozen reference represents the current 61-parameter optimizer result, including the corrected
-700 C MOD-F-07 experiment temperature. Two OpenPronghorn validation changes must not be mistaken
-for outputs of that optimization:
+The frozen reference represents the current 61-parameter optimizer result, including both the
+corrected 700 C MOD-F-07 experiment temperature and the source-audited M-041 direct target of
+19.7 um at 1079 h. One OpenPronghorn production change must not be mistaken for an output of that
+optimization:
 
 1. `log_ncl16_cr_inventory_bonus` was added to the production database as a source-specific
    multiplier for the ORNL-TM-4188 NCL-16 chromium inventory. It is the 62nd production entry.
-2. Measurement M-041 was re-read from ORNL-TM-6002 Table 3 and changed in the OpenPronghorn scoring
-   matrix from a qualitative lower bound to a direct 19.7 um target at 1079 h.
 
 The workbook retained here is the input to the current fit, so a clean recalibration reproduces the
-current 61 coefficients and 92.1% constraint pass fraction. The corrected M-041 OpenPronghorn target
-remains in `validation/corrosion/data/targets.csv` and is intentionally not silently substituted
-into the calibration workbook.
+current 61 coefficients and 94.7% constraint pass fraction. The corrected M-041 measurement is
+retained consistently in the workbook, readable workbook exports, frozen reference, and vendored
+OpenPronghorn target table.
 
 Any future coefficient update should first update the workbook and its CSV exports, rerun the
 optimizer, record the environment manifest, and review the resulting production-database change.

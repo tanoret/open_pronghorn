@@ -86,9 +86,9 @@ TEST(MoltenSaltCorrosionData, calibratedParameterLookups)
   const auto db = loadDatabase();
 
   // A spot-check of the fitted parameters from results/parameters.json and validation corrections.
-  EXPECT_DOUBLE_EQ(db.parameter("log_rate0_um_y"), 0.2738425584281219);
-  EXPECT_DOUBLE_EQ(db.parameter("redox_oxidizing_fef2"), 1.4907034651481712);
-  EXPECT_DOUBLE_EQ(db.parameter("mat_stainless_304"), 1.5106172470262285);
+  EXPECT_DOUBLE_EQ(db.parameter("log_rate0_um_y"), 0.2653718349421312);
+  EXPECT_DOUBLE_EQ(db.parameter("redox_oxidizing_fef2"), 1.5026092214000561);
+  EXPECT_DOUBLE_EQ(db.parameter("mat_stainless_304"), 1.5121011893045204);
   EXPECT_DOUBLE_EQ(db.parameter("Ea_Dcr_kJ_mol"), 240.0);
   EXPECT_DOUBLE_EQ(db.parameter("log_Dcr_ref_cm2_s"), -30.84989694079675);
   EXPECT_DOUBLE_EQ(db.parameter("log_ncl16_cr_inventory_bonus"), 1.0250787771220031);

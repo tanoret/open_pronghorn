@@ -67,10 +67,10 @@ difference of approximately `3.2e-5`.
 The workbook contains 76 source-mapped cases and 43 detailed measurement rows. Thirty-eight rows
 are active calibration constraints:
 
-- 25 direct numerical targets;
+- 26 direct numerical targets;
 - 3 numerical ranges;
 - 7 upper bounds;
-- 2 lower bounds; and
+- 1 lower bound; and
 - 1 qualitative deposition ranking.
 
 The ranking row produces two inequality residuals. The objective also contains one regularizing
@@ -83,7 +83,7 @@ source inventory and the distinction between the original fit and later OpenPron
 
 ## Frozen reference versus production database
 
-`reference/parameters.json` contains exactly the original 61 fitted coefficients. The production
+`reference/parameters.json` contains exactly the current 61 fitted coefficients. The production
 file `data/corrosion_database.json` contains those same 61 values plus
 `log_ncl16_cr_inventory_bonus`, a source-specific correction introduced after the original fit.
 The calibration runner never overwrites the production database. Promoting a new fit must be an
