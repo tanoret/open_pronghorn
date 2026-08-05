@@ -13,9 +13,10 @@ local workbook
   -> ../../../../data/corrosion_database.json: production copy plus one later correction
 ```
 
-The SHA-256 identity of the original upstream `parameters.json` and the previously vendored
-`validation/corrosion/data/parameters.json` was verified before this package was added. The tests
-continue to enforce equality between the frozen local reference and the existing vendored copy.
+The tests enforce equality between the frozen local reference and the vendored
+`validation/corrosion/data/parameters.json` copy. When a source audit corrected the MOD-F-07
+experiment temperature from 650 C to 700 C, the workbook, frozen reference, and vendored parameters
+were regenerated together.
 
 ## Experimental sources used by active constraints
 
@@ -43,21 +44,20 @@ Full titles, URLs, extraction status, and source-quality classifications are ret
 `data/workbook_exports/detailed_measurements.csv` and the normalized model targets are in
 `reference/targets.csv`.
 
-## Original fit and later source-audit changes
+## Current fit and source-audit changes
 
-The frozen reference represents the original 61-parameter optimizer result. Two later
-OpenPronghorn validation changes must not be mistaken for outputs of that optimization:
+The frozen reference represents the current 61-parameter optimizer result, including both the
+corrected 700 C MOD-F-07 experiment temperature and the source-audited M-041 direct target of
+19.7 um at 1079 h. One OpenPronghorn production change must not be mistaken for an output of that
+optimization:
 
 1. `log_ncl16_cr_inventory_bonus` was added to the production database as a source-specific
    multiplier for the ORNL-TM-4188 NCL-16 chromium inventory. It is the 62nd production entry.
-2. Measurement M-041 was re-read from ORNL-TM-6002 Table 3 and changed in the OpenPronghorn scoring
-   matrix from a qualitative lower bound to a direct 19.7 um target at 1079 h.
 
-The workbook retained here is the input to the original fit, so a clean recalibration reproduces
-the original 61 coefficients and original 92.1% constraint pass fraction. The corrected
-OpenPronghorn target matrix remains in `validation/corrosion/data/targets.csv` and is intentionally
-not silently substituted into this historical calibration.
+The workbook retained here is the input to the current fit, so a clean recalibration reproduces the
+current 61 coefficients and 94.7% constraint pass fraction. The corrected M-041 measurement is
+retained consistently in the workbook, readable workbook exports, frozen reference, and vendored
+OpenPronghorn target table.
 
 Any future coefficient update should first update the workbook and its CSV exports, rerun the
 optimizer, record the environment manifest, and review the resulting production-database change.
-

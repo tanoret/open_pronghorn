@@ -2,7 +2,7 @@
 # external Butler-Volmer boundary. The action seeds the exchange current so that, at the applied
 # overpotential and the initial (reference) concentration, the interfacial current reproduces the
 # calibrated dissolution rate of the reference correlation. This case is ORNL-FL-01 (304L stainless,
-# hot fluoride loop), whose reference corrosion rate is 16.599 um/y; the rate auxiliary reads that
+# hot fluoride loop), whose reference corrosion rate is 16.821 um/y; the rate auxiliary reads that
 # value at the initial state.
 
 [Mesh]

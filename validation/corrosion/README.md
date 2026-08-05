@@ -19,8 +19,8 @@ Vendored verbatim from the reference model:
 | `case_predictions_all_76_cases.csv` | reference predictions for every case |
 | `ncl16_simplified_loop_simulation.csv` | the NCL-16 multi-segment loop simulation |
 
-The reference fit quality (from `metrics.json`): median direct-target factor error 1.11, 92.9 % of
-direct targets within a factor of 2, 100 % within a factor of 5, and 92.1 % overall constraint pass
+The reference fit quality (from `metrics.json`): median direct-target factor error 1.11, 93.1 % of
+direct targets within a factor of 2, 100 % within a factor of 5, and 94.7 % overall constraint pass
 fraction.
 
 ## Layer 1 — term-for-term correlation reproduction (C++ unit tests)
@@ -78,8 +78,9 @@ It scores the 43 measurement rows in `validation_predictions.csv` against their 
 relations. The active experimental constraints exclude input-only rows and one auxiliary row; direct
 targets pass when the model is within a factor of 2, range targets pass when the prediction lies
 inside the extracted range, and upper/lower targets pass against the corresponding bound with a small
-explicit digitization tolerance. Source-audited corrections are applied in the script and written to
-the output matrix.
+explicit digitization tolerance. Source-audited targets are retained in the calibration workbook
+and vendored target table; the script writes any current-model compatibility adjustment to the
+output matrix.
 
 ## Layer 3 — linear finite-volume Butler-Volmer wall (flow-coupled path)
 
@@ -88,5 +89,5 @@ The corrosion framework also provides a linear finite-volume path (`[CorrosionPl
 flow solve as the radiolysis and energy — the way corrosion couples into a flowing MSR
 (`examples/flowing_msr_corrosion`). The linear-FV Butler-Volmer wall uses the identical kinetics and
 exchange-current seeding as the finite-element path, so it reproduces the same calibrated rates:
-`test/tests/corrosion/linearfv_wall` confirms the 304L hot-fluoride-loop case (16.599 um/y) in a
+`test/tests/corrosion/linearfv_wall` confirms the 304L hot-fluoride-loop case (16.821 um/y) in a
 well-mixed cell, matching the finite-element `action_salt_only` result.

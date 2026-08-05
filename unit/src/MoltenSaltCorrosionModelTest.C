@@ -60,12 +60,12 @@ TEST(MoltenSaltCorrosionModel, msreBaselineCase)
   f.experiment_family = "MSRE reactor evidence";
   f.source_id = "ORNL-TM-1997";
 
-  expectClose(model.corrosionRateUmY(f), 3.0904570400052536);
-  expectClose(model.corrosionDepthUm(f), 1.6922420479152653);
-  expectClose(model.depositionRateUmY(f), 0.9050856781168021);
-  expectClose(model.depositionDepthUm(f), 0.4955979072508156);
-  expectClose(model.saltCrPpm(f), 54.872836061949485);
-  expectClose(model.bvOverpotentialEquivalentV(f.redox_class, f.temperature_K), 0.05350567723515326);
+  expectClose(model.corrosionRateUmY(f), 2.8886105201070436);
+  expectClose(model.corrosionDepthUm(f), 1.5817169172386274);
+  expectClose(model.depositionRateUmY(f), 0.89139009681033832);
+  expectClose(model.depositionDepthUm(f), 0.48809861563878892);
+  expectClose(model.saltCrPpm(f), 48.839619181734882);
+  expectClose(model.bvOverpotentialEquivalentV(f.redox_class, f.temperature_K), 0.057830215469956626);
 }
 
 TEST(MoltenSaltCorrosionModel, stainlessHotLoopCase)
@@ -86,10 +86,10 @@ TEST(MoltenSaltCorrosionModel, stainlessHotLoopCase)
   f.experiment_family = "ORNL fluoride loops";
   f.source_id = "ORNL-TM-4286";
 
-  expectClose(model.corrosionRateUmY(f), 16.59936625192517);
-  expectClose(model.corrosionDepthUm(f), 158.14655166504477);
-  expectClose(model.depositionRateUmY(f), 0.8643479937948538);
-  expectClose(model.saltCrPpm(f), 72153.73230534839);
+  expectClose(model.corrosionRateUmY(f), 16.820902186837731);
+  expectClose(model.corrosionDepthUm(f), 160.25718309787132);
+  expectClose(model.depositionRateUmY(f), 0.85155407825395457);
+  expectClose(model.saltCrPpm(f), 64523.738111490929);
 }
 
 TEST(MoltenSaltCorrosionModel, noSaltGasControlIsGated)
@@ -129,9 +129,9 @@ TEST(MoltenSaltCorrosionModel, telluriumRateWithUnsetTime)
   f.flow_factor = 2.0;
   f.time_years = NaN;
 
-  expectClose(model.corrosionRateUmY(f), 0.469422837451225);
+  expectClose(model.corrosionRateUmY(f), 0.36436803463043105);
   EXPECT_TRUE(std::isnan(model.corrosionDepthUm(f)));
-  expectClose(model.depositionRateUmY(f), 1.6577144763404386);
+  expectClose(model.depositionRateUmY(f), 1.7320555522798577);
 }
 
 TEST(MoltenSaltCorrosionModel, predictResponseDispatch)
@@ -154,9 +154,9 @@ TEST(MoltenSaltCorrosionModel, predictResponseDispatch)
     f.experiment_family = "ORNL fluoride loops";
     f.source_id = "ORNL-TM-4188";
     f.response_kind = "igc_depth_um";
-    expectClose(model.predictResponse(f), 10.335067115819228);
+    expectClose(model.predictResponse(f), 10.137168557536629);
     f.response_kind = "redox_acceleration_ratio";
-    expectClose(model.predictResponse(f), 6.556240992684608);
+    expectClose(model.predictResponse(f), 6.5983339474197109);
   }
 
   // M-011: mass_loss_mg_cm2 for a purified hot leg.
@@ -173,7 +173,7 @@ TEST(MoltenSaltCorrosionModel, predictResponseDispatch)
     f.experiment_family = "ORNL fluoride loops";
     f.source_id = "ORNL-TM-4188";
     f.response_kind = "mass_loss_mg_cm2";
-    expectClose(model.predictResponse(f), 4.088654962872375);
+    expectClose(model.predictResponse(f), 4.1350524766414853);
   }
 
   // M-012: mass_gain_mg_cm2 for a purified cold leg.
@@ -190,7 +190,7 @@ TEST(MoltenSaltCorrosionModel, predictResponseDispatch)
     f.experiment_family = "ORNL fluoride loops";
     f.source_id = "ORNL-TM-4188";
     f.response_kind = "mass_gain_mg_cm2";
-    expectClose(model.predictResponse(f), 1.8197244388227007);
+    expectClose(model.predictResponse(f), 1.8196209865790125);
   }
 
   // M-004: salt_cr_ppm for a generic metal at MSRE scale.
@@ -206,7 +206,7 @@ TEST(MoltenSaltCorrosionModel, predictResponseDispatch)
     f.experiment_family = "MSRE reactor evidence";
     f.source_id = "ORNL-TM-3063";
     f.response_kind = "salt_cr_ppm";
-    expectClose(model.predictResponse(f), 61.46761844618267);
+    expectClose(model.predictResponse(f), 61.529378350594214);
   }
 
   // M-014/M-015: NCL-16 Cr inventory needs the ORNL-TM-4188 Cr chemistry correction, while Fe
@@ -224,9 +224,9 @@ TEST(MoltenSaltCorrosionModel, predictResponseDispatch)
     f.experiment_family = "ORNL fluoride loops";
     f.source_id = "ORNL-TM-4188";
     f.response_kind = "salt_cr_ppm";
-    expectClose(model.predictResponse(f), 500.0);
+    expectClose(model.predictResponse(f), 496.25386877913809);
     f.response_kind = "salt_fe_decrease_ppm";
-    expectClose(model.predictResponse(f), 96.09701585416305);
+    expectClose(model.predictResponse(f), 96.062683348068731);
   }
 
   // M-005: cr_diffusion_cm2_s at the reference temperature.
@@ -296,7 +296,7 @@ TEST(MoltenSaltCorrosionModel, ncl16LoopSimulation)
   EXPECT_DOUBLE_EQ(sim.front().time_h, 0.0);
   EXPECT_DOUBLE_EQ(sim.front().salt_cr_ppm, 0.0);
   EXPECT_DOUBLE_EQ(sim.back().time_h, 29500.0);
-  expectClose(sim.back().salt_cr_ppm, 0.6907143110457217);
-  expectClose(sim.back().total_cr_dissolved_mg, 30.92723039018361);
-  expectClose(sim.back().total_deposit_mg, 30.581873234660705);
+  expectClose(sim.back().salt_cr_ppm, 0.6830528553035391);
+  expectClose(sim.back().total_cr_dissolved_mg, 30.744744270819492);
+  expectClose(sim.back().total_deposit_mg, 30.403217843167614);
 }
