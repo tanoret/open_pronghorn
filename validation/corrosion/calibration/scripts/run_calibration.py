@@ -39,8 +39,14 @@ CORE_METRICS = (
     "within_factor_2_direct",
     "within_factor_5_direct",
     "constraint_pass_fraction",
+    "n_validation_only_targets",
+    "median_factor_error_validation_only",
+    "within_factor_2_validation_only",
+    "n_all_quantitative_targets",
+    "median_factor_error_all_quantitative",
+    "within_factor_2_all_quantitative",
+    "within_factor_5_all_quantitative",
 )
-
 
 def sha256(path: Path) -> str:
     """Return a content hash used to identify the exact local workbook."""
