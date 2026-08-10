@@ -48,6 +48,19 @@
 
   "salt_density_g_cm3": 2.0,
 
+  "solid_diffusivities": {
+  "hastelloy_n": {
+    "Cr": {
+      "D0_cm2_s": 1.382126667841e-7,
+      "Q_kJ_mol": 120.620464930,
+      "measurement_temperature_min_K": 964.15,
+      "measurement_temperature_max_K": 1143.15,
+      "source": "DeVan 1960, Table XVI, Loop 1248",
+      "status": "direct_tracer_measurement"
+    }
+  }
+},
+
   "calibrated_parameters": {
     "log_rate0_um_y": 0.2653718349421312,
     "Ea_corr_kJ_mol": 54.83553514725915,

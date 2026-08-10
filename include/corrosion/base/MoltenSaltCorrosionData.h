@@ -43,6 +43,29 @@ struct ElementProperties
   Real c_ref_mol_m3 = 1.0;
 };
 
+/// Solid-state Arrhenius diffusivity properties for one element in one alloy.
+
+struct SolidDiffusivityProperties
+{
+  /// Arrhenius pre-exponential factor [cm^2/s].
+  Real D0_cm2_s = 0.0;
+
+  /// Arrhenius activation energy [kJ/mol].
+  Real Q_kJ_mol = 0.0;
+
+  /// Minimum temperature represented by the experimental measurements [K].
+  Real measurement_temperature_min_K = 0.0;
+
+  /// Maximum temperature represented by the experimental measurements [K].
+  Real measurement_temperature_max_K = 0.0;
+
+  /// Human-readable source description.
+  std::string source;
+
+  /// Provenance/status classification, e.g. "direct_tracer_measurement".
+  std::string status;
+};
+
 /**
  * Reads and queries the molten salt corrosion and plating database from a JSON file.
  *
@@ -79,6 +102,17 @@ public:
   /// Chromium mass fraction of a material class; falls back to 'generic_metal'
   /// (port of chemistry.py::cr_weight_fraction).
   Real crWeightFraction(const std::string & material_class) const;
+
+/// True when a material/element pair has an explicit solid-state diffusivity entry.
+/// No generic-material fallback is applied.
+  bool hasSolidDiffusivity(const std::string & material_class,
+                          const std::string & element) const;
+
+  /// Solid-state Arrhenius diffusivity properties for an explicitly listed
+  /// material/element pair. Errors if the pair is not present in the database.
+  SolidDiffusivityProperties
+  solidDiffusivity(const std::string & material_class,
+                  const std::string & element) const;
 
   /// Effective salt mass density [g/cm^3] used by the loop inventory closure.
   Real saltDensity() const;

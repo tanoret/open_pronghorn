@@ -229,17 +229,29 @@ TEST(MoltenSaltCorrosionModel, predictResponseDispatch)
     expectClose(model.predictResponse(f), 96.062683348068731);
   }
 
-  // M-005: cr_diffusion_cm2_s at the reference temperature.
-  {
-    Corrosion::CorrosionFeatures f;
-    f.salt_class = "fluoride_fuel";
-    f.redox_class = "msre_or_fuel_baseline";
-    f.temperature_K = 923.15;
-    f.response_kind = "cr_diffusion_cm2_s";
-    expectClose(model.predictResponse(f), 3.9999999999999956e-14);
-    // The mechanistic diffusivity is the same value converted to m^2/s.
-    expectClose(model.crDiffusivityM2S(f), 3.9999999999999956e-14 * 1.0e-4);
-  }
+// M-005 conditions: Hastelloy N chromium diffusivity at 650 C.
+// The DeVan Arrhenius correlation is extrapolated below its measured temperature range.
+{
+  Corrosion::CorrosionFeatures f;
+  f.material_class = "hastelloy_n";
+  f.salt_class = "fluoride_fuel";
+  f.redox_class = "msre_or_fuel_baseline";
+  f.temperature_K = 923.15;
+  f.response_kind = "cr_diffusion_cm2_s";
+
+  expectClose(model.predictResponse(f), 2.068271980647136e-14);
+
+  // The mechanistic diffusivity is the same value converted to m^2/s.
+  expectClose(model.crDiffusivityM2S(f), 2.068271980647136e-18);
+
+  // Generic material still uses the legacy chromium diffusivity correlation.
+  Corrosion::CorrosionFeatures generic;
+  generic.material_class = "generic_metal";
+  generic.temperature_K = 923.15;
+  generic.response_kind = "cr_diffusion_cm2_s";
+
+  expectClose(model.predictResponse(generic), 3.9999999999999956e-14);
+}
 
   // M-009: noble-metal deposition ranking (turbulent/graphite ratio).
   {

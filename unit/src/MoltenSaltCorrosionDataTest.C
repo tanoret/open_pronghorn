@@ -81,6 +81,29 @@ TEST(MoltenSaltCorrosionData, densityAndChromiumFractionTables)
   EXPECT_DOUBLE_EQ(db.crWeightFraction("unobtanium"), 0.12);
 }
 
+TEST(MoltenSaltCorrosionData, solidDiffusivityProperties)
+{
+  const auto db = loadDatabase();
+
+  // Hastelloy N has an explicit chromium diffusivity correlation from DeVan.
+  EXPECT_TRUE(db.hasSolidDiffusivity("hastelloy_n", "Cr"));
+
+  // Material and element lookup are case-insensitive.
+  EXPECT_TRUE(db.hasSolidDiffusivity("HASTELLOY_N", "cr"));
+
+  const auto props = db.solidDiffusivity("hastelloy_n", "Cr");
+
+  EXPECT_DOUBLE_EQ(props.D0_cm2_s, 1.382126667841e-7);
+  EXPECT_DOUBLE_EQ(props.Q_kJ_mol, 120.620464930);
+  EXPECT_DOUBLE_EQ(props.measurement_temperature_min_K, 964.15);
+  EXPECT_DOUBLE_EQ(props.measurement_temperature_max_K, 1143.15);
+  EXPECT_EQ(props.source, "DeVan 1960, Table XVI, Loop 1248");
+  EXPECT_EQ(props.status, "direct_tracer_measurement");
+
+  // Generic materials retain the legacy diffusivity path.
+  EXPECT_FALSE(db.hasSolidDiffusivity("generic_metal", "Cr"));
+}
+
 TEST(MoltenSaltCorrosionData, calibratedParameterLookups)
 {
   const auto db = loadDatabase();

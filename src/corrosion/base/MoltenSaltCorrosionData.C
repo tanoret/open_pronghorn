@@ -144,6 +144,63 @@ MoltenSaltCorrosionDatabase::crWeightFraction(const std::string & material_class
       _root.at("alloy_cr_wt_frac"), material_class, "generic_metal", "chromium weight fraction");
 }
 
+bool
+MoltenSaltCorrosionDatabase::hasSolidDiffusivity(const std::string & material_class,
+                                                 const std::string & element) const
+{
+  if (!_root.contains("solid_diffusivities"))
+    return false;
+
+  const auto & diffusivities = _root.at("solid_diffusivities");
+  const nlohmann::json * material = findCaseInsensitive(diffusivities, material_class);
+
+  if (!material)
+    return false;
+
+  return findCaseInsensitive(*material, element) != nullptr;
+}
+
+SolidDiffusivityProperties
+MoltenSaltCorrosionDatabase::solidDiffusivity(const std::string & material_class,
+                                              const std::string & element) const
+{
+  if (!_root.contains("solid_diffusivities"))
+    mooseError("Corrosion: the database '", _filename, "' has no 'solid_diffusivities' section.");
+
+  const auto & diffusivities = _root.at("solid_diffusivities");
+  const nlohmann::json * material = findCaseInsensitive(diffusivities, material_class);
+
+  if (!material)
+    mooseError("Corrosion: material '",
+               material_class,
+               "' has no solid diffusivity data in the database '",
+               _filename,
+               "'.");
+
+  const nlohmann::json * entry = findCaseInsensitive(*material, element);
+
+  if (!entry)
+    mooseError("Corrosion: element '",
+               element,
+               "' has no solid diffusivity data for material '",
+               material_class,
+               "' in the database '",
+               _filename,
+               "'.");
+
+  SolidDiffusivityProperties props;
+  props.D0_cm2_s = entry->at("D0_cm2_s").get<Real>();
+  props.Q_kJ_mol = entry->at("Q_kJ_mol").get<Real>();
+  props.measurement_temperature_min_K =
+      entry->value("measurement_temperature_min_K", 0.0);
+  props.measurement_temperature_max_K =
+      entry->value("measurement_temperature_max_K", 0.0);
+  props.source = entry->value("source", "");
+  props.status = entry->value("status", "");
+
+  return props;
+}
+
 Real
 MoltenSaltCorrosionDatabase::saltDensity() const
 {
