@@ -60,12 +60,13 @@ TEST(MoltenSaltCorrosionModel, msreBaselineCase)
   f.experiment_family = "MSRE reactor evidence";
   f.source_id = "ORNL-TM-1997";
 
-  expectClose(model.corrosionRateUmY(f), 2.8886105201070436);
-  expectClose(model.corrosionDepthUm(f), 1.5817169172386274);
-  expectClose(model.depositionRateUmY(f), 0.89139009681033832);
-  expectClose(model.depositionDepthUm(f), 0.48809861563878892);
-  expectClose(model.saltCrPpm(f), 48.839619181734882);
-  expectClose(model.bvOverpotentialEquivalentV(f.redox_class, f.temperature_K), 0.057830215469956626);
+  expectClose(model.corrosionRateUmY(f), 2.888610670850245);
+  expectClose(model.corrosionDepthUm(f), 1.581716999781106);
+  expectClose(model.depositionRateUmY(f), 0.89139016713993169);
+  expectClose(model.depositionDepthUm(f), 0.48809865414917541);
+  expectClose(model.saltCrPpm(f), 48.839630276212077);
+  expectClose(model.bvOverpotentialEquivalentV(f.redox_class, f.temperature_K),
+              0.057830226907234918);
 }
 
 TEST(MoltenSaltCorrosionModel, stainlessHotLoopCase)
@@ -86,10 +87,10 @@ TEST(MoltenSaltCorrosionModel, stainlessHotLoopCase)
   f.experiment_family = "ORNL fluoride loops";
   f.source_id = "ORNL-TM-4286";
 
-  expectClose(model.corrosionRateUmY(f), 16.820902186837731);
-  expectClose(model.corrosionDepthUm(f), 160.25718309787132);
-  expectClose(model.depositionRateUmY(f), 0.85155407825395457);
-  expectClose(model.saltCrPpm(f), 64523.738111490929);
+  expectClose(model.corrosionRateUmY(f), 16.820902341202594);
+  expectClose(model.corrosionDepthUm(f), 160.25718456854617);
+  expectClose(model.depositionRateUmY(f), 0.85155415991936079);
+  expectClose(model.saltCrPpm(f), 64523.750622407075);
 }
 
 TEST(MoltenSaltCorrosionModel, noSaltGasControlIsGated)
@@ -129,9 +130,9 @@ TEST(MoltenSaltCorrosionModel, telluriumRateWithUnsetTime)
   f.flow_factor = 2.0;
   f.time_years = NaN;
 
-  expectClose(model.corrosionRateUmY(f), 0.36436803463043105);
+  expectClose(model.corrosionRateUmY(f), 0.3643680896775312);
   EXPECT_TRUE(std::isnan(model.corrosionDepthUm(f)));
-  expectClose(model.depositionRateUmY(f), 1.7320555522798577);
+  expectClose(model.depositionRateUmY(f), 1.732055644176828);
 }
 
 TEST(MoltenSaltCorrosionModel, predictResponseDispatch)
@@ -154,9 +155,9 @@ TEST(MoltenSaltCorrosionModel, predictResponseDispatch)
     f.experiment_family = "ORNL fluoride loops";
     f.source_id = "ORNL-TM-4188";
     f.response_kind = "igc_depth_um";
-    expectClose(model.predictResponse(f), 10.137168557536629);
+    expectClose(model.predictResponse(f), 10.13716839696114);
     f.response_kind = "redox_acceleration_ratio";
-    expectClose(model.predictResponse(f), 6.5983339474197109);
+    expectClose(model.predictResponse(f), 6.5983339869030582);
   }
 
   // M-011: mass_loss_mg_cm2 for a purified hot leg.
@@ -173,7 +174,7 @@ TEST(MoltenSaltCorrosionModel, predictResponseDispatch)
     f.experiment_family = "ORNL fluoride loops";
     f.source_id = "ORNL-TM-4188";
     f.response_kind = "mass_loss_mg_cm2";
-    expectClose(model.predictResponse(f), 4.1350524766414853);
+    expectClose(model.predictResponse(f), 4.1350525455309901);
   }
 
   // M-012: mass_gain_mg_cm2 for a purified cold leg.
@@ -206,7 +207,7 @@ TEST(MoltenSaltCorrosionModel, predictResponseDispatch)
     f.experiment_family = "MSRE reactor evidence";
     f.source_id = "ORNL-TM-3063";
     f.response_kind = "salt_cr_ppm";
-    expectClose(model.predictResponse(f), 61.529378350594214);
+    expectClose(model.predictResponse(f), 61.529377983416758);
   }
 
   // M-014/M-015: NCL-16 Cr inventory needs the ORNL-TM-4188 Cr chemistry correction, while Fe
@@ -224,9 +225,9 @@ TEST(MoltenSaltCorrosionModel, predictResponseDispatch)
     f.experiment_family = "ORNL fluoride loops";
     f.source_id = "ORNL-TM-4188";
     f.response_kind = "salt_cr_ppm";
-    expectClose(model.predictResponse(f), 496.25386877913809);
+    expectClose(model.predictResponse(f), 496.25385299566278);
     f.response_kind = "salt_fe_decrease_ppm";
-    expectClose(model.predictResponse(f), 96.062683348068731);
+    expectClose(model.predictResponse(f), 96.062682988069);
   }
 
 // M-005 conditions: Hastelloy N chromium diffusivity at 650 C.
@@ -308,7 +309,7 @@ TEST(MoltenSaltCorrosionModel, ncl16LoopSimulation)
   EXPECT_DOUBLE_EQ(sim.front().time_h, 0.0);
   EXPECT_DOUBLE_EQ(sim.front().salt_cr_ppm, 0.0);
   EXPECT_DOUBLE_EQ(sim.back().time_h, 29500.0);
-  expectClose(sim.back().salt_cr_ppm, 0.6830528553035391);
-  expectClose(sim.back().total_cr_dissolved_mg, 30.744744270819492);
-  expectClose(sim.back().total_deposit_mg, 30.403217843167614);
+  expectClose(sim.back().salt_cr_ppm, 0.68305286907948615);
+  expectClose(sim.back().total_cr_dissolved_mg, 30.744744865498273);
+  expectClose(sim.back().total_deposit_mg, 30.403218430958493);
 }

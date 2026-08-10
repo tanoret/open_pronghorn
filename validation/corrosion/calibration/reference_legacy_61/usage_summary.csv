@@ -1,6 +1,7 @@
 fit_role,response_kind,n_measurements
 direct,corrosion_depth_um,3
 direct,corrosion_rate_um_y,7
+direct,cr_diffusion_cm2_s,1
 direct,igc_depth_um,7
 direct,mass_gain_mg_cm2,2
 direct,mass_loss_mg_cm2,2
@@ -21,4 +22,3 @@ upper,igc_depth_um,1
 upper,mass_loss_mg_cm2,2
 upper,offgas_fraction_percent,1
 upper,te_soluble_ppm,1
-validation_only,cr_diffusion_cm2_s,1

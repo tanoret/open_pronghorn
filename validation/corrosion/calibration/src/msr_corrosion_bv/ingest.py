@@ -357,8 +357,15 @@ def classify_response(row: pd.Series) -> dict[str, Any]:
 
     # Diffusion and redox thresholds.
     if "diffusion coefficient" in obs:
-        result.update(response_kind="cr_diffusion_cm2_s", fit_role="direct", target_units_model="cm2/s", usage_reason="Directly calibrates chromium diffusion submodel.", default_sigma_ln=0.35)
+        result.update(
+            response_kind="cr_diffusion_cm2_s",
+            fit_role="validation_only",
+            target_units_model="cm2/s",
+            usage_reason="Independent validation of chromium diffusivity material property; not fitted.",
+            default_sigma_ln=0.35,
+        )
         return result
+
     if "critical redox" in obs or "u(iv)/u(iii)" in _clean_text(row.get("material_or_species")).lower():
         result.update(response_kind="te_redox_threshold_ratio", fit_role="direct", target_units_model="ratio", usage_reason="Calibrates tellurium redox threshold submodel.", default_sigma_ln=0.45)
         return result

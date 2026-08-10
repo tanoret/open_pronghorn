@@ -47,18 +47,18 @@ class CalibrationDataTests(unittest.TestCase):
 
         self.assertEqual(len(self.tables["case_features"]), 76)
         self.assertEqual(len(targets), 43)
-        self.assertEqual(len(active), 38)
+        self.assertEqual(len(active), 37)
         self.assertEqual(active["source_id"].nunique(), 14)
 
     def test_objective_contains_data_and_prior_residuals(self) -> None:
         targets = self.tables["targets"]
         objective = objective_vector(initial_parameter_vector(), targets)
 
-        # Thirty-eight active rows produce 39 data residuals because the one
-        # deposition-ranking row encodes two inequalities.  Every one of the
-        # 61 parameters contributes a regularizing prior residual.
-        self.assertEqual(len(PARAMETER_SPECS), 61)
-        self.assertEqual(len(objective), 39 + 61)
+        # Thirty-seven active rows produce 38 data residuals because the one
+        # deposition-ranking row encodes two inequalities. Every one of the
+        # 59 parameters contributes a regularizing prior residual.
+        self.assertEqual(len(PARAMETER_SPECS), 59)
+        self.assertEqual(len(objective), 38 + 59)
 
     def test_frozen_parameters_match_existing_vendored_copy(self) -> None:
         frozen = read_json(REFERENCE / "parameters.json")

@@ -100,8 +100,14 @@ TEST(MoltenSaltCorrosionData, solidDiffusivityProperties)
   EXPECT_EQ(props.source, "DeVan 1960, Table XVI, Loop 1248");
   EXPECT_EQ(props.status, "direct_tracer_measurement");
 
-  // Generic materials retain the legacy diffusivity path.
-  EXPECT_FALSE(db.hasSolidDiffusivity("generic_metal", "Cr"));
+// Generic metal retains the old correlation as an explicit legacy fallback.
+EXPECT_TRUE(db.hasSolidDiffusivity("generic_metal", "Cr"));
+
+const auto legacy = db.solidDiffusivity("generic_metal", "Cr");
+EXPECT_DOUBLE_EQ(legacy.D0_cm2_s, 1.5195890862355468);
+EXPECT_DOUBLE_EQ(legacy.Q_kJ_mol, 240.0);
+EXPECT_EQ(legacy.source, "Legacy 61-parameter corrosion calibration");
+EXPECT_EQ(legacy.status, "legacy_fallback");
 }
 
 TEST(MoltenSaltCorrosionData, calibratedParameterLookups)
@@ -109,13 +115,10 @@ TEST(MoltenSaltCorrosionData, calibratedParameterLookups)
   const auto db = loadDatabase();
 
   // A spot-check of the fitted parameters from results/parameters.json and validation corrections.
-  EXPECT_DOUBLE_EQ(db.parameter("log_rate0_um_y"), 0.2653718349421312);
-  EXPECT_DOUBLE_EQ(db.parameter("redox_oxidizing_fef2"), 1.5026092214000561);
-  EXPECT_DOUBLE_EQ(db.parameter("mat_stainless_304"), 1.5121011893045204);
-  EXPECT_DOUBLE_EQ(db.parameter("Ea_Dcr_kJ_mol"), 240.0);
-  EXPECT_DOUBLE_EQ(db.parameter("log_Dcr_ref_cm2_s"), -30.84989694079675);
-  EXPECT_DOUBLE_EQ(db.parameter("log_ncl16_cr_inventory_bonus"), 1.0250787771220031);
-  EXPECT_EQ(db.calibratedParameters().size(), 62u);
+  EXPECT_DOUBLE_EQ(db.parameter("log_rate0_um_y"), 0.26537174220781806);
+  EXPECT_DOUBLE_EQ(db.parameter("redox_oxidizing_fef2"), 1.5026093263788216);
+  EXPECT_DOUBLE_EQ(db.parameter("mat_stainless_304"), 1.5121011358409628);
+  EXPECT_EQ(db.calibratedParameters().size(), 60u);
 }
 
 TEST(MoltenSaltCorrosionData, faradaicConversionsRoundTrip)

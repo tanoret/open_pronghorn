@@ -1,30 +1,22 @@
 {
   "n_measurements_total": 43,
-  "n_active_constraints": 37,
-  "n_direct_or_range_targets": 28,
+  "n_active_constraints": 38,
+  "n_direct_or_range_targets": 29,
   "n_upper_lower_ranking_constraints": 9,
-  "log_rmse_direct": 0.3716182530765127,
-  "median_factor_error_direct": 1.116618577505282,
-  "within_factor_2_direct": 0.9285714285714286,
+  "log_rmse_direct": 0.365154832030594,
+  "median_factor_error_direct": 1.1144958209171885,
+  "within_factor_2_direct": 0.9310344827586207,
   "within_factor_5_direct": 1.0,
-  "constraint_pass_fraction": 0.9459459459459459,
-  "max_abs_weighted_residual": 1.8689950761562355,
-  "n_validation_only_targets": 1,
-  "median_factor_error_validation_only": 1.9339816219774928,
-  "within_factor_2_validation_only": 1.0,
-  "n_all_quantitative_targets": 29,
-  "median_factor_error_all_quantitative": 1.118745400506574,
-  "within_factor_2_all_quantitative": 0.9310344827586207,
-  "within_factor_5_all_quantitative": 1.0,
+  "constraint_pass_fraction": 0.9473684210526315,
+  "max_abs_weighted_residual": 1.8689950580757502,
   "fit_role_counts": {
-    "direct": 25,
+    "direct": 26,
     "excluded_auxiliary": 1,
     "input_only": 4,
     "lower": 1,
     "range": 3,
     "ranking": 1,
-    "upper": 7,
-    "validation_only": 1
+    "upper": 7
   },
   "response_kind_counts": {
     "carbon_layer_depth_um": 1,
@@ -48,8 +40,8 @@
   },
   "optimizer_success": true,
   "optimizer_message": "`ftol` termination condition is satisfied.",
-  "optimizer_cost": 6.078978137255323,
+  "optimizer_cost": 6.078978137175648,
   "optimizer_nfev": 21,
   "prior_strength": 0.35,
-  "n_parameters": 59
+  "n_parameters": 61
 }
