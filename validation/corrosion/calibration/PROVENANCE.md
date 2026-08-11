@@ -65,9 +65,18 @@ corrected 700 C MOD-F-07 experiment temperature and the source-audited M-041 dir
 19.7 um at 1079 h.
 
 Chromium solid diffusivity is no longer included in the fitted parameter vector. Hastelloy N
-chromium diffusivity is supplied independently from the DeVan radiotracer-derived Arrhenius
-correlation stored under `solid_diffusivities` in `data/corrosion_database.json`. The
-`generic_metal` chromium entry preserves the historical diffusion correlation as an explicitly
+chromium diffusivity is supplied independently from the DeVan 51Cr radiotracer-derived Arrhenius
+correlation stored under `solid_diffusivities` in `data/corrosion_database.json`.
+
+Solution-treated SUS316 chromium volume/lattice diffusivity is supplied independently from the
+Mizouchi et al. (2004) 51Cr radiotracer correlation,
+`D = 1.13e-3 exp[-234000/(R T)] cm^2/s`, measured over 888-1173 K. The production database stores
+this direct property under `stainless_316`. The `solid_diffusivity_fallbacks` table explicitly maps
+`stainless_304`, `stainless_304l`, `stainless_316h`, and `stainless_316l` to that SUS316 correlation
+when no exact grade-specific chromium lattice-diffusion property is installed. These mappings are
+engineering fallbacks and do not imply that the source measurement was performed in those grades.
+
+The `generic_metal` chromium entry preserves the historical diffusion correlation as an explicitly
 labeled legacy fallback.
 
 One OpenPronghorn production correction remains outside the 59-parameter optimizer:

@@ -241,9 +241,22 @@ TEST(MoltenSaltCorrosionModel, predictResponseDispatch)
   f.response_kind = "cr_diffusion_cm2_s";
 
   expectClose(model.predictResponse(f), 2.068271980647136e-14);
-
   // The mechanistic diffusivity is the same value converted to m^2/s.
   expectClose(model.crDiffusivityM2S(f), 2.068271980647136e-18);
+
+    // Stainless 316H uses the explicitly configured SUS316 lattice-diffusion fallback.
+  Corrosion::CorrosionFeatures stainless;
+  stainless.material_class = "stainless_316h";
+  stainless.temperature_K = 923.15;
+  stainless.response_kind = "cr_diffusion_cm2_s";
+
+  const Real stainless_diffusivity = model.predictResponse(stainless);
+  EXPECT_NEAR(stainless_diffusivity,
+              6.499858816091512e-17,
+              6.499858816091512e-29);
+  EXPECT_NEAR(model.crDiffusivityM2S(stainless),
+              6.499858816091512e-21,
+              6.499858816091512e-33);
 
   // Generic material still uses the legacy chromium diffusivity correlation.
   Corrosion::CorrosionFeatures generic;

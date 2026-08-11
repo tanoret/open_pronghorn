@@ -1,5 +1,5 @@
 {
-  "description": "Molten salt corrosion and plating database for open_pronghorn. The 'elements' section holds the mechanistic transport and electrode-kinetics properties of each tracked metal cation. The 'densities_g_cm3' and 'alloy_cr_wt_frac' tables and the molar masses and valences are the engineering properties from the validated reference model (msr_corrosion_bv/chemistry.py). The 'calibrated_parameters' section contains the fitted parameter set from the reference effective Butler-Volmer correlation (msr_corrosion_plating_model/results/parameters.json), plus named source-audited corrections introduced during validation; it parameterizes the exchange current, the effective overpotential, salt inventory responses, and the solid-state chromium diffusivity of the mechanistic model.",
+"description": "Molten salt corrosion and plating database for open_pronghorn. The 'elements' section holds the mechanistic transport and electrode-kinetics properties of each tracked metal cation. The 'densities_g_cm3' and 'alloy_cr_wt_frac' tables and the molar masses and valences are the engineering properties from the validated reference model (msr_corrosion_bv/chemistry.py). The 'calibrated_parameters' section contains the fitted parameter set from the reference effective Butler-Volmer correlation (msr_corrosion_plating_model/results/parameters.json), plus named source-audited corrections introduced during validation. The 'solid_diffusivities' section contains independent solid-state chromium Arrhenius properties, and 'solid_diffusivity_fallbacks' records explicit engineering mappings used when a grade-specific correlation is unavailable.",
 
   "elements": {
     "Cr": {"valence": 2, "molar_mass_g_mol": 51.9961,  "diffusivity_m2_s": 1.0e-9, "E0_V": 0.0, "alpha_a": 0.5, "alpha_c": 0.5, "c_ref_mol_m3": 1.0},
@@ -59,6 +59,16 @@
       "status": "direct_tracer_measurement"
     }
   },
+  "stainless_316": {
+  "Cr": {
+    "D0_cm2_s": 1.13e-3,
+    "Q_kJ_mol": 234.0,
+    "measurement_temperature_min_K": 888.0,
+    "measurement_temperature_max_K": 1173.0,
+    "source": "Mizouchi et al. 2004, Sec. 3.1 and Fig. 2, 51Cr volume/lattice diffusion in SUS316",
+    "status": "direct_tracer_measurement"
+  }
+},
   "generic_metal": {
     "Cr": {
       "D0_cm2_s": 1.5195890862355468e-0,
@@ -67,6 +77,13 @@
       "status": "legacy_fallback"
     }
   }
+},
+
+"solid_diffusivity_fallbacks": {
+  "stainless_304": "stainless_316",
+  "stainless_304l": "stainless_316",
+  "stainless_316h": "stainless_316",
+  "stainless_316l": "stainless_316"
 },
 
   "calibrated_parameters": {

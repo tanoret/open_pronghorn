@@ -154,10 +154,22 @@ MoltenSaltCorrosionDatabase::hasSolidDiffusivity(const std::string & material_cl
   const auto & diffusivities = _root.at("solid_diffusivities");
   const nlohmann::json * material = findCaseInsensitive(diffusivities, material_class);
 
-  if (!material)
+  if (material && findCaseInsensitive(*material, element))
+    return true;
+
+  if (!_root.contains("solid_diffusivity_fallbacks"))
     return false;
 
-  return findCaseInsensitive(*material, element) != nullptr;
+  const nlohmann::json * fallback =
+      findCaseInsensitive(_root.at("solid_diffusivity_fallbacks"), material_class);
+
+  if (!fallback)
+    return false;
+
+  const std::string fallback_material = fallback->get<std::string>();
+  material = findCaseInsensitive(diffusivities, fallback_material);
+
+  return material && findCaseInsensitive(*material, element);
 }
 
 SolidDiffusivityProperties
@@ -170,12 +182,25 @@ MoltenSaltCorrosionDatabase::solidDiffusivity(const std::string & material_class
   const auto & diffusivities = _root.at("solid_diffusivities");
   const nlohmann::json * material = findCaseInsensitive(diffusivities, material_class);
 
+  if ((!material || !findCaseInsensitive(*material, element)) &&
+      _root.contains("solid_diffusivity_fallbacks"))
+  {
+    const nlohmann::json * fallback =
+        findCaseInsensitive(_root.at("solid_diffusivity_fallbacks"), material_class);
+
+    if (fallback)
+    {
+      const std::string fallback_material = fallback->get<std::string>();
+      material = findCaseInsensitive(diffusivities, fallback_material);
+    }
+  }
+
   if (!material)
     mooseError("Corrosion: material '",
-               material_class,
-               "' has no solid diffusivity data in the database '",
-               _filename,
-               "'.");
+              material_class,
+              "' has no solid diffusivity data in the database '",
+              _filename,
+              "'.");
 
   const nlohmann::json * entry = findCaseInsensitive(*material, element);
 

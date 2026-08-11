@@ -41,6 +41,21 @@ def solid_diffusivities() -> dict[str, Any]:
         database = json.load(stream)
     return database["solid_diffusivities"]
 
+@lru_cache(maxsize=1)
+def solid_diffusivity_fallbacks() -> dict[str, str]:
+    """Load explicit solid-diffusivity material fallbacks from the production database."""
+    db_path = Path(__file__).resolve().parents[5] / "data" / "corrosion_database.json"
+    with db_path.open(encoding="utf-8") as stream:
+        database = json.load(stream)
+    return database.get("solid_diffusivity_fallbacks", {})
+
+def _case_insensitive_get(mapping: Mapping[str, Any], key: str) -> Any:
+    """Return a mapping value using case-insensitive string-key lookup."""
+    key_lower = key.lower()
+    for candidate, value in mapping.items():
+        if candidate.lower() == key_lower:
+            return value
+    return None
 
 @dataclass(frozen=True)
 class ParameterSpec:
@@ -405,9 +420,19 @@ class MoltenSaltBVModel:
         material = str(self._feature(row, "material_class", "generic_metal"))
 
         diffusivities = solid_diffusivities()
-        material_data = diffusivities.get(material, diffusivities["generic_metal"])
-        props = material_data["Cr"]
+        fallbacks = solid_diffusivity_fallbacks()
 
+        material_data = _case_insensitive_get(diffusivities, material)
+
+        if material_data is None or "Cr" not in material_data:
+            fallback_material = _case_insensitive_get(fallbacks, material)
+            if fallback_material is not None:
+                material_data = _case_insensitive_get(diffusivities, fallback_material)
+
+        if material_data is None or "Cr" not in material_data:
+            material_data = diffusivities["generic_metal"]
+
+        props = material_data["Cr"]
         D0_cm2_s = float(props["D0_cm2_s"])
         Q_kJ_mol = float(props["Q_kJ_mol"])
 

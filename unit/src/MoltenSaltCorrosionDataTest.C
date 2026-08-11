@@ -100,14 +100,44 @@ TEST(MoltenSaltCorrosionData, solidDiffusivityProperties)
   EXPECT_EQ(props.source, "DeVan 1960, Table XVI, Loop 1248");
   EXPECT_EQ(props.status, "direct_tracer_measurement");
 
-// Generic metal retains the old correlation as an explicit legacy fallback.
-EXPECT_TRUE(db.hasSolidDiffusivity("generic_metal", "Cr"));
+  // SUS316 has a direct chromium volume/lattice diffusivity correlation from Mizouchi et al.
+  EXPECT_TRUE(db.hasSolidDiffusivity("stainless_316", "Cr"));
 
-const auto legacy = db.solidDiffusivity("generic_metal", "Cr");
-EXPECT_DOUBLE_EQ(legacy.D0_cm2_s, 1.5195890862355468);
-EXPECT_DOUBLE_EQ(legacy.Q_kJ_mol, 240.0);
-EXPECT_EQ(legacy.source, "Legacy 61-parameter corrosion calibration");
-EXPECT_EQ(legacy.status, "legacy_fallback");
+  const auto stainless_316 = db.solidDiffusivity("stainless_316", "Cr");
+  EXPECT_DOUBLE_EQ(stainless_316.D0_cm2_s, 1.13e-3);
+  EXPECT_DOUBLE_EQ(stainless_316.Q_kJ_mol, 234.0);
+  EXPECT_DOUBLE_EQ(stainless_316.measurement_temperature_min_K, 888.0);
+  EXPECT_DOUBLE_EQ(stainless_316.measurement_temperature_max_K, 1173.0);
+  EXPECT_EQ(stainless_316.source,
+            "Mizouchi et al. 2004, Sec. 3.1 and Fig. 2, 51Cr volume/lattice diffusion in SUS316");
+  EXPECT_EQ(stainless_316.status, "direct_tracer_measurement");
+
+  // Related stainless grades use the explicitly configured SUS316 engineering fallback.
+  EXPECT_TRUE(db.hasSolidDiffusivity("stainless_316h", "Cr"));
+  EXPECT_TRUE(db.hasSolidDiffusivity("stainless_316l", "Cr"));
+  EXPECT_TRUE(db.hasSolidDiffusivity("stainless_304", "Cr"));
+  EXPECT_TRUE(db.hasSolidDiffusivity("stainless_304l", "Cr"));
+
+  const auto stainless_316h = db.solidDiffusivity("stainless_316h", "Cr");
+  EXPECT_DOUBLE_EQ(stainless_316h.D0_cm2_s, stainless_316.D0_cm2_s);
+  EXPECT_DOUBLE_EQ(stainless_316h.Q_kJ_mol, stainless_316.Q_kJ_mol);
+  EXPECT_EQ(stainless_316h.source, stainless_316.source);
+  EXPECT_EQ(stainless_316h.status, "direct_tracer_measurement");
+
+  // Fallback lookup remains case-insensitive.
+  EXPECT_TRUE(db.hasSolidDiffusivity("STAINLESS_316H", "cr"));
+
+  // An unrelated material still has no alloy-specific or configured fallback entry.
+  EXPECT_FALSE(db.hasSolidDiffusivity("unobtanium", "Cr"));
+
+// Generic metal retains the old correlation as an explicit legacy fallback.
+  EXPECT_TRUE(db.hasSolidDiffusivity("generic_metal", "Cr"));
+
+  const auto legacy = db.solidDiffusivity("generic_metal", "Cr");
+  EXPECT_DOUBLE_EQ(legacy.D0_cm2_s, 1.5195890862355468);
+  EXPECT_DOUBLE_EQ(legacy.Q_kJ_mol, 240.0);
+  EXPECT_EQ(legacy.source, "Legacy 61-parameter corrosion calibration");
+  EXPECT_EQ(legacy.status, "legacy_fallback");
 }
 
 TEST(MoltenSaltCorrosionData, calibratedParameterLookups)

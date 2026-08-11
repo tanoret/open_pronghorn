@@ -28,6 +28,32 @@ and is within a factor of 2 of the independently supplied Hastelloy N diffusivit
 quantitative targets reported by the frozen calibration metrics, 93.1 % are within a factor of 2
 and 100 % are within a factor of 5.
 
+## Chromium solid-diffusivity selection
+
+Chromium solid diffusivity is supplied as an independent material property rather than as a fitted
+corrosion coefficient. OpenPronghorn first uses an exact material-specific correlation, then an
+explicitly configured engineering fallback when one is available, and finally the legacy
+`generic_metal` correlation for otherwise unsupported materials.
+
+| User material | Chromium lattice diffusivity used | Basis |
+| :--- | :--- | :--- |
+| `hastelloy_n` | DeVan INOR-8/Hastelloy N correlation | Direct 51Cr radiotracer measurement |
+| `stainless_316` | Mizouchi et al. SUS316 correlation | Direct 51Cr volume/lattice radiotracer measurement |
+| `stainless_316h` | Mizouchi et al. SUS316 correlation | Explicit engineering fallback |
+| `stainless_316l` | Mizouchi et al. SUS316 correlation | Explicit engineering fallback for lattice diffusion |
+| `stainless_304`, `stainless_304l` | Mizouchi et al. SUS316 correlation | Explicit austenitic-stainless engineering fallback |
+| otherwise unsupported material | `generic_metal` legacy correlation | Historical 61-parameter calibration fallback |
+
+The Mizouchi SUS316 correlation is
+
+`D = 1.13e-3 exp[-234000/(R T)] cm^2/s`
+
+and was measured over 888-1173 K. The measurement range is retained as provenance metadata; the
+Arrhenius correlation is not clamped outside that interval. A fallback indicates that the
+correlation was measured in the referenced source alloy, not in the user-selected alloy. In
+particular, the SUS316 measurement is not represented as a direct 316H, 316L, 304, or 304L
+measurement.
+
 ## Layer 1 — term-for-term correlation reproduction (C++ unit tests)
 
 `MoltenSaltCorrosionModel` is a faithful C++ port of the reference `MoltenSaltBVModel`. The unit

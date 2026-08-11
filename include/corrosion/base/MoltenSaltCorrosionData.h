@@ -103,13 +103,14 @@ public:
   /// (port of chemistry.py::cr_weight_fraction).
   Real crWeightFraction(const std::string & material_class) const;
 
-/// True when a material/element pair has an explicit solid-state diffusivity entry.
-/// No generic-material fallback is applied.
+/// True when a material/element pair has an exact or explicitly configured
+  /// solid-state diffusivity. The generic_metal legacy fallback is not applied here.
   bool hasSolidDiffusivity(const std::string & material_class,
                           const std::string & element) const;
 
-  /// Solid-state Arrhenius diffusivity properties for an explicitly listed
-  /// material/element pair. Errors if the pair is not present in the database.
+  /// Solid-state Arrhenius diffusivity properties for an exact or explicitly configured
+  /// fallback material/element pair. For configured fallbacks, the returned provenance
+  /// describes the source-material correlation. Errors if neither is present.
   SolidDiffusivityProperties
   solidDiffusivity(const std::string & material_class,
                   const std::string & element) const;
