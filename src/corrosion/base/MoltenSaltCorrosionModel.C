@@ -296,10 +296,20 @@ Real
 MoltenSaltCorrosionModel::crDiffusionCm2S(const CorrosionFeatures & feat) const
 {
   const Real T = pyOr(feat.temperature_K, T_ref_K);
-  const Real logD = param("log_Dcr_ref_cm2_s") + thermalTerm(T, param("Ea_Dcr_kJ_mol"));
+
+  if (_db.hasSolidDiffusivity(feat.material_class, "Cr"))
+  {
+    const auto props = _db.solidDiffusivity(feat.material_class, "Cr");
+    const Real logD =
+        std::log(props.D0_cm2_s) - props.Q_kJ_mol * 1000.0 / (R_gas * T);
+    return expClip(logD, -80.0, -20.0);
+  }
+
+  const auto props = _db.solidDiffusivity("generic_metal", "Cr");
+  const Real logD =
+      std::log(props.D0_cm2_s) - props.Q_kJ_mol * 1000.0 / (R_gas * T);
   return expClip(logD, -80.0, -20.0);
 }
-
 Real
 MoltenSaltCorrosionModel::saltCrPpmBase(const CorrosionFeatures & feat) const
 {

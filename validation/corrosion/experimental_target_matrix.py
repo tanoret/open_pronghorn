@@ -76,11 +76,14 @@ def score(row: dict[str, str], bound_relative_tol: float) -> dict[str, str]:
     high = to_float(row.get("target_high", ""))
     factor = factor_error(pred, mid)
 
-    active = role not in {"input_only", "excluded_auxiliary"}
+    active = role not in {"input_only", "excluded_auxiliary", "validation_only"}
     passed: bool | None
     criterion: str
 
-    if not active:
+    if role == "validation_only":
+        passed = factor is not None and factor <= 2.0
+        criterion = "validation factor error <= 2"
+    elif not active:
         passed = None
         criterion = "not scored"
     elif pred is None and role != "ranking":
@@ -148,6 +151,11 @@ def main() -> int:
     active = [row for row in rows if row["active_constraint"] == "yes"]
     passed = [row for row in active if row["pass"] == "yes"]
     failed = [row for row in active if row["pass"] == "no"]
+
+    validation_only = [row for row in rows if row["fit_role"] == "validation_only"]
+    validation_passed = [row for row in validation_only if row["pass"] == "yes"]
+    validation_failed = [row for row in validation_only if row["pass"] == "no"]
+
     direct_or_range = [row for row in rows if row["fit_role"] in {"direct", "range"}]
     direct_factor2 = [
         row
@@ -167,8 +175,12 @@ def main() -> int:
     print(f"measurement rows:             {len(rows)}")
     print(f"active constraints:           {len(active)}")
     print(f"active constraints passed:    {len(passed)}/{len(active)}")
-    print(f"direct/range within factor 2: {len(direct_factor2)}/{len(direct_or_range)}")
-    print(f"direct/range within factor 5: {len(direct_factor5)}/{len(direct_or_range)}")
+    print(
+        f"validation-only passed:       "
+        f"{len(validation_passed)}/{len(validation_only)}"
+    )
+    print(f"production-model direct/range within factor 2: {len(direct_factor2)}/{len(direct_or_range)}")
+    print(f"production-model direct/range within factor 5: {len(direct_factor5)}/{len(direct_or_range)}")
     if failed:
         print("\nFailed active constraints:")
         for row in failed:
@@ -177,7 +189,16 @@ def main() -> int:
                 f"target={row['target_low']}/{row['target_mid']}/{row['target_high']} "
                 f"{row['target_units_model']} prediction={row['prediction']} | {row['criterion']}"
             )
-    return 1 if failed else 0
+    if validation_failed:
+        print("\nFailed validation-only targets:")
+        for row in validation_failed:
+            print(
+                f"  {row['measurement_id']} {row['case_id']}: {row['observable']} | "
+                f"target={row['target_low']}/{row['target_mid']}/{row['target_high']} "
+                f"{row['target_units_model']} prediction={row['prediction']} | "
+                f"{row['criterion']}"
+            )
+    return 1 if failed or validation_failed else 0
 
 
 if __name__ == "__main__":
