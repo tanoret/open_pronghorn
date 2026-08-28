@@ -29,11 +29,12 @@
  * For each tracked element the action creates a linear finite-volume cation concentration, its time
  * derivative, advection by the solved flow (Rhie-Chow) or a prescribed velocity, and molecular plus
  * turbulent diffusion, and applies the Butler-Volmer electrode reaction at the wall through
- * CorrosionLinearFVButlerVolmerBC. The exchange current is seeded from the validated effective
- * corrosion correlation (MoltenSaltCorrosionModel) and is Arrhenius in the local temperature, so the
- * wall corrodes faster where the salt is hotter. The full electromigration / electric-potential solve
- * is provided by the finite-element CorrosionPlating action; here the bulk transport is advective and
- * diffusive, as in the radiolysis framework.
+ * CorrosionLinearFVButlerVolmerBC. The exchange current can be seeded from either the validated
+ * reduced-empirical correlation or a static MSTDB-TC standard-state endpoint. In MSTDB mode the
+ * total front rate is apportioned among Cr, Fe, and Ni before the individual currents are built.
+ * The full electromigration / electric-potential solve is provided by the finite-element
+ * CorrosionPlating action; here the bulk transport is advective and diffusive, as in the radiolysis
+ * framework.
  */
 class CorrosionPlatingFlowAction : public Action
 {
@@ -52,6 +53,7 @@ protected:
     std::string salt_var;
     Real valence = 2.0;
     Real molar_mass = 55.0;
+    Real planned_rate_um_y = 0.0;
     Real i0 = 0.0;
     Real alpha_a = 0.5;
     Real alpha_c = 0.5;
@@ -74,6 +76,7 @@ protected:
 
   const MooseFunctorName _temperature;
   const Real _reference_temperature;
+  const bool _use_mstdb_tc;
   const bool _temperature_dependent;
   const bool _transient;
 

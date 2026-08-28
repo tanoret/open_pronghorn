@@ -1,0 +1,67 @@
+[Tests]
+  design = 'CorrosionPlatingAction.md CorrosionRateAux.md ButlerVolmerBC.md'
+
+  [solid_only_default_potential]
+    type = CSVDiff
+    input = solid_only_default.i
+    csvdiff = solid_only_default_out.csv
+    abs_zero = 1e-9
+    rel_err = 1e-6
+    requirement = 'The solid-only CorrosionPlating topology shall interpret the default applied '
+                  'overpotential as metal minus salt, dissolve rather than plate the solid, and '
+                  'report the same reference dissolution rate through CorrosionRateAux.'
+  []
+
+  [solid_only_custom_functors]
+    type = CSVDiff
+    input = solid_only_custom_functors.i
+    csvdiff = solid_only_custom_functors_out.csv
+    abs_zero = 1e-9
+    rel_err = 1e-6
+    requirement = 'The solid-only Butler-Volmer boundary and rate diagnostics shall consume the '
+                  'same named external-salt concentration and potential functors.'
+  []
+
+  [reject_rate_aux_duplicate_concentration]
+    type = RunException
+    input = rate_aux_sources.i
+    check_input = true
+    cli_args = 'AuxKernels/rate_aux/concentration_functor=1'
+    expect_err = 'Supply exactly one salt concentration source'
+    requirement = 'CorrosionRateAux shall reject simultaneous coupled-variable and functor salt '
+                  'concentration sources.'
+  []
+
+  [reject_rate_aux_duplicate_potential]
+    type = RunException
+    input = rate_aux_sources.i
+    check_input = true
+    cli_args = 'AuxKernels/rate_aux/metal_potential=c '
+               'AuxKernels/rate_aux/metal_potential_functor=0.1'
+    expect_err = 'Supply at most one metal_potential source'
+    requirement = 'CorrosionRateAux shall reject simultaneous coupled-variable and functor phase '
+                  'potential sources.'
+  []
+
+  [reject_rate_aux_functor_and_fixed_potential]
+    type = RunException
+    input = rate_aux_sources.i
+    check_input = true
+    cli_args = 'AuxKernels/rate_aux/metal_potential_functor=0.1 '
+               'AuxKernels/rate_aux/metal_potential_value=0.2'
+    expect_err = 'Supply at most one metal_potential source'
+    requirement = 'CorrosionRateAux shall reject simultaneous functor and user-specified fixed '
+                  'phase-potential sources.'
+  []
+
+  [reject_solid_only_salt_potential_solve]
+    type = RunException
+    input = solid_only_default.i
+    check_input = true
+    cli_args = 'CorrosionPlating/solve_potential=true '
+               'CorrosionPlating/pin_potential_boundary=right'
+    expect_err = 'solid_only topology has no modeled salt phase or salt-potential variable'
+    requirement = 'The solid-only Action topology shall reject a salt-potential solve that would '
+                  'otherwise be silently unused.'
+  []
+[]

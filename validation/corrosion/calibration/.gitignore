@@ -1,15 +1,23 @@
-# Recalibration products are intentionally regenerated, not versioned.  The
-# frozen benchmark used by the tests lives in reference/.
+# Recalibration products are intentionally regenerated, not versioned. The
+# frozen benchmark used by tests lives in reference/ and results/advanced/.
 generated/
 figures/
 __pycache__/
 *.py[cod]
 .pytest_cache/
 
-# The repository's root ignore file excludes generic CSV, JSON, and TXT
-# outputs.  These calibration files are curated inputs/reference artifacts,
-# not disposable solver output, so keep the exceptions local to this folder.
+# MSTDB-TC is external, permission-controlled input and must never be committed.
+*MSTDB-TC*.dat
+MSTDB-TC/
+Thermochimica/
+
+# The repository root ignores generic CSV, JSON, and TXT outputs. These are
+# curated inputs/reference artifacts, so keep their exceptions local.
 !requirements.txt
+!advanced_provenance.json
 !data/workbook_exports/*.csv
 !reference/*.csv
 !reference/*.json
+!results/advanced/*.csv
+!results/advanced/*.json
+
