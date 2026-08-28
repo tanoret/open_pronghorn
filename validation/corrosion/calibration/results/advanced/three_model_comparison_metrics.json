@@ -1,0 +1,156 @@
+{
+  "n_supported_constraints": 32,
+  "n_direct_or_range_targets": 26,
+  "n_dynamic_parameters": 26,
+  "n_fitted_dynamic_parameters": 16,
+  "integration_steps": 120,
+  "midpoint_metric_note": "Range targets are referenced to their reported midpoint for legacy comparability.",
+  "range_aware_metric_note": "Range targets contribute zero error inside the reported interval and error to the nearest bound outside it.",
+  "effective_log_rmse_direct": 0.37775703352225126,
+  "effective_median_factor_error_direct": 1.1166186420471353,
+  "effective_within_factor_2_direct": 0.9230769230769231,
+  "effective_within_factor_5_direct": 1.0,
+  "effective_range_aware_log_rmse_direct": 0.29109629881707294,
+  "effective_range_aware_median_factor_error_direct": 1.1040126441490443,
+  "effective_range_aware_within_factor_2_direct": 0.9615384615384616,
+  "effective_constraint_pass_fraction": 0.9375,
+  "reduced_mechanistic_log_rmse_direct": 0.3829698746084429,
+  "reduced_mechanistic_median_factor_error_direct": 1.0374560787738232,
+  "reduced_mechanistic_within_factor_2_direct": 0.9230769230769231,
+  "reduced_mechanistic_within_factor_5_direct": 1.0,
+  "reduced_mechanistic_range_aware_log_rmse_direct": 0.11206711515312348,
+  "reduced_mechanistic_range_aware_median_factor_error_direct": 1.0189199515873675,
+  "reduced_mechanistic_range_aware_within_factor_2_direct": 1.0,
+  "reduced_mechanistic_constraint_pass_fraction": 0.96875,
+  "thermochemical_log_rmse_direct": 0.1810780018259235,
+  "thermochemical_median_factor_error_direct": 1.0291077032207878,
+  "thermochemical_within_factor_2_direct": 1.0,
+  "thermochemical_within_factor_5_direct": 1.0,
+  "thermochemical_range_aware_log_rmse_direct": 0.10985228507721682,
+  "thermochemical_range_aware_median_factor_error_direct": 1.0175108251827039,
+  "thermochemical_range_aware_within_factor_2_direct": 1.0,
+  "thermochemical_constraint_pass_fraction": 0.9375,
+  "dynamic_network_log_rmse_direct": 0.20059586024730272,
+  "dynamic_network_median_factor_error_direct": 1.0521581915551634,
+  "dynamic_network_within_factor_2_direct": 1.0,
+  "dynamic_network_within_factor_5_direct": 1.0,
+  "dynamic_network_range_aware_log_rmse_direct": 0.09206498365493246,
+  "dynamic_network_range_aware_median_factor_error_direct": 1.0335275893018825,
+  "dynamic_network_range_aware_within_factor_2_direct": 1.0,
+  "dynamic_network_constraint_pass_fraction": 0.96875,
+  "dynamic_better_than_effective_count": 18,
+  "dynamic_better_than_reduced_count": 12,
+  "dynamic_better_than_thermochemical_count": 9,
+  "optimizer_success": true,
+  "optimizer_message": "baseline dissolution and redox: `ftol` termination condition is satisfied.; stress and impurity interfacial activation: `ftol` termination condition is satisfied.; inventory and cold-leg deposition: `ftol` termination condition is satisfied.; non-congruent mass recession: `gtol` termination condition is satisfied.; grain-boundary penetration: `ftol` termination condition is satisfied.; joint endpoint polish: `ftol` termination condition is satisfied.",
+  "optimizer_cost": 0.8331010681104379,
+  "optimizer_nfev": 62,
+  "prior_strength": 0.35,
+  "calibration_mode": "staged refit",
+  "dynamic_model_name": "Dynamic Redox-Inventory-Depletion Network (DRIDN)",
+  "ode_integrator": "SciPy solve_ivp/LSODA with nonnegative state projection in rate evaluations",
+  "validation_interpretation": "Calibrated like-for-like endpoint benchmark with explicit transient state evolution. The interval-aware score respects reported experimental ranges; numerical convergence, species ordering, and elemental inventory closure are audited independently.",
+  "dynamic_state_variables": [
+    "surface Cr/Fe/Ni availability",
+    "dissolved Cr/Fe/Ni inventory",
+    "cumulative Cr/Fe/Ni dissolution source",
+    "redox buffer coordinate",
+    "reaction-front depth",
+    "equivalent mass recession",
+    "species-resolved measured-coupon deposit",
+    "species-resolved uninstrumented/bulk capture",
+    "grain-boundary penetration squared"
+  ],
+  "fixed_dynamic_parameters": [
+    "affinity_feedback_scale",
+    "surface_reservoir_cr_exponent",
+    "log_dynamic_cr_exchange_bias",
+    "log_dynamic_fe_capture_bias",
+    "inventory_inhibition_scale",
+    "redox_consumption_per_um",
+    "bulk_capture_area_multiplier_fuel",
+    "bulk_capture_area_multiplier_flinak",
+    "log_bulk_precipitation_rate_scale",
+    "damage_affinity_scale"
+  ],
+  "endpoint_mass_balance": {
+    "n_cases": 32,
+    "maximum_relative_error": 1.3162075390115825e-15,
+    "median_relative_error": 7.463599958666418e-16,
+    "p95_relative_error": 1.2044431376500038e-15
+  },
+  "parameter_bound_audit": {
+    "fitted_parameters_at_lower_bound": [],
+    "fitted_parameters_at_upper_bound": [],
+    "fixed_parameters_at_lower_bound": [
+      "affinity_feedback_scale",
+      "inventory_inhibition_scale",
+      "redox_consumption_per_um",
+      "bulk_capture_area_multiplier_fuel",
+      "bulk_capture_area_multiplier_flinak"
+    ],
+    "fixed_parameters_at_upper_bound": [],
+    "n_fitted_parameters_at_any_bound": 0,
+    "n_fixed_parameters_at_any_bound": 5
+  },
+  "physics_constraints": {
+    "n_constraints": 3,
+    "pass_fraction": 1.0,
+    "constraints": [
+      {
+        "constraint_id": "D-P001",
+        "measurement_id": "M-030",
+        "description": "FLiNaK cold-leg deposit remains Fe-rich relative to Cr",
+        "value": 2.7764231728477715,
+        "required_minimum": 1.0,
+        "residual": 0.0,
+        "constraint_pass": true
+      },
+      {
+        "constraint_id": "D-P002-Fe",
+        "measurement_id": "M-003",
+        "description": "Selective dissolution retains Cr source fraction > Fe",
+        "value": 3.9575423298103503,
+        "required_minimum": 1.05,
+        "residual": 0.0,
+        "constraint_pass": true
+      },
+      {
+        "constraint_id": "D-P002-Ni",
+        "measurement_id": "M-003",
+        "description": "Selective dissolution retains Cr source fraction > Ni",
+        "value": 1.0880419996485222,
+        "required_minimum": 1.05,
+        "residual": 0.0,
+        "constraint_pass": true
+      }
+    ]
+  },
+  "numerical_convergence": {
+    "integration_steps_evaluated": [
+      30,
+      60,
+      120,
+      240
+    ],
+    "reference_integration_steps": 240,
+    "n_supported_predictions": 32,
+    "comparisons": {
+      "30_vs_240": {
+        "maximum_relative_difference": 3.039378985505651e-06,
+        "median_relative_difference": 7.456177718178342e-11,
+        "p95_relative_difference": 7.420621742644003e-07
+      },
+      "60_vs_240": {
+        "maximum_relative_difference": 5.326065922272189e-07,
+        "median_relative_difference": 9.836822546276318e-11,
+        "p95_relative_difference": 2.640642830507731e-07
+      },
+      "120_vs_240": {
+        "maximum_relative_difference": 6.26136495665444e-08,
+        "median_relative_difference": 3.5740616525416004e-11,
+        "p95_relative_difference": 5.768772540053086e-08
+      }
+    }
+  }
+}

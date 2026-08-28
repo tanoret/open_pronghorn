@@ -1,0 +1,26 @@
+parameter,value,prior,prior_sigma,lower,upper,description
+log_front_rate0_um_y,-0.06806531052471404,0.0,1.0,-2.995732273553991,2.995732273553991,"Reference Cr-controlled dissolution-front rate at 650 C, log(um/y)."
+cr_activity_exponent,1.9881258070895724,1.6,1.0,0.2,4.0,Exponent mapping alloy Cr mass fraction to an effective Cr activity ratio.
+delta_mu_flinak_kJ_mol,-15.484956221100429,-8.0,10.0,-25.0,20.0,Effective FLiNaK chemical-potential shift relative to fuel fluoride; negative values increase dissolution drive under this sign convention.
+delta_mu_flibe_kJ_mol,-5.910850189976318,2.0,10.0,-15.0,20.0,Effective FLiBe chemical-potential shift relative to fuel fluoride.
+delta_mu_fluoroborate_kJ_mol,-16.524665324660994,-10.0,10.0,-30.0,20.0,Effective fluoroborate chemical-potential shift relative to fuel fluoride.
+delta_mu_chloride_kJ_mol,-3.1163991307847243,-5.0,10.0,-30.0,20.0,Effective chloride chemical-potential shift relative to fuel fluoride.
+log_mass_transfer_cap_um_y,7.298109061807462,7.600902459542082,1.5,3.4011973816621555,11.512925464970229,"Reference salt-side mass-transfer capacity, log(um/y)."
+Ea_mass_transfer_kJ_mol,21.33079199870709,25.0,30.0,0.0,100.0,Apparent activation energy for salt-side mass transfer.
+flow_mass_transfer_exponent,0.6649961571453582,0.6,0.4,0.1,1.5,Flow-factor exponent for salt-side mass transfer.
+gb_diffusion_multiplier,0.610659736974896,0.65,0.4,0.1,2.0,Multiplier on the Cr solid-state diffusion length for ordinary IGC/void penetration.
+multi_alloy_gb_multiplier,6.497985027770862,9.0,6.0,1.0,30.0,Grain-boundary/galvanic penetration multiplier in multi-alloy tests.
+x750_gb_multiplier,12.47276009666017,12.0,8.0,1.0,30.0,Additional X-750 susceptibility multiplier in multi-alloy tests.
+chloride_reaction_multiplier,5.065547750352212,6.0,5.0,1.0,20.0,Reaction-front multiplier for impure chloride IGC.
+chloride_gb_multiplier,3.5646035559795073,4.0,5.0,1.0,20.0,Diffusion-length multiplier for impure chloride IGC.
+tellurium_gb_multiplier,1.9925278717877002,8.0,8.0,1.0,30.0,Diffusion-length multiplier for tellurium-assisted intergranular attack.
+cold_leg_capture_efficiency,0.6041302376891134,0.75,0.2,0.2,1.0,Fraction of hot-side transported inventory captured by cold-side supersaturation.
+effective_solution_enthalpy_fuel_kJ_mol,46.49098072916414,70.0,50.0,10.0,250.0,Effective enthalpy controlling temperature-dependent dissolved-metal capacity in fuel fluoride.
+effective_solution_enthalpy_flinak_kJ_mol,35.11655708598378,140.0,80.0,10.0,300.0,Effective enthalpy controlling temperature-dependent dissolved-metal capacity in FLiNaK.
+log_area_to_salt_mass_msre_cm2_g,-2.0402208285265546,-2.0402208285265546,1.0,-4.605170185988091,0.6931471805599453,"Effective exposed-area/salt-mass ratio for MSRE-scale inventory closure, log(cm2/g)."
+log_area_to_salt_mass_loop_cm2_g,1.243927082814626,1.0986122886681098,1.2,-2.3025850929940455,3.4011973816621555,"Effective exposed-area/salt-mass ratio for small-loop inventory closure, log(cm2/g)."
+fe_to_cr_inventory_ratio,0.20052464504136333,0.2,0.25,0.02,1.0,Effective magnitude ratio between salt Fe decrease and Cr increase.
+mass_loss_fraction_logit,1.067811327871538,0.9444616088408513,1.0,-4.0,4.0,Reference fraction of the affected alloy layer removed as net mass.
+mass_loss_cr_exponent,0.3329999408588816,-0.25,0.5,-2.0,1.0,Cr-content exponent for non-congruent mass loss.
+flinak_high_cr_selectivity_exponent,-1.0683084274073356,-0.8,0.7,-2.5,0.5,Additional non-congruent selective-leaching exponent for high-Cr alloys in FLiNaK.
+log_dissolved_cr_capacity_ppm,7.506139678899648,7.495541943884256,0.8,5.703782474656201,9.210340371976184,"Effective dissolved-Cr inventory capacity used to saturate long-duration loop inventories, log(ppm)."

@@ -26,14 +26,23 @@
  * modeled) the solid-side metal variable, the Nernst-Planck transport (diffusion plus
  * electromigration) of the cations, the optional current-continuity equation for the electric
  * potential (the electrophoresis driving force), and the Butler-Volmer electrode kinetics. The
- * kinetics are parameterized from the validated effective-correlation port (MoltenSaltCorrosionModel)
- * using the case feature selectors, so a single interface or boundary reproduces the calibrated
- * dissolution rate.
+ * kinetics can be parameterized either from the validated reduced-empirical correlation or from
+ * the MSTDB-TC standard-state/Nernst engineering model.  The latter is evaluated once at the
+ * explicitly supplied reference endpoint; its total dissolution-front rate is apportioned among
+ * Cr, Fe, and Ni before each Butler-Volmer exchange current is seeded.
  *
  * Three topologies are supported:
  *   - two_block: salt and solid are separate mesh blocks; Butler-Volmer is an interface kernel.
  *   - salt_only: only the salt is modeled; Butler-Volmer is a boundary condition (metal is external).
  *   - solid_only: only the solid is modeled; Butler-Volmer is a boundary condition (salt is external).
+ *
+ * applied_overpotential is always the reference metal-minus-salt difference. When the salt
+ * potential is solved, the generated default metal potential carries the pinned salt's absolute
+ * offset; a user-supplied applied_potential remains an unshifted absolute functor. The rate
+ * diagnostics consume the same external-phase potential and concentration inputs as the generated
+ * boundary condition. In MSTDB-TC mode those diagnostics sum the Cr/Fe/Ni penetration-rate shares
+ * to report total front rate and recession; the reduced model retains its legacy controlling-element
+ * output.
  */
 class CorrosionPlatingAction : public Action
 {
@@ -63,6 +72,7 @@ protected:
     Real molar_mass = 55.0;  ///< Molar mass [g/mol].
     Real diffusivity = 1.0e-9;      ///< Salt diffusivity [m^2/s].
     Real solid_diffusivity = 1.0e-15; ///< Solid-state diffusivity [m^2/s].
+    Real planned_rate_um_y = 0.0; ///< Element-resolved penetration-rate seed [um/y].
     Real i0 = 0.0;           ///< Exchange current density [A/m^2].
     Real alpha_a = 0.5;      ///< Anodic transfer coefficient.
     Real alpha_c = 0.5;      ///< Cathodic transfer coefficient.
@@ -102,6 +112,8 @@ protected:
   const MooseFunctorName _temperature;
   /// Scalar temperature used for the kinetics seed and the Butler-Volmer exponent [K].
   const Real _reference_temperature;
+  /// Select the external-MSTDB standard-state seed instead of the reduced empirical correlation.
+  const bool _use_mstdb_tc;
   const bool _solve_potential;
   const bool _supporting_electrolyte;
   const bool _transient;

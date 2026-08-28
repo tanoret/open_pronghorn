@@ -1,0 +1,27 @@
+parameter,value,prior,prior_sigma,lower,upper,description
+log_rate_scale,0.055365471992740514,0.0,0.5,-1.5,1.5,Log multiplier on the thermochemical charge-transfer rate.
+affinity_feedback_scale,2.8725723958274885e-13,0.035,0.06,0.0,0.3,Scale converting Nernst product buildup into dynamic rate suppression.
+log_surface_reservoir_um,3.321684647830804,3.6888794541139363,1.0,-0.6931471805599453,6.214608098422191,"Effective near-surface alloy reservoir thickness, log(um)."
+log_surface_replenishment_y_inv,-0.17253145397117015,0.6931471805599453,1.3,-5.298317366548036,5.298317366548036,"Reference solid-state replenishment rate of the surface reservoir, log(1/y)."
+surface_availability_exponent,1.001027788010305,0.8,0.8,0.0,3.0,Exponent coupling depleted surface availability to interfacial current.
+surface_reservoir_cr_exponent,0.5550218064425788,0.8,0.7,0.0,2.5,Scaling of effective surface-reservoir thickness with bulk alloy Cr fraction.
+log_dynamic_cr_exchange_bias,0.007,0.0,0.15,-0.5,0.5,Small dynamic interfacial-transfer correction for selective Cr dissolution.
+log_dynamic_fe_capture_bias,0.05,0.3,0.2,-0.5,0.5,Fe-rich cold-leg capture bias constrained by the 316H FLiNaK deposit observation.
+inventory_inhibition_scale,2.50000000000004e-15,0.75,1.2,0.0,6.0,Strength of dissolved-product inhibition of salt-side mass transfer.
+log_redox_relaxation_y_inv,0.0003247206442954783,0.0,1.4,-5.298317366548036,5.298317366548036,"Relaxation rate of transient FeF2, Be, or moisture redox perturbations, log(1/y)."
+redox_buffer_retention,0.7499538506912311,0.75,0.25,0.0,1.0,Long-time fraction of the imposed transient redox perturbation retained by buffering.
+redox_consumption_per_um,4.4182081345454976e-13,0.005,0.025,0.0,0.25,Dimensionless redox-buffer consumption per micrometre of reaction-front advance.
+log_stress_interfacial_factor,0.023049536841576106,0.0,0.8,0.0,2.4849066497880004,Log multiplier representing stress-opened active area and interfacial transport.
+log_fluoride_impurity_interfacial_factor,0.17254172336369716,0.0,0.8,0.0,2.4849066497880004,Log multiplier representing impurity-activated fluoride interfacial transport.
+log_deposition_rate_y_inv_fuel,0.9415843932550865,-0.6931471805599453,1.5,-6.907755278982137,4.605170185988092,"First-order cold-leg capture rate for fuel/fluoroborate salts, log(1/y)."
+log_deposition_rate_y_inv_flinak,2.9521708093322574,0.6931471805599453,1.5,-6.907755278982137,5.298317366548036,"First-order cold-leg capture rate for FLiNaK, log(1/y)."
+bulk_capture_area_multiplier_fuel,1e-10,1.0,2.0,0.0,12.0,Uninstrumented-to-coupon cold-surface capture multiplier for fuel/fluoroborate loops.
+bulk_capture_area_multiplier_flinak,0.0,0.5,2.0,0.0,12.0,Uninstrumented-to-coupon cold-surface capture multiplier for FLiNaK loops.
+log_bulk_precipitation_rate_scale,1.761132,0.0,1.0,-2.995732273553991,3.912023005428146,Log multiplier on nonlinear bulk precipitation under dissolved-metal supersaturation.
+log_inventory_scale_msre,-0.15185382582003074,0.0,0.75,-2.0,2.0,Log multiplier on MSRE-scale exposed-area-to-salt-mass source terms.
+log_inventory_scale_loop,-0.8819669893066959,0.0,0.75,-2.0,2.0,Log multiplier on small-loop exposed-area-to-salt-mass source terms.
+log_deposit_area_scale_fuel,0.511133587761954,0.0,0.8,-2.302585092994046,2.302585092994046,Log correction to the observed cold-leg area mapping for fuel/fluoroborate salts (within one decade).
+log_deposit_area_scale_flinak,0.6632084287760844,0.0,0.8,-2.302585092994046,2.302585092994046,Log correction to the observed cold-leg area mapping for FLiNaK (within one decade).
+log_mass_loss_scale,-1.2444239037670558e-07,0.0,0.45,-1.0,1.0,Log multiplier on non-congruent equivalent mass recession.
+gb_dynamic_scale,0.9905649525756313,1.0,0.55,0.2,3.0,Multiplier on inherited grain-boundary diffusion lengths.
+damage_affinity_scale,0.02611452873592219,0.03,0.08,0.0,0.4,Positive-redox enhancement of parabolic grain-boundary penetration.

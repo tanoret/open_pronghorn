@@ -1,0 +1,27 @@
+{
+  "thermochimica_reference_commit": "0c35c8d7d1cf2084b4e2ca5d6608f7dcdf60adad",
+  "native_thermochimica_available": false,
+  "native_thermochimica_smoke_test": {
+    "available": false,
+    "executed": false,
+    "executable": null,
+    "reason": "InputScriptMode was not found"
+  },
+  "fluoride_species_records": 677,
+  "chloride_species_records": 649,
+  "G_CrF2_liquid_J_mol_at_923_15K": -881852.8502324164,
+  "G_Cr_solid_J_mol_at_923_15K": -32479.385685162837,
+  "lnK_Cr_plus_2UF4_to_CrF2_plus_2UF3": -3.2900422614422524,
+  "lnK_Fe_plus_2UF4_to_FeF2_plus_2UF3": -12.837806430848973,
+  "lnK_Ni_plus_2UF4_to_NiF2_plus_2UF3": -24.449707227488272,
+  "lnK_Cr_plus_FeF2_to_CrF2_plus_Fe": 9.547764169406722,
+  "lnK_Cr_plus_BeF2_to_CrF2_plus_Be": -30.830682996105303,
+  "CrF2_ideal_saturation_activity_977_15K": 0.703832641622109,
+  "CrF2_ideal_saturation_activity_811_15K": 0.48257228177195377,
+  "check_selective_Cr_over_Fe_over_Ni_in_U_buffer": true,
+  "check_FeF2_oxidizes_Cr": true,
+  "check_Be_buffer_suppresses_Cr_dissolution": true,
+  "check_cold_leg_has_lower_CrF2_saturation": true,
+  "chloride_spot_check_G_CrCl2_liquid_J_mol_at_923_15K": -528859.0468304644,
+  "all_thermochemical_sanity_checks_pass": true
+}

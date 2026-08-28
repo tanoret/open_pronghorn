@@ -1,0 +1,7 @@
+stage,success,message,nfev,cost,parameters,n_constraints
+baseline dissolution and redox,True,`ftol` termination condition is satisfied.,17,0.34491103881690655,"['log_rate_scale', 'log_surface_reservoir_um', 'log_surface_replenishment_y_inv', 'surface_availability_exponent', 'log_redox_relaxation_y_inv', 'redox_buffer_retention']",11
+stress and impurity interfacial activation,True,`ftol` termination condition is satisfied.,2,0.02756689079022223,"['log_stress_interfacial_factor', 'log_fluoride_impurity_interfacial_factor']",2
+inventory and cold-leg deposition,True,`ftol` termination condition is satisfied.,7,0.362490777949108,"['log_deposition_rate_y_inv_fuel', 'log_deposition_rate_y_inv_flinak', 'log_inventory_scale_msre', 'log_inventory_scale_loop', 'log_deposit_area_scale_fuel', 'log_deposit_area_scale_flinak']",6
+non-congruent mass recession,True,`gtol` termination condition is satisfied.,3,0.36033996820738134,['log_mass_loss_scale'],11
+grain-boundary penetration,True,`ftol` termination condition is satisfied.,3,0.03909382377622439,['gb_dynamic_scale'],8
+joint endpoint polish,True,`ftol` termination condition is satisfied.,30,0.39377813959856844,"['log_rate_scale', 'log_mass_loss_scale', 'gb_dynamic_scale', 'log_stress_interfacial_factor', 'log_fluoride_impurity_interfacial_factor']",32

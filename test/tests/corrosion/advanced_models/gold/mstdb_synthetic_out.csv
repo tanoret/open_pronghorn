@@ -1,0 +1,2 @@
+time,corrosion_rate_um_y,dissolved_inventory_cr_ppm,dissolved_inventory_fe_ppm,dissolved_inventory_ni_ppm,front_depth_um,front_rate_um_y,igc_depth_um,mass_gain_mg_cm2,mass_loss_mg_cm2,source_fraction_cr,source_fraction_fe,source_fraction_ni
+0,0.6769519993770632,42.06842983593101,10.64154122433037,41.46282158617806,1.002572013466553,1.002572013466553,8.437358903779177,0.09217210747212942,0.6018103274462092,0.4467153267278792,0.1130001662399752,0.4402845070321457
