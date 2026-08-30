@@ -238,4 +238,3 @@ jobs:
         run: |
           test "${NEW_HARNESS}" = success
           test "${COMPATIBILITY_HARNESS}" = success
-
