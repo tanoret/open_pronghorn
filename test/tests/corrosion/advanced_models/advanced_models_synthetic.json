@@ -5,8 +5,8 @@
   "calibration_data_revision": "synthetic-nonvalidation-fixture",
   "mstdb_provenance": {
     "version": "3.1",
-    "fluoride_sha256": "63634d874ab4be8d6a6541c3c903c2d1afd567d12718ba53a81fadfe063169a5",
-    "chloride_sha256": "4926cb48418ce7a61455dcd4cefdae91913d2ca6b2fd8e3c179eca097f7945d0"
+    "fluoride_sha256": "9cc68de7e49ba470adefbb49ee3f915c1d065eea9243ddd98bb4719b95ee5d69",
+    "chloride_sha256": "cbff3c4144f7b086d20923be059b6fb7bed684035fd3a298fff8622736bc2077"
   },
   "base_model_provenance": {
     "source": "data/corrosion_database.json",

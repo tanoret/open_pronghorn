@@ -19,4 +19,3 @@ AdvancedCorrosionModelUserObject::AdvancedCorrosionModelUserObject(
   : GeneralUserObject(parameters)
 {
 }
-

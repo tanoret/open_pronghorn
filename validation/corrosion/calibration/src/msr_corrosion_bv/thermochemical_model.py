@@ -11,4 +11,3 @@ class MSTDBThermochemicalCorrosionModel(
     ThermochemicalTransportMixin,
 ):
     """Species-resolved corrosion model driven by MSTDB-TC reaction affinities."""
-

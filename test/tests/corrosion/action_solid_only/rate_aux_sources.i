@@ -36,4 +36,3 @@
 [Executioner]
   type = Steady
 []
-

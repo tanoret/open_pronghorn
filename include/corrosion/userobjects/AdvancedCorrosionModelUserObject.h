@@ -25,4 +25,3 @@ public:
   /// Return one named scalar result. Implementations must reject unsupported names.
   virtual Real scalarValue(const std::string & quantity) const = 0;
 };
-

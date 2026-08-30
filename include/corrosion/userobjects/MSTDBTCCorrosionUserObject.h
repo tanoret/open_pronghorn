@@ -46,4 +46,3 @@ protected:
   const Corrosion::MSTDBTCCorrosionFeatures _features;
   const Corrosion::MSTDBTCCorrosionResult _result;
 };
-

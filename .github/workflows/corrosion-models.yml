@@ -38,6 +38,8 @@ jobs:
             data/advanced_corrosion_models.json \
             unit/data/dridn/cpp_parity_cases.csv \
             unit/data/dridn/fitted_parameters.csv \
+            validation/corrosion/calibration/data/parameters.json \
+            validation/corrosion/calibration/data/targets.csv \
             test/tests/corrosion/advanced_models/advanced_models_synthetic.json
 
           fluoride_sha="a7ca53e6061c3aa16d1932e35f908fa61b328b88625e8361e63881bfc8592000"
@@ -53,15 +55,11 @@ jobs:
           done < <(git ls-files -z)
 
       - name: Set up the pinned scientific Python environment
-        uses: conda-incubator/setup-miniconda@8ee1f361103df19b6f8c8655fd3967a8ecb162d5 # v4.0.1
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
-          activate-environment: corrosion-validation
-          auto-update-conda: false
-          channel-priority: strict
-          channels: conda-forge
-          conda-remove-defaults: true
-          miniforge-version: "26.5.3-0"
           python-version: "3.12.13"
+          cache: pip
+          cache-dependency-path: validation/corrosion/calibration/requirements.txt
 
       - name: Install calibration requirements
         run: |
@@ -84,6 +82,8 @@ jobs:
 
   linked-moose:
     name: Linked MOOSE build and tests
+    needs: portable-validation
+    if: ${{ always() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     env:
@@ -95,6 +95,11 @@ jobs:
         shell: bash -el {0}
 
     steps:
+      - name: Require portable model validation
+        env:
+          PORTABLE_RESULT: ${{ needs['portable-validation'].result }}
+        run: test "${PORTABLE_RESULT}" = success
+
       - name: Check out OpenPronghorn
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

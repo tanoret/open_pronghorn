@@ -63,4 +63,3 @@
 [Outputs]
   csv = true
 []
-

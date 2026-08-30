@@ -46,4 +46,3 @@ protected:
   unsigned int & _accepted_steps;
   unsigned int & _rejected_steps;
 };
-
