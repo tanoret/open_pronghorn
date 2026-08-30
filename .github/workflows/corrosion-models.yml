@@ -133,10 +133,14 @@ jobs:
           grep --fixed-strings '{% set version = "2026.02.20" %}' moose/conda/moose-dev/meta.yaml
           conda list moose-dev
 
-      - name: Check changed-source formatting and whitespace
+      - name: Check changed-file whitespace
         run: |
           base="$(git rev-parse HEAD^1)"
           git diff --check "${base}...HEAD"
+
+      - name: Check changed-source formatting
+        run: |
+          base="$(git rev-parse HEAD^1)"
           mapfile -t sources < <(
             git diff --diff-filter=ACMR --name-only "${base}...HEAD" -- '*.C' '*.h'
           )
