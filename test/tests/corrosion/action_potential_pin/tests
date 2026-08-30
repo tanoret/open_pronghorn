@@ -1,5 +1,6 @@
 [Tests]
   design = 'CorrosionPlatingAction.md ButlerVolmerBC.md CorrosionRateAux.md'
+  issues = '#4'
 
   [default_metal_tracks_nonzero_salt_pin]
     type = RunApp
