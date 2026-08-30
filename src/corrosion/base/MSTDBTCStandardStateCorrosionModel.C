@@ -104,7 +104,8 @@ MSTDBTCStandardStateCorrosionModel::MSTDBTCStandardStateCorrosionModel(
   const auto require_base_value = [](const std::string & category,
                                      const std::string & name,
                                      const Real actual,
-                                     const Real expected) {
+                                     const Real expected)
+  {
     if (!std::isfinite(actual) || actual != expected)
       mooseError("MSTDB-TC corrosion: base-model ",
                  category,
@@ -369,7 +370,10 @@ MSTDBTCStandardStateCorrosionModel::speciesFluxFractions(
   const auto & fractions = alloyMassFractions(features.material_class);
   for (unsigned int i = 0; i < n_elements; ++i)
     affinity[i] = reactionLogKOverQ(
-        static_cast<Element>(i), features, temperature_K, redox_override);
+        static_cast<Element>(i),
+        features,
+        temperature_K,
+        redox_override);
   const std::array<Real, 3> offsets{{0.0,
                                      parameter("log_exchange_fe_relative"),
                                      parameter("log_exchange_ni_relative")}};

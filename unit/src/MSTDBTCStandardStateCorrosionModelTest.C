@@ -259,16 +259,13 @@ TEST(MSTDBTCStandardStateCorrosionModel, CoreRejectsUnboundThermodynamicProvenan
                                     "0.2");
 
   // The production artifact is V3.1, so the synthetic V0.2 pair must fail at the core boundary.
-  EXPECT_THROW(Corrosion::MSTDBTCStandardStateCorrosionModel(base, advanced, pair),
-               std::exception);
+  EXPECT_THROW(Corrosion::MSTDBTCStandardStateCorrosionModel(base, advanced, pair), std::exception);
 
   advanced.bindMSTDB("0.2", std::string(64, '0'), chloride_fixture_sha256);
-  EXPECT_THROW(Corrosion::MSTDBTCStandardStateCorrosionModel(base, advanced, pair),
-               std::exception);
+  EXPECT_THROW(Corrosion::MSTDBTCStandardStateCorrosionModel(base, advanced, pair), std::exception);
 
   advanced.bindMSTDB("0.2", fluoride_fixture_sha256, std::string(64, '0'));
-  EXPECT_THROW(Corrosion::MSTDBTCStandardStateCorrosionModel(base, advanced, pair),
-               std::exception);
+  EXPECT_THROW(Corrosion::MSTDBTCStandardStateCorrosionModel(base, advanced, pair), std::exception);
 }
 
 TEST(MSTDBTCStandardStateCorrosionModel, CoreRejectsMismatchedBaseModelSemantics)

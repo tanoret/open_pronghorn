@@ -44,10 +44,8 @@ TEST(AdvancedCorrosionModelData, LoadsCorrectedCalibratedArtifactAndProvenance)
   const Corrosion::AdvancedCorrosionModelDatabase database(
       Moose::DataFileUtils::getPath("advanced_corrosion_models.json").path);
   EXPECT_EQ(database.schemaVersion(), "1.0");
-  EXPECT_EQ(database.calibrationId(),
-            "pr-corrosion-advanced-explicit-context-2026-08-28-v5");
-  EXPECT_EQ(database.modelRevision(),
-            "mstdb-nst-v2-fe-identity_dridn-v2-explicit-geometry");
+  EXPECT_EQ(database.calibrationId(), "pr-corrosion-advanced-explicit-context-2026-08-28-v5");
+  EXPECT_EQ(database.modelRevision(), "mstdb-nst-v2-fe-identity_dridn-v2-explicit-geometry");
   EXPECT_EQ(database.modelRevision(),
             Corrosion::AdvancedCorrosionModelDatabase::supportedModelRevision());
   EXPECT_EQ(database.expectedMSTDBVersion(), "3.1");
@@ -61,21 +59,17 @@ TEST(AdvancedCorrosionModelData, LoadsCorrectedCalibratedArtifactAndProvenance)
   EXPECT_EQ(database.baseModelDensities().size(), 12u);
   EXPECT_EQ(database.baseModelElementProperties().size(), 3u);
   EXPECT_DOUBLE_EQ(database.baseModelParameter("Ea_corr_kJ_mol"), 54.83553514725915);
-  EXPECT_DOUBLE_EQ(database.baseModelParameter("redox_oxidizing_fef2"),
-                   1.5026092214000561);
+  EXPECT_DOUBLE_EQ(database.baseModelParameter("redox_oxidizing_fef2"), 1.5026092214000561);
   EXPECT_DOUBLE_EQ(database.baseModelDensity("stainless_316h"), 8.0);
   EXPECT_DOUBLE_EQ(database.baseModelElementProperty("Cr", "molar_mass_g_mol"), 51.9961);
   EXPECT_EQ(database.thermochemicalParameters().size(), 28u);
   EXPECT_EQ(database.dynamicParameters().size(), 26u);
 
   // Corrected-data anchors: these distinguish the 2026-08-28 refit from the stale extension.
-  EXPECT_DOUBLE_EQ(database.thermochemicalParameter("log_front_rate0_um_y"),
-                   0.0036741915643164766);
-  EXPECT_DOUBLE_EQ(database.thermochemicalParameter("log_gamma_cr_flinak"),
-                   -8.056846922178943);
+  EXPECT_DOUBLE_EQ(database.thermochemicalParameter("log_front_rate0_um_y"), 0.0036741915643164766);
+  EXPECT_DOUBLE_EQ(database.thermochemicalParameter("log_gamma_cr_flinak"), -8.056846922178943);
   EXPECT_DOUBLE_EQ(database.dynamicParameter("log_rate_scale"), 0.055365471992740514);
-  EXPECT_DOUBLE_EQ(database.dynamicParameter("log_surface_reservoir_um"),
-                   3.321684647830804);
+  EXPECT_DOUBLE_EQ(database.dynamicParameter("log_surface_reservoir_um"), 3.321684647830804);
 
   const Corrosion::MoltenSaltCorrosionDatabase base(
       Moose::DataFileUtils::getPath("corrosion_database.json").path);

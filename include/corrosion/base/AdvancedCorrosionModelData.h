@@ -64,14 +64,8 @@ public:
   Real baseModelElementProperty(const std::string & element, const std::string & property) const;
   /// Reject any base database whose bound parameters, densities, or Cr/Fe/Ni properties differ.
   void validateBaseModel(const MoltenSaltCorrosionDatabase & database) const;
-  const std::map<std::string, Real> & baseModelParameters() const
-  {
-    return _base_model_parameters;
-  }
-  const std::map<std::string, Real> & baseModelDensities() const
-  {
-    return _base_model_densities;
-  }
+  const std::map<std::string, Real> & baseModelParameters() const { return _base_model_parameters; }
+  const std::map<std::string, Real> & baseModelDensities() const { return _base_model_densities; }
   const std::map<std::string, std::map<std::string, Real>> & baseModelElementProperties() const
   {
     return _base_model_element_properties;

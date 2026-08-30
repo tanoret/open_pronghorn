@@ -62,8 +62,8 @@ struct MSTDBTCCorrosionResult
 /**
  * Reduced Cr/Fe/Ni corrosion model driven by MSTDB-TC standard-state Gibbs functions.
  *
- * This class corrects the historical non-fuel Fe-buffer duplicate-key defect: the standard-state
- * Fe + FeX2 identity reaction has exactly zero net stoichiometry and affinity.  Unknown material,
+ * This class corrects the historical non-fuel Fe-buffer duplicate-key defect: the standard-state Fe
+ * + FeX2 identity reaction has exactly zero net stoichiometry and affinity.  Unknown material,
  * salt, and redox labels are rejected rather than silently mapped to a generic case.
  */
 class MSTDBTCStandardStateCorrosionModel

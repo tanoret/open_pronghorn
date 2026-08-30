@@ -236,8 +236,7 @@ TEST(DRIDNModel, ExactLegacySyntheticRHS)
             rate.deposit_conversion_mg_cm2_per_ppm +
         derivative[DRIDNModel::bulkCaptureIndex(element)];
     expectClose(accounted, derivative[DRIDNModel::cumulativeSourceIndex(element)]);
-    expectClose(rate.source_rate_ppm_y[i],
-                derivative[DRIDNModel::cumulativeSourceIndex(element)]);
+    expectClose(rate.source_rate_ppm_y[i], derivative[DRIDNModel::cumulativeSourceIndex(element)]);
   }
 }
 
@@ -457,8 +456,7 @@ TEST(DRIDNModel, ProjectedSurfaceFloorSatisfiesComplementarity)
   model.advance(context, state, 0.1);
   EXPECT_DOUBLE_EQ(state[DRIDNModel::surfaceIndex(DRIDNModel::Element::Cr)],
                    model.closures().surface_availability_floor);
-  EXPECT_DOUBLE_EQ(model.rhs(context, state)
-                       [DRIDNModel::surfaceIndex(DRIDNModel::Element::Cr)],
+  EXPECT_DOUBLE_EQ(model.rhs(context, state)[DRIDNModel::surfaceIndex(DRIDNModel::Element::Cr)],
                    0.0);
   EXPECT_GE(state[DRIDNModel::dissolvedIndex(DRIDNModel::Element::Cr)], 0.0);
   EXPECT_LT(model.outputs(context, state, 0.1).mass_balance_relative_error, 1.0e-10);
@@ -490,8 +488,7 @@ TEST(DRIDNModel, RedoxRelaxationAndDamageHaveClosedFormLimits)
   const Real target = parameters.redox_buffer_retention * context.redox_shift_initial;
   const Real expected_redox =
       target + (context.redox_shift_initial - target) * std::exp(-relaxation * duration_y);
-  const Real diffusion_um2_y = context.cr_diffusion_cm2_s * 1.0e8 *
-                               DRIDNModel::seconds_per_year;
+  const Real diffusion_um2_y = context.cr_diffusion_cm2_s * 1.0e8 * DRIDNModel::seconds_per_year;
   constexpr Real pi = 3.141592653589793238462643383279502884;
   const Real multiplier = context.gb_length_multiplier * parameters.gb_dynamic_scale;
   const Real expected_q = 4.0 / pi * diffusion_um2_y * multiplier * multiplier * duration_y;

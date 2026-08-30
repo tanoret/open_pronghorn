@@ -60,13 +60,21 @@ MSTDBTCCorrosionUserObject::validParams()
       "basis is documented for the application.");
 
   params.addRequiredRangeCheckedParam<Real>(
-      "hot_temperature", "hot_temperature > 0", "Hot-side salt temperature [K].");
+      "hot_temperature",
+      "hot_temperature > 0",
+      "Hot-side salt temperature [K].");
   params.addRequiredRangeCheckedParam<Real>(
-      "cold_temperature", "cold_temperature > 0", "Cold-side salt temperature [K].");
+      "cold_temperature",
+      "cold_temperature > 0",
+      "Cold-side salt temperature [K].");
   params.addRequiredRangeCheckedParam<Real>(
-      "exposure_time", "exposure_time >= 0", "Physical exposure time [s].");
+      "exposure_time",
+      "exposure_time >= 0",
+      "Physical exposure time [s].");
   params.addRequiredRangeCheckedParam<Real>(
-      "flow_factor", "flow_factor > 0", "Dimensionless circulation/mass-transfer factor.");
+      "flow_factor",
+      "flow_factor > 0",
+      "Dimensionless circulation/mass-transfer factor.");
   params.addRequiredRangeCheckedParam<Real>(
       "area_to_salt_mass",
       "area_to_salt_mass > 0",

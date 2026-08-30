@@ -96,7 +96,8 @@ bool
 looksLikeSpeciesName(const std::string & name)
 {
   return !name.empty() && std::isalpha(static_cast<unsigned char>(name.front())) &&
-         std::none_of(name.begin(), name.end(), [](const unsigned char character) {
+         std::none_of(name.begin(), name.end(), [](const unsigned char character)
+         {
            return std::isspace(character);
          });
 }
@@ -129,14 +130,16 @@ normalizeHash(const std::string & hash)
   if (hash.empty())
     return "";
   if (hash.size() != 64 ||
-      !std::all_of(hash.begin(), hash.end(), [](const unsigned char character) {
+      !std::all_of(hash.begin(), hash.end(), [](const unsigned char character)
+      {
         return std::isxdigit(character);
       }))
     mooseError("MSTDB-TC: expected SHA-256 must contain exactly 64 hexadecimal characters; got '",
                hash,
                "'.");
   std::string result = hash;
-  std::transform(result.begin(), result.end(), result.begin(), [](const unsigned char character) {
+  std::transform(result.begin(), result.end(), result.begin(), [](const unsigned char character)
+  {
     return static_cast<char>(std::tolower(character));
   });
   return result;
@@ -576,7 +579,8 @@ MSTDBTCData::evaluateSpecies(const MSTDBTCSpecies & record,
     mooseError("MSTDB-TC: temperature must be finite and positive; got ", temperature_K, " K.");
   const auto interval = std::find_if(record.intervals.begin(),
                                      record.intervals.end(),
-                                     [temperature_K](const MSTDBTCGibbsInterval & candidate) {
+                                     [temperature_K](const MSTDBTCGibbsInterval & candidate)
+                                     {
                                        return temperature_K <= candidate.upper_temperature_K;
                                      });
   if (interval == record.intervals.end() && !allow_extrapolation)
