@@ -63,8 +63,9 @@ CorrosionPlatingAction::validParams()
 
   params.addParam<DataFileName>("database",
                                 "corrosion_database.json",
-                                "The JSON corrosion database (elements, material tables, calibrated "
-                                "correlation parameters). Defaults to data/corrosion_database.json.");
+                                "The JSON corrosion database (elements, material tables, "
+                                "calibrated correlation parameters). Defaults to "
+                                "data/corrosion_database.json.");
 
   MooseEnum kinetics_model("reduced_empirical mstdb_tc_standard_state", "reduced_empirical");
   params.addParam<MooseEnum>(
@@ -102,7 +103,8 @@ CorrosionPlatingAction::validParams()
       "instead reports the summed Cr/Fe/Ni front rate and recession.");
 
   MooseEnum topology("two_block salt_only solid_only");
-  params.addRequiredParam<MooseEnum>("topology", topology, "Which phases are modeled as mesh blocks.");
+  params.addRequiredParam<MooseEnum>(
+      "topology", topology, "Which phases are modeled as mesh blocks.");
   params.addParam<std::vector<SubdomainName>>("salt_block", {}, "The salt (electrolyte) block(s).");
   params.addParam<std::vector<SubdomainName>>("solid_block", {}, "The solid (metal) block(s).");
   params.addParam<BoundaryName>("interface_boundary",
@@ -143,9 +145,9 @@ CorrosionPlatingAction::validParams()
   // Electrode kinetics and operating point.
   params.addParam<Real>("applied_overpotential",
                         0.1,
-                        "Finite imposed metal-minus-salt potential difference [V]. The element E0 is "
-                        "subtracted from this value when seeding the exchange current, exactly as "
-                        "in the generated Butler-Volmer objects; a positive dissolution seed "
+                        "Finite imposed metal-minus-salt potential difference [V]. The element E0 "
+                        "is subtracted from this value when seeding the exchange current, exactly "
+                        "as in the generated Butler-Volmer objects; a positive dissolution seed "
                         "therefore requires a positive anodic bracket.");
   params.addParam<MooseFunctorName>(
       "applied_potential",
@@ -182,9 +184,12 @@ CorrosionPlatingAction::validParams()
       "be representable as a finite Real.");
 
   // Advection by an external (one-way) velocity field.
-  params.addParam<MooseFunctorName>("velocity_x", "x-velocity functor [m/s] for salt-ion advection.");
-  params.addParam<MooseFunctorName>("velocity_y", "y-velocity functor [m/s] for salt-ion advection.");
-  params.addParam<MooseFunctorName>("velocity_z", "z-velocity functor [m/s] for salt-ion advection.");
+  params.addParam<MooseFunctorName>(
+      "velocity_x", "x-velocity functor [m/s] for salt-ion advection.");
+  params.addParam<MooseFunctorName>(
+      "velocity_y", "y-velocity functor [m/s] for salt-ion advection.");
+  params.addParam<MooseFunctorName>(
+      "velocity_z", "z-velocity functor [m/s] for salt-ion advection.");
 
   params.addParam<Real>("salt_diffusivity",
                         "Override the salt-ion diffusivity [m^2/s] for all elements (e.g. an "
@@ -203,7 +208,9 @@ CorrosionPlatingAction::validParams()
                         "the initial salt concentration; set it explicitly to start the salt below "
                         "c_ref (fresh salt) while keeping the calibrated rate at c_ref.");
   params.addParam<std::vector<std::string>>(
-      "initial_condition_variables", {}, "Generated variable names with a specified initial value.");
+      "initial_condition_variables",
+      {},
+      "Generated variable names with a specified initial value.");
   params.addParam<std::vector<Real>>(
       "initial_condition_values", {}, "Initial values matching 'initial_condition_variables'.");
 
@@ -344,12 +351,10 @@ CorrosionPlatingAction::buildPlan()
       paramError("reference_exposure_time", "Must be finite and nonnegative.");
     if (!std::isfinite(area_to_salt_mass) || area_to_salt_mass <= 0.0)
       paramError("area_to_salt_mass", "Must be finite and positive.");
-    if (!std::isfinite(inventory_coupling) || inventory_coupling < 0.0 ||
-        inventory_coupling > 1.0)
+    if (!std::isfinite(inventory_coupling) || inventory_coupling < 0.0 || inventory_coupling > 1.0)
       paramError("inventory_coupling_factor", "Must be finite and in [0,1].");
 
-    Corrosion::AdvancedCorrosionModelDatabase advanced(
-        getParam<DataFileName>("advanced_database"));
+    Corrosion::AdvancedCorrosionModelDatabase advanced(getParam<DataFileName>("advanced_database"));
     advanced.validateBaseModel(db);
     if (advanced.expectedMSTDBVersion() != "3.1")
       paramError("advanced_database",
@@ -414,7 +419,8 @@ CorrosionPlatingAction::buildPlan()
   const auto & ic_vals = getParam<std::vector<Real>>("initial_condition_values");
   if (ic_vars.size() != ic_vals.size())
     paramError("initial_condition_values",
-               "'initial_condition_variables' and 'initial_condition_values' must match in length.");
+               "'initial_condition_variables' and 'initial_condition_values' must match in "
+               "length.");
   std::map<std::string, Real> ic;
   for (const auto i : index_range(ic_vars))
     ic[ic_vars[i]] = ic_vals[i];
@@ -432,8 +438,9 @@ CorrosionPlatingAction::buildPlan()
     plan.solid_var = "cs_" + plan.name;
     plan.valence = props.valence;
     plan.molar_mass = props.molar_mass_g_mol;
-    plan.diffusivity =
-        isParamValid("salt_diffusivity") ? getParam<Real>("salt_diffusivity") : props.diffusivity_m2_s;
+    plan.diffusivity = isParamValid("salt_diffusivity")
+                           ? getParam<Real>("salt_diffusivity")
+                           : props.diffusivity_m2_s;
     plan.solid_diffusivity = solid_diffusivity;
     plan.alpha_a = props.alpha_a;
     plan.alpha_c = props.alpha_c;
@@ -907,8 +914,7 @@ CorrosionPlatingAction::addAuxKernels()
         params.set<std::vector<VariableName>>("concentrations") = concentrations;
       params.set<std::vector<Real>>("valences") = valences;
       params.set<std::vector<Real>>("molar_masses") = molar_masses;
-      params.set<std::vector<Real>>("exchange_current_densities") =
-          exchange_current_densities;
+      params.set<std::vector<Real>>("exchange_current_densities") = exchange_current_densities;
       params.set<std::vector<Real>>("E0_values") = E0_values;
       params.set<std::vector<Real>>("alpha_a_values") = alpha_a_values;
       params.set<std::vector<Real>>("alpha_c_values") = alpha_c_values;

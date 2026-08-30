@@ -50,12 +50,14 @@ InputParameters
 CorrosionPlatingFlowAction::validParams()
 {
   InputParameters params = Action::validParams();
-  params.addClassDescription("Sets up salt-side molten salt corrosion (linear finite-volume passive "
-                             "scalars plus a Butler-Volmer wall reaction) for a flowing MSR.");
+  params.addClassDescription(
+      "Sets up salt-side molten salt corrosion (linear finite-volume passive scalars plus a "
+      "Butler-Volmer wall reaction) for a flowing MSR.");
 
   params.addParam<DataFileName>("database",
                                 "corrosion_database.json",
-                                "The JSON corrosion database. Defaults to data/corrosion_database.json.");
+                                "The JSON corrosion database. Defaults to "
+                                "data/corrosion_database.json.");
 
   MooseEnum kinetics_model("reduced_empirical mstdb_tc_standard_state", "reduced_empirical");
   params.addParam<MooseEnum>(
@@ -87,8 +89,9 @@ CorrosionPlatingFlowAction::validParams()
       "One entry per tracked element: the existing variable that element's corrosion is released "
       "into (e.g. the radiolysis-tracked 'Cr_II'), or 'none' for an element that gets its own "
       "c_<El> variable created and transported here. Leave empty to create c_<El> for every "
-      "element. Releasing into a radiolysis cation couples corrosion and radiolysis; that variable's "
-      "transport and chemistry are then owned by the radiolysis action. Example for 'Cr Fe Ni': "
+      "element. Releasing into a radiolysis cation couples corrosion and radiolysis; that "
+      "variable's transport and chemistry are then owned by the radiolysis action. Example for "
+      "'Cr Fe Ni': "
       "'Cr_II none none' feeds chromium into the radiolysis Cr(II) and tracks iron and nickel as "
       "their own c_Fe / c_Ni.");
 
@@ -136,8 +139,8 @@ CorrosionPlatingFlowAction::validParams()
   params.addRequiredParam<std::vector<BoundaryName>>("reaction_boundary",
                                                      "The corroding wall boundary(ies).");
 
-  params.addParam<UserObjectName>("rhie_chow_user_object",
-                                  "The Rhie-Chow user object for advection by the segregated flow.");
+  params.addParam<UserObjectName>(
+      "rhie_chow_user_object", "The Rhie-Chow user object for advection by the segregated flow.");
   params.addParam<RealVectorValue>("velocity", "A prescribed constant advection velocity.");
   MooseEnum interp("average upwind", "upwind");
   params.addParam<MooseEnum>("advected_interp_method", interp, "Advected interpolation method.");
@@ -237,12 +240,10 @@ CorrosionPlatingFlowAction::buildPlan()
       paramError("reference_exposure_time", "Must be finite and nonnegative.");
     if (!std::isfinite(area_to_salt_mass) || area_to_salt_mass <= 0.0)
       paramError("area_to_salt_mass", "Must be finite and positive.");
-    if (!std::isfinite(inventory_coupling) || inventory_coupling < 0.0 ||
-        inventory_coupling > 1.0)
+    if (!std::isfinite(inventory_coupling) || inventory_coupling < 0.0 || inventory_coupling > 1.0)
       paramError("inventory_coupling_factor", "Must be finite and in [0,1].");
 
-    Corrosion::AdvancedCorrosionModelDatabase advanced(
-        getParam<DataFileName>("advanced_database"));
+    Corrosion::AdvancedCorrosionModelDatabase advanced(getParam<DataFileName>("advanced_database"));
     advanced.validateBaseModel(db);
     if (advanced.expectedMSTDBVersion() != "3.1")
       paramError("advanced_database",
@@ -316,8 +317,7 @@ CorrosionPlatingFlowAction::buildPlan()
     plan.name = canonicalElementToken(el.name());
     // An element owns its own variable when no release target is given (empty list, empty entry, or
     // the explicit sentinel 'none'); otherwise it is released into the named existing variable.
-    plan.owns_variable =
-        release.empty() || release[index].empty() || release[index] == "none";
+    plan.owns_variable = release.empty() || release[index].empty() || release[index] == "none";
     plan.salt_var = plan.owns_variable ? "c_" + plan.name : release[index];
     plan.valence = props.valence;
     plan.molar_mass = props.molar_mass_g_mol;
@@ -476,7 +476,8 @@ CorrosionPlatingFlowAction::addKernels()
       params.set<LinearVariableName>("variable") = e.salt_var;
       params.set<UserObjectName>("rhie_chow_user_object") =
           getParam<UserObjectName>("rhie_chow_user_object");
-      params.set<MooseEnum>("advected_interp_method") = getParam<MooseEnum>("advected_interp_method");
+      params.set<MooseEnum>("advected_interp_method") =
+          getParam<MooseEnum>("advected_interp_method");
       maybeAssignBlocks(params);
       _problem->addLinearFVKernel(
           "LinearFVScalarAdvection", "corr_" + e.salt_var + "_advection", params);
@@ -486,7 +487,8 @@ CorrosionPlatingFlowAction::addKernels()
       auto params = _factory.getValidParams("LinearFVAdvection");
       params.set<LinearVariableName>("variable") = e.salt_var;
       params.set<RealVectorValue>("velocity") = getParam<RealVectorValue>("velocity");
-      params.set<MooseEnum>("advected_interp_method") = getParam<MooseEnum>("advected_interp_method");
+      params.set<MooseEnum>("advected_interp_method") =
+          getParam<MooseEnum>("advected_interp_method");
       maybeAssignBlocks(params);
       _problem->addLinearFVKernel("LinearFVAdvection", "corr_" + e.salt_var + "_advection", params);
     }
@@ -543,8 +545,7 @@ CorrosionPlatingFlowAction::addBoundaryConditions()
       auto params = _factory.getValidParams("LinearFVAdvectionDiffusionFunctorDirichletBC");
       params.set<LinearVariableName>("variable") = e.salt_var;
       params.set<std::vector<BoundaryName>>("boundary") = inlets;
-      params.set<MooseFunctorName>("functor") =
-          Corrosion::ActionKinetics::realFunctorName(inlet_c);
+      params.set<MooseFunctorName>("functor") = Corrosion::ActionKinetics::realFunctorName(inlet_c);
       _problem->addLinearFVBC(
           "LinearFVAdvectionDiffusionFunctorDirichletBC", "corr_" + e.salt_var + "_inlet", params);
     }

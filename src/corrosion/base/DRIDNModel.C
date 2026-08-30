@@ -172,7 +172,8 @@ DRIDNModel::Context::validate(const ClosureConstants & closures) const
     requireNonnegative(initial_dissolved_ppm[i], "initial_dissolved_ppm");
   }
   if (modeled_fraction <= 0.0)
-    throw std::invalid_argument("DRIDN: at least one modeled alloy mass fraction must be positive.");
+    throw std::invalid_argument(
+        "DRIDN: at least one modeled alloy mass fraction must be positive.");
   if (modeled_fraction > 1.0 + 1.0e-12)
     throw std::invalid_argument(
         "DRIDN: modeled alloy mass fractions must not sum to more than one.");
@@ -576,7 +577,8 @@ DRIDNModel::rk4Step(const Context & context,
   // complementarity conditions already enforced by rhsImpl().  Dissolved and accumulated
   // inventories are deliberately not projected here: a negative inventory still rejects the
   // step, and restoreConservation() closes every accepted element balance.
-  const auto projectBoundaryVariables = [this, &context](State & candidate) {
+  const auto projectBoundaryVariables = [this, &context](State & candidate)
+  {
     for (const auto element : elements)
       candidate[surfaceIndex(element)] =
           bounded(candidate[surfaceIndex(element)], _closures.surface_availability_floor, 1.0);

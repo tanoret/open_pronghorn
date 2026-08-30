@@ -97,8 +97,7 @@ TEST(MSTDBTCV31Integration, AuthorizedDatabaseAnchors)
   if (!std::ifstream(fluoride).good() || !std::ifstream(chloride).good())
     FAIL() << "MSTDB_TC_DIR is set but does not contain the expected V3.1 function-expanded pair.";
 
-  const Corrosion::MSTDBTCPair pair(
-      fluoride, chloride, "3.1", fluoride_sha256, chloride_sha256);
+  const Corrosion::MSTDBTCPair pair(fluoride, chloride, "3.1", fluoride_sha256, chloride_sha256);
   EXPECT_EQ(pair.fluoride().recordCount(), 677);
   EXPECT_EQ(pair.chloride().recordCount(), 649);
 
@@ -141,8 +140,7 @@ TEST(MSTDBTCV31Integration, FullEndpointPythonParity)
   if (!std::ifstream(fluoride).good() || !std::ifstream(chloride).good())
     FAIL() << "MSTDB_TC_DIR is set but does not contain the expected V3.1 function-expanded pair.";
 
-  const Corrosion::MSTDBTCPair pair(
-      fluoride, chloride, "3.1", fluoride_sha256, chloride_sha256);
+  const Corrosion::MSTDBTCPair pair(fluoride, chloride, "3.1", fluoride_sha256, chloride_sha256);
   const Corrosion::MoltenSaltCorrosionDatabase base(
       Moose::DataFileUtils::getPath("corrosion_database.json").path);
   const Corrosion::AdvancedCorrosionModelDatabase advanced(
@@ -242,8 +240,7 @@ TEST(MSTDBTCV31Integration, FullEndpointPythonParity)
   expectEndpointParity(flinak_half_coupling_output, flinak_half_coupling_reference);
   // Static MSTDB v2 couples this factor only to dissolved inventory.  Mass gain is a separate
   // cold-capture closure; changing this distinction requires a new model revision and validation.
-  EXPECT_DOUBLE_EQ(flinak_half_coupling_output.mass_gain_mg_cm2,
-                   flinak_output.mass_gain_mg_cm2);
+  EXPECT_DOUBLE_EQ(flinak_half_coupling_output.mass_gain_mg_cm2, flinak_output.mass_gain_mg_cm2);
   for (unsigned int i = 0; i < 3; ++i)
     EXPECT_LT(flinak_half_coupling_output.dissolved_inventory_ppm[i],
               flinak_output.dissolved_inventory_ppm[i]);

@@ -21,8 +21,9 @@ triplet(const InputParameters & parameters, const std::string & name)
 {
   const auto & values = parameters.get<std::vector<Real>>(name);
   if (values.size() != Corrosion::DRIDNModel::n_elements)
-    mooseError(
-        "DRIDNCorrosionUserObject: '", name, "' must contain exactly Cr, Fe, and Ni values.");
+    mooseError("DRIDNCorrosionUserObject: '",
+               name,
+               "' must contain exactly Cr, Fe, and Ni values.");
   return {{values[0], values[1], values[2]}};
 }
 
@@ -154,37 +155,57 @@ DRIDNCorrosionUserObject::validParams()
                                 "advanced_corrosion_models.json",
                                 "Calibrated DRIDN parameters and model provenance.");
   params.addRequiredParam<std::vector<Real>>(
-      "mass_fractions", "Cr, Fe, and Ni alloy mass fractions.");
+      "mass_fractions",
+      "Cr, Fe, and Ni alloy mass fractions.");
   params.addRequiredParam<std::vector<Real>>(
-      "log_exchange_offsets", "Cr, Fe, and Ni log exchange-current offsets.");
+      "log_exchange_offsets",
+      "Cr, Fe, and Ni log exchange-current offsets.");
   params.addRequiredParam<std::vector<Real>>(
-      "affinity_baseline", "Cr, Fe, and Ni initial dimensionless reaction affinities.");
+      "affinity_baseline",
+      "Cr, Fe, and Ni initial dimensionless reaction affinities.");
   params.addRequiredParam<std::vector<Real>>(
-      "cold_capture_fraction", "Cr, Fe, and Ni cold-side capture fractions [0,1].");
+      "cold_capture_fraction",
+      "Cr, Fe, and Ni cold-side capture fractions [0,1].");
   params.addRequiredParam<std::vector<Real>>(
-      "initial_dissolved_ppm", "Initial physical Cr, Fe, and Ni dissolved inventories [ppm].");
+      "initial_dissolved_ppm",
+      "Initial physical Cr, Fe, and Ni dissolved inventories [ppm].");
 
   params.addRequiredRangeCheckedParam<Real>(
-      "cr_fraction_ratio", "cr_fraction_ratio > 0", "Alloy Cr fraction divided by 0.07.");
+      "cr_fraction_ratio",
+      "cr_fraction_ratio > 0",
+      "Alloy Cr fraction divided by 0.07.");
   params.addRequiredRangeCheckedParam<Real>(
-      "density", "density > 0", "Alloy density [g/cm^3].");
+      "density",
+      "density > 0",
+      "Alloy density [g/cm^3].");
   params.addRequiredRangeCheckedParam<Real>(
-      "flow_factor", "flow_factor > 0", "Dimensionless circulation factor.");
+      "flow_factor",
+      "flow_factor > 0",
+      "Dimensionless circulation factor.");
   params.addRequiredRangeCheckedParam<Real>(
-      "selectivity_scale", "selectivity_scale >= 0", "Affinity selectivity coefficient.");
+      "selectivity_scale",
+      "selectivity_scale >= 0",
+      "Affinity selectivity coefficient.");
   params.addRequiredRangeCheckedParam<Real>(
       "product_activity_floor",
       "product_activity_floor > 0",
       "Nernst activity floor [ppm], separate from the physical inventory.");
   params.addRequiredParam<Real>("initial_redox_shift", "Initial dimensionless redox shift.");
   params.addRequiredParam<Real>(
-      "log_charge_base_no_redox", "Log charge-transfer rate before the redox term.");
+      "log_charge_base_no_redox",
+      "Log charge-transfer rate before the redox term.");
   params.addRequiredRangeCheckedParam<Real>(
-      "mass_transfer_rate", "mass_transfer_rate >= 0", "Mass-transfer limiting rate [um/y].");
+      "mass_transfer_rate",
+      "mass_transfer_rate >= 0",
+      "Mass-transfer limiting rate [um/y].");
   params.addRequiredRangeCheckedParam<Real>(
-      "inventory_capacity", "inventory_capacity > 0", "Salt inventory capacity [ppm].");
+      "inventory_capacity",
+      "inventory_capacity > 0",
+      "Salt inventory capacity [ppm].");
   params.addRequiredRangeCheckedParam<Real>(
-      "area_to_salt_mass", "area_to_salt_mass > 0", "Wetted-area/salt-mass ratio [cm^2/g].");
+      "area_to_salt_mass",
+      "area_to_salt_mass > 0",
+      "Wetted-area/salt-mass ratio [cm^2/g].");
   params.addRequiredRangeCheckedParam<Real>(
       "inventory_scale_factor",
       "inventory_scale_factor > 0",
@@ -194,13 +215,17 @@ DRIDNCorrosionUserObject::validParams()
       "inventory_coupling_factor >= 0 & inventory_coupling_factor <= 1",
       "Fractional source-to-salt inventory coupling.");
   params.addRequiredRangeCheckedParam<Real>(
-      "deposit_area_factor", "deposit_area_factor > 0", "Coupon deposit-area conversion factor.");
+      "deposit_area_factor",
+      "deposit_area_factor > 0",
+      "Coupon deposit-area conversion factor.");
   params.addRequiredRangeCheckedParam<Real>(
       "mass_loss_fraction",
       "mass_loss_fraction >= 0 & mass_loss_fraction <= 1",
       "Front recession contributing to mass loss.");
   params.addRequiredRangeCheckedParam<Real>(
-      "cr_diffusion", "cr_diffusion >= 0", "Chromium solid diffusivity [cm^2/s].");
+      "cr_diffusion",
+      "cr_diffusion >= 0",
+      "Chromium solid diffusivity [cm^2/s].");
   params.addRequiredRangeCheckedParam<Real>(
       "front_damage_multiplier",
       "front_damage_multiplier >= 0",
@@ -212,13 +237,18 @@ DRIDNCorrosionUserObject::validParams()
 
   MooseEnum inventory_scale("explicit msre loop");
   params.addRequiredParam<MooseEnum>(
-      "inventory_scale", inventory_scale, "Explicit selection of the inventory closure.");
+      "inventory_scale",
+      inventory_scale,
+      "Explicit selection of the inventory closure.");
   MooseEnum deposition_closure("fuel_like flinak");
   params.addRequiredParam<MooseEnum>(
-      "deposition_closure", deposition_closure, "Explicit deposition/capture closure.");
+      "deposition_closure",
+      deposition_closure,
+      "Explicit deposition/capture closure.");
   params.addRequiredParam<bool>("transient_redox", "Enable the DRIDN redox evolution equation.");
   params.addRequiredParam<bool>(
-      "stress_interfacial_activation", "Apply the calibrated stress interfacial factor.");
+      "stress_interfacial_activation",
+      "Apply the calibrated stress interfacial factor.");
   params.addRequiredParam<bool>("fluoride_impurity_interfacial_activation",
                                 "Apply the calibrated fluoride-impurity interfacial factor.");
   params.addRequiredParam<bool>("chloride_salt", "Whether this context represents chloride salt.");
@@ -231,9 +261,15 @@ DRIDNCorrosionUserObject::validParams()
       "affinity_gated_dissolution is experimental and is not covered by the stored calibration "
       "metrics.");
   params.addRangeCheckedParam<Real>(
-      "relative_tolerance", 2.0e-7, "relative_tolerance > 0", "Adaptive RK tolerance.");
+      "relative_tolerance",
+      2.0e-7,
+      "relative_tolerance > 0",
+      "Adaptive RK tolerance.");
   params.addRangeCheckedParam<Real>(
-      "absolute_tolerance", 1.0e-10, "absolute_tolerance > 0", "Adaptive RK tolerance.");
+      "absolute_tolerance",
+      1.0e-10,
+      "absolute_tolerance > 0",
+      "Adaptive RK tolerance.");
   params.addRangeCheckedParam<Real>("maximum_internal_step",
                                     1.0,
                                     "maximum_internal_step > 0",

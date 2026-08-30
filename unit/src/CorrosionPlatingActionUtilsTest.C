@@ -36,8 +36,7 @@ TEST(CorrosionPlatingActionUtils, NonzeroE0SeedReproducesProductionButlerVolmerC
   // production boundary law must therefore recover the planned current, including a nonzero E0.
   // Exercise the same 17-digit numeric-functor serialization used by the linear-FV Action.
   const Real i0 = reference_current / bracket;
-  const Real runtime_potential =
-      std::stod(ActionKinetics::realFunctorName(potential_difference));
+  const Real runtime_potential = std::stod(ActionKinetics::realFunctorName(potential_difference));
   EXPECT_DOUBLE_EQ(runtime_potential, potential_difference);
   EXPECT_NEAR(bvCurrent(runtime_potential,
                         0.0,
@@ -86,8 +85,7 @@ TEST(CorrosionPlatingActionUtils, DefaultMetalPotentialCarriesSolvedSaltPin)
   const Real metal_minus_salt = 0.1;
   const Real salt_pin = 0.0375;
 
-  EXPECT_DOUBLE_EQ(
-      ActionKinetics::defaultMetalPotential(metal_minus_salt, true, salt_pin), 0.1375);
-  EXPECT_DOUBLE_EQ(
-      ActionKinetics::defaultMetalPotential(metal_minus_salt, false, salt_pin), metal_minus_salt);
+  EXPECT_DOUBLE_EQ(ActionKinetics::defaultMetalPotential(metal_minus_salt, true, salt_pin), 0.1375);
+  EXPECT_DOUBLE_EQ(ActionKinetics::defaultMetalPotential(metal_minus_salt, false, salt_pin),
+                   metal_minus_salt);
 }

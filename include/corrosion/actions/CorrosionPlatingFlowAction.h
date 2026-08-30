@@ -20,9 +20,9 @@
 #include <vector>
 
 /**
- * Sets up salt-side molten salt corrosion of a wall on the linear finite-volume segregated basis, so
- * that the dissolved corrosion products are transported as passive scalars by the same flow solve
- * that carries the radiolysis chemistry and energy. This is the corrosion counterpart of
+ * Sets up salt-side molten salt corrosion of a wall on the linear finite-volume segregated basis,
+ * so that the dissolved corrosion products are transported as passive scalars by the same flow
+ * solve that carries the radiolysis chemistry and energy. This is the corrosion counterpart of
  * MoltenSaltRadiolysisAction, and it is the natural way to couple corrosion into a flowing MSR
  * (Navier-Stokes + k-epsilon + energy + radiolysis) solved with SIMPLE/PIMPLE.
  *

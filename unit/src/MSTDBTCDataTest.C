@@ -85,13 +85,10 @@ TEST(MSTDBTCData, SGTEBranchesAndMagneticRecords)
 {
   const MSTDBTCData database(dataFile("MSTDB-TC_V0.0_Fluorides_No_Func.dat"));
   const Real expected = -1179.7062552844277;
-  EXPECT_NEAR(MSTDBTCData::magneticGibbsJMol(923.15, 1043.0, 2.22, 1.0, 0.4),
-              expected,
-              1e-10);
+  EXPECT_NEAR(MSTDBTCData::magneticGibbsJMol(923.15, 1043.0, 2.22, 1.0, 0.4), expected, 1e-10);
   EXPECT_NEAR(database.standardGibbsJMol("X_mag13", 923.15), expected, 1e-10);
   EXPECT_NEAR(database.standardGibbsJMol("X_mag16", 923.15), 243.04989984118538, 1e-10);
-  EXPECT_DOUBLE_EQ(MSTDBTCData::magneticGibbsJMol(923.15, 0.0, 2.22, 1.0, 0.4),
-                   0.0);
+  EXPECT_DOUBLE_EQ(MSTDBTCData::magneticGibbsJMol(923.15, 0.0, 2.22, 1.0, 0.4), 0.0);
 }
 
 TEST(MSTDBTCData, ExactCaseSensitiveOccurrenceLookup)
@@ -123,12 +120,10 @@ TEST(MSTDBTCData, ExtrapolationAndInvalidStateAreExplicit)
   EXPECT_THROW(database.standardGibbsJMol("X_poly", 2100.0), std::exception);
   EXPECT_TRUE(std::isfinite(database.standardGibbsJMol("X_poly", 2100.0, true)));
   EXPECT_THROW(database.standardGibbsJMol("X_poly", 0.0), std::exception);
-  EXPECT_THROW(database.standardGibbsJMol(
-                   "X_poly", std::numeric_limits<Real>::quiet_NaN()),
+  EXPECT_THROW(database.standardGibbsJMol("X_poly", std::numeric_limits<Real>::quiet_NaN()),
                std::exception);
 
-  const MSTDBTCData compatibility_database(
-      dataFile("MSTDB-TC_V0.0_Fluorides_No_Func.dat"), true);
+  const MSTDBTCData compatibility_database(dataFile("MSTDB-TC_V0.0_Fluorides_No_Func.dat"), true);
   EXPECT_TRUE(std::isfinite(compatibility_database.standardGibbsJMol("X_poly", 2100.0)));
 }
 
@@ -140,8 +135,7 @@ TEST(MSTDBTCData, HashBindingAndMismatchOverride)
 
   const MSTDBTCData intentionally_unbound(filename, false, wrong_hash, true);
   EXPECT_FALSE(intentionally_unbound.hashMatchesExpected());
-  EXPECT_FALSE(
-      intentionally_unbound.provenance().at("sha256_matches_expected").get<bool>());
+  EXPECT_FALSE(intentionally_unbound.provenance().at("sha256_matches_expected").get<bool>());
 }
 
 TEST(MSTDBTCData, PairBindsVersionAndBothHashes)
@@ -167,10 +161,8 @@ TEST(MSTDBTCData, PairBindsVersionAndBothHashes)
 
 TEST(MSTDBTCData, MalformedCandidateFailsFast)
 {
-  EXPECT_THROW(MSTDBTCData(dataFile("MSTDB-TC_V0.0_Malformed_No_Func.dat")),
-               std::exception);
-  EXPECT_THROW(MSTDBTCData(dataFile("MSTDB-TC_V0.0_Truncated_No_Func.dat")),
-               std::exception);
+  EXPECT_THROW(MSTDBTCData(dataFile("MSTDB-TC_V0.0_Malformed_No_Func.dat")), std::exception);
+  EXPECT_THROW(MSTDBTCData(dataFile("MSTDB-TC_V0.0_Truncated_No_Func.dat")), std::exception);
 }
 
 TEST(MSTDBTCData, SkipsSolutionHeaderWithoutStoichiometry)

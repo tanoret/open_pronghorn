@@ -306,8 +306,7 @@ contextFromFrozenRow(const CSVRow & row)
     throw std::runtime_error("Frozen DRIDN parity row has unknown deposition_closure.");
 
   context.transient_redox = booleanValue(row, "transient_redox");
-  context.stress_interfacial_activation =
-      booleanValue(row, "stress_interfacial_activation");
+  context.stress_interfacial_activation = booleanValue(row, "stress_interfacial_activation");
   context.fluoride_impurity_interfacial_activation =
       booleanValue(row, "fluoride_impurity_interfacial_activation");
   context.chloride_salt = booleanValue(row, "chloride_salt");
@@ -342,8 +341,7 @@ expectContextRoundTrip(const DRIDNModel::Context & context, const CSVRow & row)
   EXPECT_DOUBLE_EQ(context.inventory_capacity_ppm, number(row, "inventory_capacity_ppm"));
   EXPECT_DOUBLE_EQ(context.area_to_salt_mass_cm2_g, number(row, "area_to_salt_mass_cm2_g"));
   EXPECT_DOUBLE_EQ(context.explicit_inventory_scale, number(row, "explicit_inventory_scale"));
-  EXPECT_DOUBLE_EQ(context.inventory_coupling_factor,
-                   number(row, "inventory_coupling_factor"));
+  EXPECT_DOUBLE_EQ(context.inventory_coupling_factor, number(row, "inventory_coupling_factor"));
   EXPECT_DOUBLE_EQ(context.deposit_area_factor, number(row, "deposit_area_factor"));
   EXPECT_DOUBLE_EQ(context.mass_loss_fraction, number(row, "mass_loss_fraction"));
   EXPECT_DOUBLE_EQ(context.cr_diffusion_cm2_s, number(row, "cr_diffusion_cm2_s"));
@@ -447,8 +445,7 @@ TEST(DRIDNParity, FrozenPythonLegacyEndpoints)
     expectPythonEndpoint(output.mass_loss_mg_cm2, number(row, "mass_loss_mg_cm2"));
     expectPythonEndpoint(output.mass_gain_mg_cm2, number(row, "mass_gain_mg_cm2"));
     expectPythonEndpoint(output.igc_depth_um, number(row, "igc_depth_um"));
-    expectPythonEndpoint(output.average_corrosion_rate_um_y,
-                         number(row, "corrosion_rate_um_y"));
+    expectPythonEndpoint(output.average_corrosion_rate_um_y, number(row, "corrosion_rate_um_y"));
     expectPythonEndpoint(output.redox_shift, number(row, "redox_shift_endpoint"));
     for (std::size_t i = 0; i < DRIDNModel::n_elements; ++i)
     {

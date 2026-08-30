@@ -19,8 +19,8 @@ namespace Corrosion
  *
  * This class owns no MOOSE variables.  It evaluates and advances the 19 scalar states of the
  * well-mixed DRIDN model, leaving a later MOOSE wrapper to map those states to scalar variables.
- * The right-hand side uses years, micrometres, ppm, and mg/cm2, exactly as documented below.
- * A MOOSE residual whose time is seconds must therefore divide rhs() by seconds_per_year.
+ * The right-hand side uses years, micrometres, ppm, and mg/cm2, exactly as documented below. A
+ * MOOSE residual whose time is seconds must therefore divide rhs() by seconds_per_year.
  *
  * The default model is deliberately stricter than the original Python research implementation:
  *  - geometry and inventory coupling are explicit and never inferred from response metadata;
@@ -32,9 +32,9 @@ namespace Corrosion
  * legacyCompatibility() is provided only for algebraic parity tests at admissible states.  It
  * restores the Python model's always-positive charge-transfer branch but does not restore its
  * nonconservative negative-inventory projection.  The safer affinity-gated default has not been
- * refitted or validated against the legacy data set: a production validation claim requires a
- * new, mode-specific fit.  A legacy fitted vector and a corrected-mode result must never be
- * combined into one regression golden.
+ * refitted or validated against the legacy data set: a production validation claim requires a new,
+ * mode-specific fit.  A legacy fitted vector and a corrected-mode result must never be combined
+ * into one regression golden.
  */
 class DRIDNModel
 {
@@ -125,7 +125,7 @@ public:
   {
     Real log_rate_scale = 0.0;
     Real affinity_feedback_scale = 0.035;
-    Real log_surface_reservoir_um = 3.6888794541139363;       // log(40 um)
+    Real log_surface_reservoir_um = 3.6888794541139363;        // log(40 um)
     Real log_surface_replenishment_y_inv = 0.6931471805599453; // log(2/y)
     Real surface_availability_exponent = 0.8;
     Real surface_reservoir_cr_exponent = 0.8;
@@ -137,7 +137,7 @@ public:
     Real redox_consumption_per_um = 0.005;
     Real log_stress_interfacial_factor = 0.0;
     Real log_fluoride_impurity_interfacial_factor = 0.0;
-    Real log_deposition_rate_y_inv_fuel = -0.6931471805599453; // log(0.5/y)
+    Real log_deposition_rate_y_inv_fuel = -0.6931471805599453;  // log(0.5/y)
     Real log_deposition_rate_y_inv_flinak = 0.6931471805599453; // log(2/y)
     Real bulk_capture_area_multiplier_fuel = 1.0;
     Real bulk_capture_area_multiplier_flinak = 0.5;
@@ -176,34 +176,34 @@ public:
    *
    * Upstream thermochemistry supplies affinity_baseline and log_charge_base_no_redox.  For the
    * corrected model it must aggregate repeated reaction species (the Fe self-buffer reaction has
-   * zero standard-state Gibbs energy) and must evaluate the actual Be/BeF2 branch when present.
-   * No response kind, experiment identifier, or source-name heuristic is accepted here.
+   * zero standard-state Gibbs energy) and must evaluate the actual Be/BeF2 branch when present. No
+   * response kind, experiment identifier, or source-name heuristic is accepted here.
    */
   struct Context
   {
-    Triplet mass_fractions{{0.07, 0.05, 0.71}};         // alloy mass fractions [-]
-    Triplet log_exchange_offsets{{0.0, 0.0, 0.0}};     // log rate offsets [-]
-    Triplet affinity_baseline{{0.0, 0.0, 0.0}};        // dimensionless -Delta_r G/(RT)
-    Triplet cold_capture_fraction{{0.0, 0.0, 0.0}};    // fractions [0,1]
-    Triplet initial_dissolved_ppm{{0.0, 0.0, 0.0}};    // physical inventory [ppm]
+    Triplet mass_fractions{{0.07, 0.05, 0.71}};      // alloy mass fractions [-]
+    Triplet log_exchange_offsets{{0.0, 0.0, 0.0}};  // log rate offsets [-]
+    Triplet affinity_baseline{{0.0, 0.0, 0.0}};     // dimensionless -Delta_r G/(RT)
+    Triplet cold_capture_fraction{{0.0, 0.0, 0.0}}; // fractions [0,1]
+    Triplet initial_dissolved_ppm{{0.0, 0.0, 0.0}}; // physical inventory [ppm]
 
-    Real cr_fraction_ratio = 1.0;             // alloy Cr fraction / reference Cr fraction [-]
-    Real density_g_cm3 = 8.3;                 // alloy density [g/cm3]
-    Real flow_factor = 1.0;                   // explicit positive circulation factor [-]
-    Real selectivity_scale = 0.0;             // affinity selectivity coefficient [-]
-    Real product_activity_floor_ppm = 1.0;    // Nernst-only activity floor [ppm]
-    Real redox_shift_initial = 0.0;            // dimensionless log redox shift
-    Real log_charge_base_no_redox = 0.0;      // log of charge-transfer rate [um/y]
-    Real mass_transfer_rate_um_y = 1.0;       // limiting front rate [um/y]
-    Real inventory_capacity_ppm = 1.0;        // inhibition/precipitation scale [ppm]
-    Real area_to_salt_mass_cm2_g = 1.0;       // wetted area / salt mass [cm2/g]
-    Real explicit_inventory_scale = 1.0;      // explicit geometry multiplier [-]
-    Real inventory_coupling_factor = 1.0;     // source coupled to modeled inventory [0,1]
-    Real deposit_area_factor = 1.0;            // coupon deposit-area mapping [-]
-    Real mass_loss_fraction = 1.0;             // recession reported as mass loss [0,1]
-    Real cr_diffusion_cm2_s = 0.0;             // solid Cr diffusivity [cm2/s]
-    Real front_damage_multiplier = 1.0;        // reaction-front IGC multiplier [-]
-    Real gb_length_multiplier = 1.0;           // grain-boundary length multiplier [-]
+    Real cr_fraction_ratio = 1.0;          // alloy Cr fraction / reference Cr fraction [-]
+    Real density_g_cm3 = 8.3;              // alloy density [g/cm3]
+    Real flow_factor = 1.0;                // explicit positive circulation factor [-]
+    Real selectivity_scale = 0.0;          // affinity selectivity coefficient [-]
+    Real product_activity_floor_ppm = 1.0; // Nernst-only activity floor [ppm]
+    Real redox_shift_initial = 0.0;         // dimensionless log redox shift
+    Real log_charge_base_no_redox = 0.0;   // log of charge-transfer rate [um/y]
+    Real mass_transfer_rate_um_y = 1.0;    // limiting front rate [um/y]
+    Real inventory_capacity_ppm = 1.0;     // inhibition/precipitation scale [ppm]
+    Real area_to_salt_mass_cm2_g = 1.0;    // wetted area / salt mass [cm2/g]
+    Real explicit_inventory_scale = 1.0;   // explicit geometry multiplier [-]
+    Real inventory_coupling_factor = 1.0;  // source coupled to modeled inventory [0,1]
+    Real deposit_area_factor = 1.0;        // coupon deposit-area mapping [-]
+    Real mass_loss_fraction = 1.0;         // recession reported as mass loss [0,1]
+    Real cr_diffusion_cm2_s = 0.0;         // solid Cr diffusivity [cm2/s]
+    Real front_damage_multiplier = 1.0;    // reaction-front IGC multiplier [-]
+    Real gb_length_multiplier = 1.0;       // grain-boundary length multiplier [-]
 
     InventoryScale inventory_scale = InventoryScale::Explicit;
     DepositionClosure deposition_closure = DepositionClosure::FuelLike;

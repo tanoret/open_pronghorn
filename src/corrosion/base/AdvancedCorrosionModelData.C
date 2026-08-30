@@ -21,8 +21,7 @@ namespace Corrosion
 const std::string &
 AdvancedCorrosionModelDatabase::supportedModelRevision()
 {
-  static const std::string revision =
-      "mstdb-nst-v2-fe-identity_dridn-v2-explicit-geometry";
+  static const std::string revision = "mstdb-nst-v2-fe-identity_dridn-v2-explicit-geometry";
   return revision;
 }
 
@@ -84,18 +83,19 @@ AdvancedCorrosionModelDatabase::AdvancedCorrosionModelDatabase(const std::string
                "' must bind a nonempty MSTDB version and 64-character fluoride/chloride SHA-256 "
                "hashes.");
 
-  if (!_root.contains("base_model_provenance") ||
-      !_root.at("base_model_provenance").is_object())
+  if (!_root.contains("base_model_provenance") || !_root.at("base_model_provenance").is_object())
     mooseError("Advanced corrosion models: '",
                _filename,
                "' has no base_model_provenance object.");
   const auto & base_provenance = _root.at("base_model_provenance");
   _base_model_source_sha256 = base_provenance.value("source_sha256", "");
-  const auto valid_sha256 = [](const std::string & value) {
+  const auto valid_sha256 = [](const std::string & value)
+  {
     return value.size() == 64 &&
-           std::all_of(value.begin(), value.end(), [](const unsigned char character) {
-             return std::isxdigit(character);
-           });
+           std::all_of(value.begin(), value.end(), [](const unsigned char character)
+                       {
+                         return std::isxdigit(character);
+                       });
   };
   if (!valid_sha256(_expected_fluoride_sha256) ||
       !valid_sha256(_expected_chloride_sha256) || !valid_sha256(_base_model_source_sha256))
@@ -103,17 +103,20 @@ AdvancedCorrosionModelDatabase::AdvancedCorrosionModelDatabase(const std::string
                _filename,
                "' must contain hexadecimal 64-character SHA-256 values for both MSTDB files and "
                "the base corrosion database source.");
-  const auto normalize_sha256 = [](std::string & value) {
-    std::transform(value.begin(), value.end(), value.begin(), [](const unsigned char character) {
-      return static_cast<char>(std::tolower(character));
-    });
+  const auto normalize_sha256 = [](std::string & value)
+  {
+    std::transform(value.begin(), value.end(), value.begin(), [](const unsigned char character)
+                   {
+                     return static_cast<char>(std::tolower(character));
+                   });
   };
   normalize_sha256(_expected_fluoride_sha256);
   normalize_sha256(_expected_chloride_sha256);
   normalize_sha256(_base_model_source_sha256);
 
   const auto read_finite_map = [this, &base_provenance](const std::string & key,
-                                                        std::map<std::string, Real> & destination) {
+                                                        std::map<std::string, Real> & destination)
+  {
     if (!base_provenance.contains(key) || !base_provenance.at(key).is_object())
       mooseError("Advanced corrosion models: base_model_provenance in '",
                  _filename,
@@ -254,7 +257,8 @@ AdvancedCorrosionModelDatabase::validateBaseModel(
   const auto require_equal = [this](const std::string & category,
                                     const std::string & name,
                                     const Real actual,
-                                    const Real expected) {
+                                    const Real expected)
+  {
     if (!std::isfinite(actual) || actual != expected)
       mooseError("Advanced corrosion models: base-model ",
                  category,

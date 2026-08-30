@@ -30,8 +30,7 @@ CorrosionRateAux::validParams()
   MooseEnum mode("current penetration_rate recession", "penetration_rate");
   params.addParam<MooseEnum>("mode", mode, "The diagnostic quantity to output.");
 
-  params.addCoupledVar(
-      "concentration", "Salt-side cation concentration variable [mol/m^3].");
+  params.addCoupledVar("concentration", "Salt-side cation concentration variable [mol/m^3].");
   params.addParam<MooseFunctorName>(
       "concentration_functor",
       "Salt-side cation concentration functor [mol/m^3]. Supply exactly one of this parameter and "

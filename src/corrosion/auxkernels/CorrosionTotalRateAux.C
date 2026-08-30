@@ -39,8 +39,7 @@ CorrosionTotalRateAux::validParams()
       "one of this parameter and the coupled concentration-variable vector.");
 
   params.addRequiredParam<std::vector<Real>>("valences", "Charge number z of each cation.");
-  params.addRequiredParam<std::vector<Real>>(
-      "molar_masses", "Molar mass of each metal [g/mol].");
+  params.addRequiredParam<std::vector<Real>>("molar_masses", "Molar mass of each metal [g/mol].");
   params.addRequiredParam<std::vector<Real>>(
       "exchange_current_densities", "Exchange current density i0 of each species [A/m^2].");
   params.addRequiredParam<std::vector<Real>>("E0_values", "Standard electrode potentials [V].");
@@ -168,8 +167,7 @@ CorrosionTotalRateAux::CorrosionTotalRateAux(const InputParameters & parameters)
       paramError("valences", "Every entry must be finite and positive.");
     if (!std::isfinite(_molar_masses[i]) || _molar_masses[i] <= 0.0)
       paramError("molar_masses", "Every entry must be finite and positive.");
-    if (!std::isfinite(_exchange_current_densities[i]) ||
-        _exchange_current_densities[i] < 0.0)
+    if (!std::isfinite(_exchange_current_densities[i]) || _exchange_current_densities[i] < 0.0)
       paramError("exchange_current_densities", "Every entry must be finite and nonnegative.");
     if (!std::isfinite(_E0_values[i]))
       paramError("E0_values", "Every entry must be finite.");

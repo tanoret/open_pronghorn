@@ -79,8 +79,7 @@ public:
                          bool allow_extrapolation) const;
 
   /// Return sum(nu_i G_i^0), with products carrying positive coefficients.
-  Real reactionGibbsJMol(const std::map<std::string, Real> & reaction,
-                         Real temperature_K) const;
+  Real reactionGibbsJMol(const std::map<std::string, Real> & reaction, Real temperature_K) const;
   Real reactionGibbsJMol(const std::map<std::string, Real> & reaction,
                          Real temperature_K,
                          bool allow_extrapolation) const;
@@ -93,8 +92,7 @@ public:
                               bool allow_extrapolation) const;
 
   /// Exact, case-sensitive species lookup. -1 selects the last occurrence.
-  const MSTDBTCSpecies & species(const std::string & name,
-                                 std::ptrdiff_t occurrence = -1) const;
+  const MSTDBTCSpecies & species(const std::string & name, std::ptrdiff_t occurrence = -1) const;
   std::size_t occurrenceCount(const std::string & name) const;
 
   const std::string & filename() const { return _filename; }
