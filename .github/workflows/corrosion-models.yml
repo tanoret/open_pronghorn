@@ -170,6 +170,62 @@ jobs:
         continue-on-error: true
         run: env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
 
+      - name: Probe AdvancedCorrosionModelData unit suite
+        id: unit_advanced_data
+        if: ${{ always() && steps.unit_build.outcome == 'success' }}
+        continue-on-error: true
+        run: >-
+          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
+          --gtest_filter='AdvancedCorrosionModelData.*'
+
+      - name: Probe CorrosionPlatingActionUtils unit suite
+        id: unit_action_utils
+        if: ${{ always() && steps.unit_build.outcome == 'success' }}
+        continue-on-error: true
+        run: >-
+          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
+          --gtest_filter='CorrosionPlatingActionUtils.*'
+
+      - name: Probe DRIDNModel unit suite
+        id: unit_dridn_model
+        if: ${{ always() && steps.unit_build.outcome == 'success' }}
+        continue-on-error: true
+        run: >-
+          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
+          --gtest_filter='DRIDNModel.*'
+
+      - name: Probe DRIDNParity unit suite
+        id: unit_dridn_parity
+        if: ${{ always() && steps.unit_build.outcome == 'success' }}
+        continue-on-error: true
+        run: >-
+          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
+          --gtest_filter='DRIDNParity.*'
+
+      - name: Probe MSTDBTCData unit suite
+        id: unit_mstdb_data
+        if: ${{ always() && steps.unit_build.outcome == 'success' }}
+        continue-on-error: true
+        run: >-
+          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
+          --gtest_filter='MSTDBTCData.*'
+
+      - name: Probe MSTDBTCStandardStateCorrosionModel unit suite
+        id: unit_mstdb_model
+        if: ${{ always() && steps.unit_build.outcome == 'success' }}
+        continue-on-error: true
+        run: >-
+          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
+          --gtest_filter='MSTDBTCStandardStateCorrosionModel.*'
+
+      - name: Probe MSTDBTCV31Integration unit suite
+        id: unit_mstdb_v31
+        if: ${{ always() && steps.unit_build.outcome == 'success' }}
+        continue-on-error: true
+        run: >-
+          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
+          --gtest_filter='MSTDBTCV31Integration.*'
+
       - name: Check documentation
         id: docs_check
         working-directory: doc
@@ -186,6 +242,54 @@ jobs:
         id: test_harness
         continue-on-error: true
         run: env -u MSTDB_TC_DIR ./run_tests -j "${MOOSE_JOBS}"
+
+      - name: GATE-FAIL unit build
+        if: ${{ always() && steps.unit_build.outcome == 'failure' }}
+        run: "true"
+
+      - name: GATE-FAIL complete unit run
+        if: ${{ always() && steps.unit_run.outcome == 'failure' }}
+        run: "true"
+
+      - name: GATE-FAIL AdvancedCorrosionModelData unit suite
+        if: ${{ always() && steps.unit_advanced_data.outcome == 'failure' }}
+        run: "true"
+
+      - name: GATE-FAIL CorrosionPlatingActionUtils unit suite
+        if: ${{ always() && steps.unit_action_utils.outcome == 'failure' }}
+        run: "true"
+
+      - name: GATE-FAIL DRIDNModel unit suite
+        if: ${{ always() && steps.unit_dridn_model.outcome == 'failure' }}
+        run: "true"
+
+      - name: GATE-FAIL DRIDNParity unit suite
+        if: ${{ always() && steps.unit_dridn_parity.outcome == 'failure' }}
+        run: "true"
+
+      - name: GATE-FAIL MSTDBTCData unit suite
+        if: ${{ always() && steps.unit_mstdb_data.outcome == 'failure' }}
+        run: "true"
+
+      - name: GATE-FAIL MSTDBTCStandardStateCorrosionModel unit suite
+        if: ${{ always() && steps.unit_mstdb_model.outcome == 'failure' }}
+        run: "true"
+
+      - name: GATE-FAIL MSTDBTCV31Integration unit suite
+        if: ${{ always() && steps.unit_mstdb_v31.outcome == 'failure' }}
+        run: "true"
+
+      - name: GATE-FAIL documentation check
+        if: ${{ always() && steps.docs_check.outcome == 'failure' }}
+        run: "true"
+
+      - name: GATE-FAIL documentation build
+        if: ${{ always() && steps.docs_build.outcome == 'failure' }}
+        run: "true"
+
+      - name: GATE-FAIL complete TestHarness
+        if: ${{ always() && steps.test_harness.outcome == 'failure' }}
+        run: "true"
 
       - name: Require all linked verification gates
         if: ${{ always() }}
