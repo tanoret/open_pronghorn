@@ -34,12 +34,10 @@ struct CSVTable
 std::string
 fixtureFile(const std::string & name)
 {
-  const std::array<std::string, 7> prefixes = {"unit/data/dridn/",
+  const std::array<std::string, 5> prefixes = {"unit/data/dridn/",
                                                "../unit/data/dridn/",
                                                "data/dridn/",
                                                "../../unit/data/dridn/",
-                                               "open_pronghorn_patch/unit/data/dridn/",
-                                               "../open_pronghorn_patch/unit/data/dridn/",
                                                ""};
   for (const auto & prefix : prefixes)
   {
