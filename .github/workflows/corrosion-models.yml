@@ -159,16 +159,45 @@ jobs:
           env -u MSTDB_TC_DIR python validation/corrosion/run_corrosion_validation.py
           --case-timeout 10
 
-      - name: Build and run C++ unit tests
-        run: |
-          make --directory=unit --jobs="${MOOSE_JOBS}"
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
+      - name: Build C++ unit tests
+        id: unit_build
+        continue-on-error: true
+        run: make --directory=unit --jobs="${MOOSE_JOBS}"
 
-      - name: Check and build documentation
+      - name: Run C++ unit tests
+        id: unit_run
+        if: ${{ always() && steps.unit_build.outcome == 'success' }}
+        continue-on-error: true
+        run: env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
+
+      - name: Check documentation
+        id: docs_check
         working-directory: doc
-        run: |
-          ./moosedocs.py check --config sqa_reports.yml
-          ./moosedocs.py build --config config.yml
+        continue-on-error: true
+        run: ./moosedocs.py check --config sqa_reports.yml
+
+      - name: Build documentation
+        id: docs_build
+        working-directory: doc
+        continue-on-error: true
+        run: ./moosedocs.py build --config config.yml
 
       - name: Run the complete OpenPronghorn TestHarness
+        id: test_harness
+        continue-on-error: true
         run: env -u MSTDB_TC_DIR ./run_tests -j "${MOOSE_JOBS}"
+
+      - name: Require all linked verification gates
+        if: ${{ always() }}
+        env:
+          UNIT_BUILD: ${{ steps.unit_build.outcome }}
+          UNIT_RUN: ${{ steps.unit_run.outcome }}
+          DOCS_CHECK: ${{ steps.docs_check.outcome }}
+          DOCS_BUILD: ${{ steps.docs_build.outcome }}
+          TEST_HARNESS: ${{ steps.test_harness.outcome }}
+        run: |
+          test "${UNIT_BUILD}" = success
+          test "${UNIT_RUN}" = success
+          test "${DOCS_CHECK}" = success
+          test "${DOCS_BUILD}" = success
+          test "${TEST_HARNESS}" = success
