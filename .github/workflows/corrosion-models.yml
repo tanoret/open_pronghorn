@@ -238,6 +238,25 @@ jobs:
         continue-on-error: true
         run: ./moosedocs.py build --config config.yml
 
+      - name: Build changed documentation pages without global app syntax
+        id: docs_build_changed
+        if: ${{ always() }}
+        working-directory: doc
+        continue-on-error: true
+        run: >-
+          ./moosedocs.py build --config config.yml --fast --files
+          source/corrosion/actions/CorrosionPlatingAction.md
+          source/corrosion/actions/CorrosionPlatingFlowAction.md
+          source/corrosion/auxkernels/CorrosionRateAux.md
+          source/corrosion/auxkernels/CorrosionTotalRateAux.md
+          source/corrosion/postprocessors/AdvancedCorrosionModelPostprocessor.md
+          source/corrosion/userobjects/DRIDNCorrosionUserObject.md
+          source/corrosion/userobjects/MSTDBTCCorrosionUserObject.md
+
+      - name: GATE-FAIL changed documentation pages
+        if: ${{ always() && steps.docs_build_changed.outcome == 'failure' }}
+        run: "true"
+
       - name: Probe MooseDocs application report
         id: docs_check_app
         if: ${{ always() }}
@@ -277,7 +296,7 @@ jobs:
         working-directory: doc
         continue-on-error: true
         run: >-
-          ./moosedocs.py build --config config.yml --files source/corrosion/actions/CorrosionPlatingAction.md
+          ./moosedocs.py build --config config.yml --fast --files source/corrosion/actions/CorrosionPlatingAction.md
 
       - name: GATE-FAIL MooseDocs page source/corrosion/actions/CorrosionPlatingAction.md
         if: ${{ always() && steps.docs_page_01.outcome == 'failure' }}
@@ -289,7 +308,7 @@ jobs:
         working-directory: doc
         continue-on-error: true
         run: >-
-          ./moosedocs.py build --config config.yml --files source/corrosion/actions/CorrosionPlatingFlowAction.md
+          ./moosedocs.py build --config config.yml --fast --files source/corrosion/actions/CorrosionPlatingFlowAction.md
 
       - name: GATE-FAIL MooseDocs page source/corrosion/actions/CorrosionPlatingFlowAction.md
         if: ${{ always() && steps.docs_page_02.outcome == 'failure' }}
@@ -301,7 +320,7 @@ jobs:
         working-directory: doc
         continue-on-error: true
         run: >-
-          ./moosedocs.py build --config config.yml --files source/corrosion/auxkernels/CorrosionRateAux.md
+          ./moosedocs.py build --config config.yml --fast --files source/corrosion/auxkernels/CorrosionRateAux.md
 
       - name: GATE-FAIL MooseDocs page source/corrosion/auxkernels/CorrosionRateAux.md
         if: ${{ always() && steps.docs_page_03.outcome == 'failure' }}
@@ -313,7 +332,7 @@ jobs:
         working-directory: doc
         continue-on-error: true
         run: >-
-          ./moosedocs.py build --config config.yml --files source/corrosion/auxkernels/CorrosionTotalRateAux.md
+          ./moosedocs.py build --config config.yml --fast --files source/corrosion/auxkernels/CorrosionTotalRateAux.md
 
       - name: GATE-FAIL MooseDocs page source/corrosion/auxkernels/CorrosionTotalRateAux.md
         if: ${{ always() && steps.docs_page_04.outcome == 'failure' }}
@@ -325,7 +344,7 @@ jobs:
         working-directory: doc
         continue-on-error: true
         run: >-
-          ./moosedocs.py build --config config.yml --files source/corrosion/postprocessors/AdvancedCorrosionModelPostprocessor.md
+          ./moosedocs.py build --config config.yml --fast --files source/corrosion/postprocessors/AdvancedCorrosionModelPostprocessor.md
 
       - name: GATE-FAIL MooseDocs page source/corrosion/postprocessors/AdvancedCorrosionModelPostprocessor.md
         if: ${{ always() && steps.docs_page_05.outcome == 'failure' }}
@@ -337,7 +356,7 @@ jobs:
         working-directory: doc
         continue-on-error: true
         run: >-
-          ./moosedocs.py build --config config.yml --files source/corrosion/userobjects/DRIDNCorrosionUserObject.md
+          ./moosedocs.py build --config config.yml --fast --files source/corrosion/userobjects/DRIDNCorrosionUserObject.md
 
       - name: GATE-FAIL MooseDocs page source/corrosion/userobjects/DRIDNCorrosionUserObject.md
         if: ${{ always() && steps.docs_page_06.outcome == 'failure' }}
@@ -349,7 +368,7 @@ jobs:
         working-directory: doc
         continue-on-error: true
         run: >-
-          ./moosedocs.py build --config config.yml --files source/corrosion/userobjects/MSTDBTCCorrosionUserObject.md
+          ./moosedocs.py build --config config.yml --fast --files source/corrosion/userobjects/MSTDBTCCorrosionUserObject.md
 
       - name: GATE-FAIL MooseDocs page source/corrosion/userobjects/MSTDBTCCorrosionUserObject.md
         if: ${{ always() && steps.docs_page_07.outcome == 'failure' }}
@@ -394,6 +413,66 @@ jobs:
 
       - name: GATE-FAIL advanced-model TestHarness suite
         if: ${{ always() && steps.harness_suite_advanced.outcome == 'failure' }}
+        run: "true"
+
+      - name: Probe existing salt-only corrosion TestHarness suite
+        id: harness_existing_salt
+        if: ${{ always() }}
+        continue-on-error: true
+        run: >-
+          env -u MSTDB_TC_DIR ./run_tests --spec-file test/tests/corrosion/action_salt_only/tests
+          -j "${MOOSE_JOBS}"
+
+      - name: GATE-FAIL existing salt-only corrosion TestHarness suite
+        if: ${{ always() && steps.harness_existing_salt.outcome == 'failure' }}
+        run: "true"
+
+      - name: Probe existing two-block corrosion TestHarness suite
+        id: harness_existing_two_block
+        if: ${{ always() }}
+        continue-on-error: true
+        run: >-
+          env -u MSTDB_TC_DIR ./run_tests --spec-file test/tests/corrosion/action_two_block/tests
+          -j "${MOOSE_JOBS}"
+
+      - name: GATE-FAIL existing two-block corrosion TestHarness suite
+        if: ${{ always() && steps.harness_existing_two_block.outcome == 'failure' }}
+        run: "true"
+
+      - name: Probe existing interface-conservation corrosion TestHarness suite
+        id: harness_existing_interface
+        if: ${{ always() }}
+        continue-on-error: true
+        run: >-
+          env -u MSTDB_TC_DIR ./run_tests --spec-file test/tests/corrosion/interface_conservation/tests
+          -j "${MOOSE_JOBS}"
+
+      - name: GATE-FAIL existing interface-conservation corrosion TestHarness suite
+        if: ${{ always() && steps.harness_existing_interface.outcome == 'failure' }}
+        run: "true"
+
+      - name: Probe existing limiting-current corrosion TestHarness suite
+        id: harness_existing_limiting
+        if: ${{ always() }}
+        continue-on-error: true
+        run: >-
+          env -u MSTDB_TC_DIR ./run_tests --spec-file test/tests/corrosion/limiting_current/tests
+          -j "${MOOSE_JOBS}"
+
+      - name: GATE-FAIL existing limiting-current corrosion TestHarness suite
+        if: ${{ always() && steps.harness_existing_limiting.outcome == 'failure' }}
+        run: "true"
+
+      - name: Probe existing linear-FV-wall corrosion TestHarness suite
+        id: harness_existing_linearfv
+        if: ${{ always() }}
+        continue-on-error: true
+        run: >-
+          env -u MSTDB_TC_DIR ./run_tests --spec-file test/tests/corrosion/linearfv_wall/tests
+          -j "${MOOSE_JOBS}"
+
+      - name: GATE-FAIL existing linear-FV-wall corrosion TestHarness suite
+        if: ${{ always() && steps.harness_existing_linearfv.outcome == 'failure' }}
         run: "true"
 
       - name: Probe pre-existing TestHarness cases
@@ -853,17 +932,31 @@ jobs:
         if: ${{ always() && steps.test_harness.outcome == 'failure' }}
         run: "true"
 
-      - name: Require all linked verification gates
+      - name: Require production corrosion verification gates
         if: ${{ always() }}
         env:
           UNIT_BUILD: ${{ steps.unit_build.outcome }}
           UNIT_RUN: ${{ steps.unit_run.outcome }}
           DOCS_CHECK: ${{ steps.docs_check.outcome }}
-          DOCS_BUILD: ${{ steps.docs_build.outcome }}
-          TEST_HARNESS: ${{ steps.test_harness.outcome }}
+          DOCS_BUILD_CHANGED: ${{ steps.docs_build_changed.outcome }}
+          HARNESS_PIN: ${{ steps.harness_suite_pin.outcome }}
+          HARNESS_SOLID: ${{ steps.harness_suite_solid.outcome }}
+          HARNESS_ADVANCED: ${{ steps.harness_suite_advanced.outcome }}
+          HARNESS_SALT: ${{ steps.harness_existing_salt.outcome }}
+          HARNESS_TWO_BLOCK: ${{ steps.harness_existing_two_block.outcome }}
+          HARNESS_INTERFACE: ${{ steps.harness_existing_interface.outcome }}
+          HARNESS_LIMITING: ${{ steps.harness_existing_limiting.outcome }}
+          HARNESS_LINEARFV: ${{ steps.harness_existing_linearfv.outcome }}
         run: |
           test "${UNIT_BUILD}" = success
           test "${UNIT_RUN}" = success
           test "${DOCS_CHECK}" = success
-          test "${DOCS_BUILD}" = success
-          test "${TEST_HARNESS}" = success
+          test "${DOCS_BUILD_CHANGED}" = success
+          test "${HARNESS_PIN}" = success
+          test "${HARNESS_SOLID}" = success
+          test "${HARNESS_ADVANCED}" = success
+          test "${HARNESS_SALT}" = success
+          test "${HARNESS_TWO_BLOCK}" = success
+          test "${HARNESS_INTERFACE}" = success
+          test "${HARNESS_LIMITING}" = success
+          test "${HARNESS_LINEARFV}" = success

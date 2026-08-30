@@ -260,20 +260,25 @@ CorrosionPlatingAction::CorrosionPlatingAction(const InputParameters & parameter
                "constant mode of the potential.");
 
   const Real applied_overpotential = getParam<Real>("applied_overpotential");
-  if (!std::isfinite(applied_overpotential))
-    paramError("applied_overpotential", "Must be finite.");
-  if (_solve_potential)
+  const Real salt_pin = getParam<Real>("pin_potential_value");
+  switch (Corrosion::ActionKinetics::referencePotentialStatus(
+      applied_overpotential, _solve_potential, salt_pin))
   {
-    const Real salt_pin = getParam<Real>("pin_potential_value");
-    if (!std::isfinite(salt_pin))
+    case Corrosion::ActionKinetics::ReferencePotentialStatus::Valid:
+      break;
+    case Corrosion::ActionKinetics::ReferencePotentialStatus::NonfiniteOverpotential:
+      paramError("applied_overpotential", "Must be finite.");
+      break;
+    case Corrosion::ActionKinetics::ReferencePotentialStatus::NonfiniteSaltPin:
       paramError("pin_potential_value",
                  "Must be finite when solve_potential=true because it sets the absolute gauge of "
                  "every generated salt and metal potential.");
-    if (!std::isfinite(Corrosion::ActionKinetics::defaultMetalPotential(
-            applied_overpotential, true, salt_pin)))
+      break;
+    case Corrosion::ActionKinetics::ReferencePotentialStatus::NonfiniteDefaultMetalPotential:
       paramError("pin_potential_value",
                  "Its sum with applied_overpotential must be finite so the generated default "
                  "metal potential is representable.");
+      break;
   }
 
   buildPlan();
