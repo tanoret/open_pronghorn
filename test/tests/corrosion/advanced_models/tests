@@ -2,6 +2,7 @@
   design = 'MSTDBTCCorrosionUserObject.md DRIDNCorrosionUserObject.md '
            'AdvancedCorrosionModelPostprocessor.md CorrosionPlatingAction.md '
            'CorrosionPlatingFlowAction.md CorrosionTotalRateAux.md'
+  issues = '#4'
 
   [synthetic_mstdb_endpoint]
     type = CSVDiff

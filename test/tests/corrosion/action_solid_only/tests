@@ -1,5 +1,6 @@
 [Tests]
   design = 'CorrosionPlatingAction.md CorrosionRateAux.md ButlerVolmerBC.md'
+  issues = '#4'
 
   [solid_only_default_potential]
     type = CSVDiff
