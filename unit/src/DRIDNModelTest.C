@@ -502,7 +502,9 @@ TEST(DRIDNModel, RejectsInvalidParametersContextStateAndDuration)
 {
   auto bad_parameters = DRIDNModel::Parameters();
   bad_parameters.log_rate_scale = 2.0;
-  EXPECT_THROW(DRIDNModel(bad_parameters), std::invalid_argument);
+  // Braces force temporary construction inside GoogleTest's statement wrapper. Parentheses can
+  // be parsed as a declaration that shadows bad_parameters (the most-vexing parse).
+  EXPECT_THROW(DRIDNModel{bad_parameters}, std::invalid_argument);
 
   const DRIDNModel model;
   auto context = equilibriumContext();

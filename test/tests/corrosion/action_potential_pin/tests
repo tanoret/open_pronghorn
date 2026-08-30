@@ -23,27 +23,6 @@
                   'gauge offset.'
   []
 
-  [reject_nonfinite_salt_pin]
-    type = RunException
-    input = nonzero_pin.i
-    check_input = true
-    cli_args = 'CorrosionPlating/pin_potential_value=nan'
-    expect_err = 'pin_potential_value.*Must be finite when solve_potential=true'
-    requirement = 'The finite-element CorrosionPlating Action shall reject a nonfinite salt gauge '
-                  'before it can propagate into generated metal potentials, boundary kinetics, or '
-                  'rate diagnostics.'
-  []
-
-  [reject_nonfinite_overpotential]
-    type = RunException
-    input = nonzero_pin.i
-    check_input = true
-    cli_args = 'CorrosionPlating/applied_overpotential=nan'
-    expect_err = 'applied_overpotential.*Must be finite'
-    requirement = 'The finite-element CorrosionPlating Action shall reject a nonfinite reference '
-                  'metal-minus-salt potential before seeding or generating runtime kinetics.'
-  []
-
   [reject_overflowing_default_metal_potential]
     type = RunException
     input = nonzero_pin.i

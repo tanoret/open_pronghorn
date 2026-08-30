@@ -9,6 +9,7 @@
 
 #include <cmath>
 #include <initializer_list>
+#include <limits>
 #include <string>
 
 using namespace Corrosion;
@@ -88,4 +89,24 @@ TEST(CorrosionPlatingActionUtils, DefaultMetalPotentialCarriesSolvedSaltPin)
   EXPECT_DOUBLE_EQ(ActionKinetics::defaultMetalPotential(metal_minus_salt, true, salt_pin), 0.1375);
   EXPECT_DOUBLE_EQ(ActionKinetics::defaultMetalPotential(metal_minus_salt, false, salt_pin),
                    metal_minus_salt);
+}
+
+TEST(CorrosionPlatingActionUtils, ReferencePotentialValidationIsParserIndependent)
+{
+  using Status = ActionKinetics::ReferencePotentialStatus;
+  const Real nan = std::numeric_limits<Real>::quiet_NaN();
+  const Real infinity = std::numeric_limits<Real>::infinity();
+
+  EXPECT_EQ(ActionKinetics::referencePotentialStatus(0.1, true, 0.0375), Status::Valid);
+  EXPECT_EQ(ActionKinetics::referencePotentialStatus(nan, true, 0.0375),
+            Status::NonfiniteOverpotential);
+  EXPECT_EQ(ActionKinetics::referencePotentialStatus(infinity, false, 0.0),
+            Status::NonfiniteOverpotential);
+  EXPECT_EQ(ActionKinetics::referencePotentialStatus(0.1, true, nan),
+            Status::NonfiniteSaltPin);
+  EXPECT_EQ(ActionKinetics::referencePotentialStatus(1.0e308, true, 1.0e308),
+            Status::NonfiniteDefaultMetalPotential);
+
+  // The pin is not consumed when no salt-potential equation is present.
+  EXPECT_EQ(ActionKinetics::referencePotentialStatus(0.1, false, nan), Status::Valid);
 }

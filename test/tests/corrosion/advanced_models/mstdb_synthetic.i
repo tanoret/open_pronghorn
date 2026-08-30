@@ -17,7 +17,7 @@
 [UserObjects]
   [mstdb_endpoint]
     type = MSTDBTCCorrosionUserObject
-    corrosion_database = corrosion_database.json
+    corrosion_database = ../../../../data/corrosion_database.json
     advanced_database = advanced_models_synthetic.json
     fluoride_database = synthetic_fluoride_chemsage_fixture.dat
     chloride_database = synthetic_chloride_chemsage_fixture.dat
