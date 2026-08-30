@@ -138,6 +138,134 @@ jobs:
           base="$(git rev-parse HEAD^1)"
           git diff --check "${base}...HEAD"
 
+      - name: Probe clang-format include/corrosion/actions/CorrosionPlatingAction.h
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'include/corrosion/actions/CorrosionPlatingAction.h'
+
+      - name: Probe clang-format include/corrosion/actions/CorrosionPlatingActionUtils.h
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'include/corrosion/actions/CorrosionPlatingActionUtils.h'
+
+      - name: Probe clang-format include/corrosion/actions/CorrosionPlatingFlowAction.h
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'include/corrosion/actions/CorrosionPlatingFlowAction.h'
+
+      - name: Probe clang-format include/corrosion/auxkernels/CorrosionRateAux.h
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'include/corrosion/auxkernels/CorrosionRateAux.h'
+
+      - name: Probe clang-format include/corrosion/auxkernels/CorrosionTotalRateAux.h
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'include/corrosion/auxkernels/CorrosionTotalRateAux.h'
+
+      - name: Probe clang-format include/corrosion/base/AdvancedCorrosionModelData.h
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'include/corrosion/base/AdvancedCorrosionModelData.h'
+
+      - name: Probe clang-format include/corrosion/base/DRIDNModel.h
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'include/corrosion/base/DRIDNModel.h'
+
+      - name: Probe clang-format include/corrosion/base/MSTDBTCData.h
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'include/corrosion/base/MSTDBTCData.h'
+
+      - name: Probe clang-format include/corrosion/base/MSTDBTCStandardStateCorrosionModel.h
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'include/corrosion/base/MSTDBTCStandardStateCorrosionModel.h'
+
+      - name: Probe clang-format include/corrosion/postprocessors/AdvancedCorrosionModelPostprocessor.h
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'include/corrosion/postprocessors/AdvancedCorrosionModelPostprocessor.h'
+
+      - name: Probe clang-format include/corrosion/userobjects/AdvancedCorrosionModelUserObject.h
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'include/corrosion/userobjects/AdvancedCorrosionModelUserObject.h'
+
+      - name: Probe clang-format include/corrosion/userobjects/DRIDNCorrosionUserObject.h
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'include/corrosion/userobjects/DRIDNCorrosionUserObject.h'
+
+      - name: Probe clang-format include/corrosion/userobjects/MSTDBTCCorrosionUserObject.h
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'include/corrosion/userobjects/MSTDBTCCorrosionUserObject.h'
+
+      - name: Probe clang-format src/corrosion/actions/CorrosionPlatingAction.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'src/corrosion/actions/CorrosionPlatingAction.C'
+
+      - name: Probe clang-format src/corrosion/actions/CorrosionPlatingFlowAction.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'src/corrosion/actions/CorrosionPlatingFlowAction.C'
+
+      - name: Probe clang-format src/corrosion/auxkernels/CorrosionRateAux.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'src/corrosion/auxkernels/CorrosionRateAux.C'
+
+      - name: Probe clang-format src/corrosion/auxkernels/CorrosionTotalRateAux.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'src/corrosion/auxkernels/CorrosionTotalRateAux.C'
+
+      - name: Probe clang-format src/corrosion/base/AdvancedCorrosionModelData.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'src/corrosion/base/AdvancedCorrosionModelData.C'
+
+      - name: Probe clang-format src/corrosion/base/DRIDNModel.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'src/corrosion/base/DRIDNModel.C'
+
+      - name: Probe clang-format src/corrosion/base/MSTDBTCData.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'src/corrosion/base/MSTDBTCData.C'
+
+      - name: Probe clang-format src/corrosion/base/MSTDBTCStandardStateCorrosionModel.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'src/corrosion/base/MSTDBTCStandardStateCorrosionModel.C'
+
+      - name: Probe clang-format src/corrosion/postprocessors/AdvancedCorrosionModelPostprocessor.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'src/corrosion/postprocessors/AdvancedCorrosionModelPostprocessor.C'
+
+      - name: Probe clang-format src/corrosion/userobjects/AdvancedCorrosionModelUserObject.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'src/corrosion/userobjects/AdvancedCorrosionModelUserObject.C'
+
+      - name: Probe clang-format src/corrosion/userobjects/DRIDNCorrosionUserObject.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'src/corrosion/userobjects/DRIDNCorrosionUserObject.C'
+
+      - name: Probe clang-format src/corrosion/userobjects/MSTDBTCCorrosionUserObject.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'src/corrosion/userobjects/MSTDBTCCorrosionUserObject.C'
+
+      - name: Probe clang-format unit/src/AdvancedCorrosionModelDataTest.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'unit/src/AdvancedCorrosionModelDataTest.C'
+
+      - name: Probe clang-format unit/src/CorrosionPlatingActionUtilsTest.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'unit/src/CorrosionPlatingActionUtilsTest.C'
+
+      - name: Probe clang-format unit/src/DRIDNModelTest.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'unit/src/DRIDNModelTest.C'
+
+      - name: Probe clang-format unit/src/DRIDNParityTest.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'unit/src/DRIDNParityTest.C'
+
+      - name: Probe clang-format unit/src/MSTDBTCDataTest.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'unit/src/MSTDBTCDataTest.C'
+
+      - name: Probe clang-format unit/src/MSTDBTCStandardStateCorrosionModelTest.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'unit/src/MSTDBTCStandardStateCorrosionModelTest.C'
+
+      - name: Probe clang-format unit/src/MSTDBTCV31IntegrationTest.C
+        continue-on-error: true
+        run: clang-format --dry-run --Werror 'unit/src/MSTDBTCV31IntegrationTest.C'
+
       - name: Check changed-source formatting
         run: |
           base="$(git rev-parse HEAD^1)"
