@@ -1,5 +1,5 @@
 # The repository root ignores generated JSON and DAT files by extension. These
 # compact files are synthetic test inputs and must be versioned.
 !advanced_models_synthetic.json
-!MSTDB-TC_V3.1_Chlorides_No_Func.dat
-!MSTDB-TC_V3.1_Fluorides_No_Func.dat
+!Synthetic_V3.1_Chlorides_No_Func.dat
+!Synthetic_V3.1_Fluorides_No_Func.dat
