@@ -1,0 +1,29 @@
+# source=validation/corrosion/calibration/results/advanced/dynamic_network_parameters.json
+# source_sha256=3ed42782d7ea1a3bb2ee529abadf1b2b476e5b86d9d656ffa20b89936354c20f
+parameter,value
+log_rate_scale,0.055365471992740514
+affinity_feedback_scale,2.8725723958274885e-13
+log_surface_reservoir_um,3.321684647830804
+log_surface_replenishment_y_inv,-0.17253145397117015
+surface_availability_exponent,1.001027788010305
+surface_reservoir_cr_exponent,0.5550218064425788
+log_dynamic_cr_exchange_bias,0.007
+log_dynamic_fe_capture_bias,0.05
+inventory_inhibition_scale,2.50000000000004e-15
+log_redox_relaxation_y_inv,0.0003247206442954783
+redox_buffer_retention,0.7499538506912311
+redox_consumption_per_um,4.4182081345454976e-13
+log_stress_interfacial_factor,0.023049536841576106
+log_fluoride_impurity_interfacial_factor,0.17254172336369716
+log_deposition_rate_y_inv_fuel,0.9415843932550865
+log_deposition_rate_y_inv_flinak,2.9521708093322574
+bulk_capture_area_multiplier_fuel,1e-10
+bulk_capture_area_multiplier_flinak,0.0
+log_bulk_precipitation_rate_scale,1.761132
+log_inventory_scale_msre,-0.15185382582003074
+log_inventory_scale_loop,-0.8819669893066959
+log_deposit_area_scale_fuel,0.511133587761954
+log_deposit_area_scale_flinak,0.6632084287760844
+log_mass_loss_scale,-1.2444239037670558e-07
+gb_dynamic_scale,0.9905649525756313
+damage_affinity_scale,0.02611452873592219

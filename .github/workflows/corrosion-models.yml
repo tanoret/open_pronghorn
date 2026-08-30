@@ -1,0 +1,240 @@
+name: Corrosion models
+
+on:
+  pull_request:
+    branches:
+      - pr_corrosion
+  push:
+    branches:
+      - pr_corrosion
+
+permissions:
+  contents: read
+
+concurrency:
+  group: corrosion-models-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  portable-validation:
+    name: Portable model validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash -el {0}
+
+    steps:
+      - name: Check out OpenPronghorn
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Verify tracked artifacts and licensed-data exclusion
+        run: |
+          git ls-files --error-unmatch \
+            THIRD_PARTY_NOTICES.md \
+            data/advanced_corrosion_models.json \
+            unit/data/dridn/cpp_parity_cases.csv \
+            unit/data/dridn/fitted_parameters.csv \
+            validation/corrosion/calibration/data/parameters.json \
+            validation/corrosion/calibration/data/targets.csv \
+            test/tests/corrosion/advanced_models/advanced_models_synthetic.json \
+            test/tests/corrosion/advanced_models/Synthetic_V3.1_Fluorides_No_Func.dat \
+            test/tests/corrosion/advanced_models/Synthetic_V3.1_Chlorides_No_Func.dat
+
+          fluoride_sha="a7ca53e6061c3aa16d1932e35f908fa61b328b88625e8361e63881bfc8592000"
+          chloride_sha="460e8d7148cc76c597064e167b4afa98ea762e59a666f9c42962f3d2d013e5c1"
+          while IFS= read -r -d '' path; do
+            if [[ -f "${path}" && ! -L "${path}" ]]; then
+              digest="$(sha256sum -- "${path}" | cut -d ' ' -f 1)"
+              if [[ "${digest}" == "${fluoride_sha}" || "${digest}" == "${chloride_sha}" ]]; then
+                echo "Licensed MSTDB-TC V3.1 data must not be committed: ${path}" >&2
+                exit 1
+              fi
+            fi
+          done < <(git ls-files -z)
+
+      - name: Set up the pinned scientific Python environment
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+        with:
+          python-version: "3.12.13"
+          cache: pip
+          cache-dependency-path: validation/corrosion/calibration/requirements.txt
+
+      - name: Install calibration requirements
+        run: |
+          python -m pip install --requirement validation/corrosion/calibration/requirements.txt
+          test "$(python -c 'import platform; print(platform.python_version())')" = "3.12.13"
+          python -m pip check
+
+      - name: Run portable corrosion-model validation
+        working-directory: validation/corrosion/calibration
+        env:
+          MPLBACKEND: Agg
+          PYTHONPATH: src
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: env -u MSTDB_TC_DIR python -m unittest discover --start-directory tests --verbose
+
+      - name: Validate the experimental target matrix
+        run: >-
+          python validation/corrosion/experimental_target_matrix.py
+          --output "${RUNNER_TEMP}/experimental_target_matrix.csv"
+
+  linked-moose:
+    name: Linked MOOSE build and corrosion tests
+    needs: portable-validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    env:
+      METHOD: opt
+      MOOSE_DIR: ${{ github.workspace }}/moose
+      MOOSE_JOBS: "2"
+    defaults:
+      run:
+        shell: bash -el {0}
+
+    steps:
+      - name: Check out OpenPronghorn
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Check out the pinned MOOSE submodule shallowly
+        run: |
+          git submodule sync -- moose
+          git submodule update --init --depth=1 moose
+
+      - name: Set up the pinned MOOSE development environment
+        uses: conda-incubator/setup-miniconda@8ee1f361103df19b6f8c8655fd3967a8ecb162d5 # v4.0.1
+        with:
+          activate-environment: moose
+          auto-update-conda: false
+          channel-priority: strict
+          channels: https://conda.software.inl.gov/public,conda-forge
+          conda-remove-defaults: true
+          miniforge-version: "26.5.3-0"
+
+      - name: Install the pinned MOOSE dependencies
+        run: |
+          conda install --yes "python=3.12" "moose-dev=2026.02.20=mpich"
+          python -c 'import sys; assert sys.version_info[:2] == (3, 12), sys.version'
+
+      - name: Verify the pinned MOOSE revision and dependency release
+        run: |
+          test "$(git -C moose rev-parse HEAD)" = "fcf1619600f293e8ab26d8b6fb1eec9e4997fefd"
+          grep --fixed-strings '{% set version = "2026.02.20" %}' moose/conda/moose-dev/meta.yaml
+          conda list moose-dev
+
+      - name: Check changed-file whitespace
+        run: |
+          base="$(git rev-parse HEAD^1)"
+          git diff --check "${base}...HEAD"
+
+      - name: Check changed-source formatting
+        id: source_format
+        continue-on-error: true
+        run: |
+          base="$(git rev-parse HEAD^1)"
+          mapfile -t sources < <(
+            git diff --diff-filter=ACMR --name-only "${base}...HEAD" -- '*.C' '*.h'
+          )
+          format_status=0
+          for source in "${sources[@]}"; do
+            clang-format --dry-run --Werror "${source}" || format_status=1
+          done
+          exit "${format_status}"
+
+      - name: ADVISORY-FAIL changed-source formatting
+        if: ${{ always() && steps.source_format.outcome == 'failure' }}
+        run: "true"
+
+      - name: Build OpenPronghorn
+        run: make --jobs="${MOOSE_JOBS}"
+
+      - name: Reproduce all 76 effective-model Action cases
+        run: >-
+          env -u MSTDB_TC_DIR python validation/corrosion/run_corrosion_validation.py
+          --case-timeout 10
+
+      - name: Build and run all C++ unit tests
+        run: |
+          make --directory=unit --jobs="${MOOSE_JOBS}"
+          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
+
+      - name: Check SQA documentation traceability
+        working-directory: doc
+        run: ./moosedocs.py check --config sqa_reports.yml
+
+      - name: Run new corrosion TestHarness suites
+        id: new_harness
+        continue-on-error: true
+        run: |
+          env -u MSTDB_TC_DIR ./run_tests \
+            --spec-file test/tests/corrosion/action_potential_pin/tests -j "${MOOSE_JOBS}"
+          env -u MSTDB_TC_DIR ./run_tests \
+            --spec-file test/tests/corrosion/action_solid_only/tests -j "${MOOSE_JOBS}"
+          env -u MSTDB_TC_DIR ./run_tests \
+            --spec-file test/tests/corrosion/advanced_models/tests -j "${MOOSE_JOBS}"
+
+      - name: Run unaffected corrosion compatibility suites
+        id: compatibility_harness
+        continue-on-error: true
+        run: |
+          for spec in \
+            test/tests/corrosion/action_salt_only/tests \
+            test/tests/corrosion/interface_conservation/tests \
+            test/tests/corrosion/limiting_current/tests \
+            test/tests/corrosion/linearfv_wall/tests
+          do
+            env -u MSTDB_TC_DIR ./run_tests --spec-file "${spec}" -j "${MOOSE_JOBS}"
+          done
+
+      - name: GATE-FAIL new corrosion TestHarness suites
+        if: ${{ always() && steps.new_harness.outcome == 'failure' }}
+        run: "true"
+
+      - name: GATE-FAIL unaffected corrosion compatibility suites
+        if: ${{ always() && steps.compatibility_harness.outcome == 'failure' }}
+        run: "true"
+
+      - name: Run legacy two-block corrosion suite (advisory; base branch fails)
+        id: two_block_harness
+        continue-on-error: true
+        run: >-
+          env -u MSTDB_TC_DIR ./run_tests
+          --spec-file test/tests/corrosion/action_two_block/tests -j "${MOOSE_JOBS}"
+
+      - name: ADVISORY-FAIL legacy two-block corrosion suite
+        if: ${{ always() && steps.two_block_harness.outcome == 'failure' }}
+        run: "true"
+
+      - name: Build the complete documentation site (advisory; base branch fails)
+        id: docs_build
+        working-directory: doc
+        continue-on-error: true
+        run: ./moosedocs.py build --config config.yml
+
+      - name: Run the complete TestHarness (advisory; base branch fails)
+        id: complete_harness
+        continue-on-error: true
+        run: env -u MSTDB_TC_DIR ./run_tests -j "${MOOSE_JOBS}"
+
+      - name: ADVISORY-FAIL complete documentation site
+        if: ${{ always() && steps.docs_build.outcome == 'failure' }}
+        run: "true"
+
+      - name: ADVISORY-FAIL complete TestHarness
+        if: ${{ always() && steps.complete_harness.outcome == 'failure' }}
+        run: "true"
+
+      - name: Require focused corrosion TestHarness gates
+        if: ${{ always() }}
+        env:
+          NEW_HARNESS: ${{ steps.new_harness.outcome }}
+          COMPATIBILITY_HARNESS: ${{ steps.compatibility_harness.outcome }}
+        run: |
+          test "${NEW_HARNESS}" = success
+          test "${COMPATIBILITY_HARNESS}" = success
