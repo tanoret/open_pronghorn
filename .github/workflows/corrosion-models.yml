@@ -243,6 +243,61 @@ jobs:
         continue-on-error: true
         run: env -u MSTDB_TC_DIR ./run_tests -j "${MOOSE_JOBS}"
 
+      - name: Probe each new C++ unit test
+        if: ${{ always() && steps.unit_build.outcome == 'success' }}
+        run: |
+          failures=0
+          while IFS= read -r test_filter; do
+            if ! env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt \
+              "--gtest_filter=${test_filter}"; then
+              printf '::error title=New corrosion unit test failed::%s\n' "${test_filter}"
+              failures=1
+            fi
+          done <<'TEST_FILTERS'
+          AdvancedCorrosionModelData.LoadsCorrectedCalibratedArtifactAndProvenance
+          AdvancedCorrosionModelData.RejectsLegacyModelLawBeforeParametersAreUsed
+          AdvancedCorrosionModelData.RejectsMutatedOrImplicitBaseSemantics
+          CorrosionPlatingActionUtils.DefaultMetalPotentialCarriesSolvedSaltPin
+          CorrosionPlatingActionUtils.NonzeroE0SeedReproducesProductionButlerVolmerCurrent
+          CorrosionPlatingActionUtils.RealFunctorNamesRoundTripWithoutPrecisionLoss
+          CorrosionPlatingActionUtils.ZeroE0PreservesLegacySeedBracket
+          DRIDNModel.AbsentAlloySpeciesAndZeroColdCaptureStayAbsent
+          DRIDNModel.CorrectedDefaultIsAtEquilibriumAndDoesNotConsumeActivityFloor
+          DRIDNModel.DepositionLimitMatchesExponentialAndClosesInventory
+          DRIDNModel.EndpointConvergesBetween120And240Intervals
+          DRIDNModel.ExactLegacyInitialRHS
+          DRIDNModel.ExactLegacySyntheticRHS
+          DRIDNModel.LegacyRefitLongIntervalClosesFloatingPointEndpoint
+          DRIDNModel.LongHighSinkAdvanceRemainsPositiveAndConservative
+          DRIDNModel.ProjectedSurfaceFloorSatisfiesComplementarity
+          DRIDNModel.RedoxRelaxationAndDamageHaveClosedFormLimits
+          DRIDNModel.RejectsInvalidParametersContextStateAndDuration
+          DRIDNModel.TimeConversionIsExplicit
+          DRIDNParity.DescriptiveLabelsCannotChangeExplicitPhysics
+          DRIDNParity.FixtureIntegrityAndAllFittedParameters
+          DRIDNParity.FrozenPythonLegacyEndpoints
+          MSTDBTCData.ExactCaseSensitiveOccurrenceLookup
+          MSTDBTCData.ExtrapolationAndInvalidStateAreExplicit
+          MSTDBTCData.GibbsPolynomialIntervalsAndAdditionalTerms
+          MSTDBTCData.HashBindingAndMismatchOverride
+          MSTDBTCData.MalformedCandidateFailsFast
+          MSTDBTCData.PairBindsVersionAndBothHashes
+          MSTDBTCData.ParsesAllSupportedEquationTypesAndMetadata
+          MSTDBTCData.ReactionGibbsAndEquilibriumConstant
+          MSTDBTCData.SGTEBranchesAndMagneticRecords
+          MSTDBTCData.SkipsSolutionHeaderWithoutStoichiometry
+          MSTDBTCStandardStateCorrosionModel.CoreRejectsMismatchedBaseElementSemantics
+          MSTDBTCStandardStateCorrosionModel.CoreRejectsMismatchedBaseModelSemantics
+          MSTDBTCStandardStateCorrosionModel.CoreRejectsUnboundThermodynamicProvenance
+          MSTDBTCStandardStateCorrosionModel.CorrectedFeIdentityAffinity
+          MSTDBTCStandardStateCorrosionModel.FractionsCaptureAndInventoryArePhysical
+          MSTDBTCStandardStateCorrosionModel.RejectsInvalidRuntimeClassesAndState
+          MSTDBTCStandardStateCorrosionModel.ZeroExposureHasZeroExtentsAndFiniteDiagnostics
+          MSTDBTCV31Integration.AuthorizedDatabaseAnchors
+          MSTDBTCV31Integration.FullEndpointPythonParity
+          TEST_FILTERS
+          exit "${failures}"
+
       - name: GATE-FAIL unit build
         if: ${{ always() && steps.unit_build.outcome == 'failure' }}
         run: "true"
