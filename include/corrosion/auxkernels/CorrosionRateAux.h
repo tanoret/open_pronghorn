@@ -86,4 +86,3 @@ protected:
   /// Old value of the recession variable (for time accumulation).
   const VariableValue & _u_old;
 };
-

@@ -18,8 +18,8 @@
   kinetics_model = mstdb_tc_standard_state
   database = corrosion_database.json
   advanced_database = advanced_models_synthetic.json
-  fluoride_database = MSTDB-TC_V3.1_Fluorides_No_Func.dat
-  chloride_database = MSTDB-TC_V3.1_Chlorides_No_Func.dat
+  fluoride_database = synthetic_fluoride_chemsage_fixture.dat
+  chloride_database = synthetic_chloride_chemsage_fixture.dat
   elements = 'Cr Fe Ni'
   reaction_boundary = left
   temperature = 923.15

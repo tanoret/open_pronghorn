@@ -15,9 +15,10 @@ Thermochimica/
 # curated inputs/reference artifacts, so keep their exceptions local.
 !requirements.txt
 !advanced_provenance.json
+!data/parameters.json
+!data/targets.csv
 !data/workbook_exports/*.csv
 !reference/*.csv
 !reference/*.json
 !results/advanced/*.csv
 !results/advanced/*.json
-
