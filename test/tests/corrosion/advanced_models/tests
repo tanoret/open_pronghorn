@@ -19,7 +19,8 @@
     type = RunException
     input = mstdb_synthetic.i
     cli_args = 'Outputs/file_base=mstdb_hash_mismatch '
-               'UserObjects/mstdb_endpoint/fluoride_database=synthetic_chloride_chemsage_fixture.dat'
+               'UserObjects/mstdb_endpoint/fluoride_database='
+               'Synthetic_V3.1_Chlorides_No_Func.dat'
     expect_err = 'SHA-256 mismatch'
     requirement = 'The MSTDB-TC endpoint UserObject shall reject an external thermodynamic file '
                   'whose SHA-256 digest does not match the advanced parameter database.'

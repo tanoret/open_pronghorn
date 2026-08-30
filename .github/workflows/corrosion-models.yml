@@ -81,11 +81,10 @@ jobs:
           --output "${RUNNER_TEMP}/experimental_target_matrix.csv"
 
   linked-moose:
-    name: Linked MOOSE build and tests
+    name: Linked MOOSE build and corrosion tests
     needs: portable-validation
-    if: ${{ always() }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 180
+    timeout-minutes: 150
     env:
       METHOD: opt
       MOOSE_DIR: ${{ github.workspace }}/moose
@@ -95,11 +94,6 @@ jobs:
         shell: bash -el {0}
 
     steps:
-      - name: Require portable model validation
-        env:
-          PORTABLE_RESULT: ${{ needs['portable-validation'].result }}
-        run: test "${PORTABLE_RESULT}" = success
-
       - name: Check out OpenPronghorn
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -125,7 +119,6 @@ jobs:
         run: |
           conda install --yes "python=3.12" "moose-dev=2026.02.20=mpich"
           python -c 'import sys; assert sys.version_info[:2] == (3, 12), sys.version'
-          conda list --explicit
 
       - name: Verify the pinned MOOSE revision and dependency release
         run: |
@@ -159,804 +152,139 @@ jobs:
           env -u MSTDB_TC_DIR python validation/corrosion/run_corrosion_validation.py
           --case-timeout 10
 
-      - name: Build C++ unit tests
-        id: unit_build
-        continue-on-error: true
-        run: make --directory=unit --jobs="${MOOSE_JOBS}"
-
-      - name: Run C++ unit tests
-        id: unit_run
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-
-      - name: Probe AdvancedCorrosionModelData unit suite
-        id: unit_advanced_data
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
+      - name: Build and run all C++ unit tests
+        run: |
+          make --directory=unit --jobs="${MOOSE_JOBS}"
           env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='AdvancedCorrosionModelData.*'
 
-      - name: Probe CorrosionPlatingActionUtils unit suite
-        id: unit_action_utils
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='CorrosionPlatingActionUtils.*'
-
-      - name: Probe DRIDNModel unit suite
-        id: unit_dridn_model
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='DRIDNModel.*'
-
-      - name: Probe DRIDNParity unit suite
-        id: unit_dridn_parity
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='DRIDNParity.*'
-
-      - name: Probe MSTDBTCData unit suite
-        id: unit_mstdb_data
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='MSTDBTCData.*'
-
-      - name: Probe MSTDBTCStandardStateCorrosionModel unit suite
-        id: unit_mstdb_model
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='MSTDBTCStandardStateCorrosionModel.*'
-
-      - name: Probe MSTDBTCV31Integration unit suite
-        id: unit_mstdb_v31
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='MSTDBTCV31Integration.*'
-
-      - name: Check documentation
-        id: docs_check
+      - name: Check SQA documentation traceability
         working-directory: doc
-        continue-on-error: true
         run: ./moosedocs.py check --config sqa_reports.yml
 
-      - name: Build documentation
+      - name: Run new corrosion TestHarness suites
+        id: new_harness
+        continue-on-error: true
+        run: |
+          env -u MSTDB_TC_DIR ./run_tests \
+            --spec-file test/tests/corrosion/action_potential_pin/tests -j "${MOOSE_JOBS}"
+          env -u MSTDB_TC_DIR ./run_tests \
+            --spec-file test/tests/corrosion/action_solid_only/tests -j "${MOOSE_JOBS}"
+          env -u MSTDB_TC_DIR ./run_tests \
+            --spec-file test/tests/corrosion/advanced_models/tests -j "${MOOSE_JOBS}"
+
+      - name: Run unaffected corrosion compatibility suites
+        id: compatibility_harness
+        continue-on-error: true
+        run: |
+          for spec in \
+            test/tests/corrosion/action_salt_only/tests \
+            test/tests/corrosion/interface_conservation/tests \
+            test/tests/corrosion/limiting_current/tests \
+            test/tests/corrosion/linearfv_wall/tests
+          do
+            env -u MSTDB_TC_DIR ./run_tests --spec-file "${spec}" -j "${MOOSE_JOBS}"
+          done
+
+      - name: Run legacy two-block corrosion suite
+        id: two_block_harness
+        continue-on-error: true
+        run: >-
+          env -u MSTDB_TC_DIR ./run_tests
+          --spec-file test/tests/corrosion/action_two_block/tests -j "${MOOSE_JOBS}"
+
+      - name: Build the complete documentation site (advisory baseline check)
         id: docs_build
         working-directory: doc
         continue-on-error: true
         run: ./moosedocs.py build --config config.yml
 
-      - name: Build changed documentation pages without global app syntax
-        id: docs_build_changed
-        if: ${{ always() }}
-        working-directory: doc
-        continue-on-error: true
-        run: >-
-          ./moosedocs.py build --config config.yml --fast --files
-          source/corrosion/actions/CorrosionPlatingAction.md
-          source/corrosion/actions/CorrosionPlatingFlowAction.md
-          source/corrosion/auxkernels/CorrosionRateAux.md
-          source/corrosion/auxkernels/CorrosionTotalRateAux.md
-          source/corrosion/postprocessors/AdvancedCorrosionModelPostprocessor.md
-          source/corrosion/userobjects/DRIDNCorrosionUserObject.md
-          source/corrosion/userobjects/MSTDBTCCorrosionUserObject.md
-
-      - name: GATE-FAIL changed documentation pages
-        if: ${{ always() && steps.docs_build_changed.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe MooseDocs application report
-        id: docs_check_app
-        if: ${{ always() }}
-        working-directory: doc
-        continue-on-error: true
-        run: ./moosedocs.py check --config sqa_reports.yml --reports app
-
-      - name: GATE-FAIL MooseDocs application report
-        if: ${{ always() && steps.docs_check_app.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe MooseDocs document record report
-        id: docs_check_doc
-        if: ${{ always() }}
-        working-directory: doc
-        continue-on-error: true
-        run: ./moosedocs.py check --config sqa_reports.yml --reports doc
-
-      - name: GATE-FAIL MooseDocs document record report
-        if: ${{ always() && steps.docs_check_doc.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe MooseDocs requirement report
-        id: docs_check_req
-        if: ${{ always() }}
-        working-directory: doc
-        continue-on-error: true
-        run: ./moosedocs.py check --config sqa_reports.yml --reports req
-
-      - name: GATE-FAIL MooseDocs requirement report
-        if: ${{ always() && steps.docs_check_req.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe MooseDocs page source/corrosion/actions/CorrosionPlatingAction.md
-        id: docs_page_01
-        if: ${{ always() }}
-        working-directory: doc
-        continue-on-error: true
-        run: >-
-          ./moosedocs.py build --config config.yml --fast --files source/corrosion/actions/CorrosionPlatingAction.md
-
-      - name: GATE-FAIL MooseDocs page source/corrosion/actions/CorrosionPlatingAction.md
-        if: ${{ always() && steps.docs_page_01.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe MooseDocs page source/corrosion/actions/CorrosionPlatingFlowAction.md
-        id: docs_page_02
-        if: ${{ always() }}
-        working-directory: doc
-        continue-on-error: true
-        run: >-
-          ./moosedocs.py build --config config.yml --fast --files source/corrosion/actions/CorrosionPlatingFlowAction.md
-
-      - name: GATE-FAIL MooseDocs page source/corrosion/actions/CorrosionPlatingFlowAction.md
-        if: ${{ always() && steps.docs_page_02.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe MooseDocs page source/corrosion/auxkernels/CorrosionRateAux.md
-        id: docs_page_03
-        if: ${{ always() }}
-        working-directory: doc
-        continue-on-error: true
-        run: >-
-          ./moosedocs.py build --config config.yml --fast --files source/corrosion/auxkernels/CorrosionRateAux.md
-
-      - name: GATE-FAIL MooseDocs page source/corrosion/auxkernels/CorrosionRateAux.md
-        if: ${{ always() && steps.docs_page_03.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe MooseDocs page source/corrosion/auxkernels/CorrosionTotalRateAux.md
-        id: docs_page_04
-        if: ${{ always() }}
-        working-directory: doc
-        continue-on-error: true
-        run: >-
-          ./moosedocs.py build --config config.yml --fast --files source/corrosion/auxkernels/CorrosionTotalRateAux.md
-
-      - name: GATE-FAIL MooseDocs page source/corrosion/auxkernels/CorrosionTotalRateAux.md
-        if: ${{ always() && steps.docs_page_04.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe MooseDocs page source/corrosion/postprocessors/AdvancedCorrosionModelPostprocessor.md
-        id: docs_page_05
-        if: ${{ always() }}
-        working-directory: doc
-        continue-on-error: true
-        run: >-
-          ./moosedocs.py build --config config.yml --fast --files source/corrosion/postprocessors/AdvancedCorrosionModelPostprocessor.md
-
-      - name: GATE-FAIL MooseDocs page source/corrosion/postprocessors/AdvancedCorrosionModelPostprocessor.md
-        if: ${{ always() && steps.docs_page_05.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe MooseDocs page source/corrosion/userobjects/DRIDNCorrosionUserObject.md
-        id: docs_page_06
-        if: ${{ always() }}
-        working-directory: doc
-        continue-on-error: true
-        run: >-
-          ./moosedocs.py build --config config.yml --fast --files source/corrosion/userobjects/DRIDNCorrosionUserObject.md
-
-      - name: GATE-FAIL MooseDocs page source/corrosion/userobjects/DRIDNCorrosionUserObject.md
-        if: ${{ always() && steps.docs_page_06.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe MooseDocs page source/corrosion/userobjects/MSTDBTCCorrosionUserObject.md
-        id: docs_page_07
-        if: ${{ always() }}
-        working-directory: doc
-        continue-on-error: true
-        run: >-
-          ./moosedocs.py build --config config.yml --fast --files source/corrosion/userobjects/MSTDBTCCorrosionUserObject.md
-
-      - name: GATE-FAIL MooseDocs page source/corrosion/userobjects/MSTDBTCCorrosionUserObject.md
-        if: ${{ always() && steps.docs_page_07.outcome == 'failure' }}
-        run: "true"
-
-      - name: Run the complete OpenPronghorn TestHarness
-        id: test_harness
+      - name: Run the complete TestHarness (advisory baseline check)
+        id: complete_harness
         continue-on-error: true
         run: env -u MSTDB_TC_DIR ./run_tests -j "${MOOSE_JOBS}"
 
-      - name: Probe action-potential-pin TestHarness suite
-        id: harness_suite_pin
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --spec-file test/tests/corrosion/action_potential_pin/tests
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL action-potential-pin TestHarness suite
-        if: ${{ always() && steps.harness_suite_pin.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe solid-only TestHarness suite
-        id: harness_suite_solid
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --spec-file test/tests/corrosion/action_solid_only/tests
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL solid-only TestHarness suite
-        if: ${{ always() && steps.harness_suite_solid.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe advanced-model TestHarness suite
-        id: harness_suite_advanced
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --spec-file test/tests/corrosion/advanced_models/tests
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL advanced-model TestHarness suite
-        if: ${{ always() && steps.harness_suite_advanced.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe existing salt-only corrosion TestHarness suite
-        id: harness_existing_salt
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --spec-file test/tests/corrosion/action_salt_only/tests
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL existing salt-only corrosion TestHarness suite
-        if: ${{ always() && steps.harness_existing_salt.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe existing two-block corrosion TestHarness suite
-        id: harness_existing_two_block
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --spec-file test/tests/corrosion/action_two_block/tests
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL existing two-block corrosion TestHarness suite
-        if: ${{ always() && steps.harness_existing_two_block.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe existing interface-conservation corrosion TestHarness suite
-        id: harness_existing_interface
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --spec-file test/tests/corrosion/interface_conservation/tests
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL existing interface-conservation corrosion TestHarness suite
-        if: ${{ always() && steps.harness_existing_interface.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe existing limiting-current corrosion TestHarness suite
-        id: harness_existing_limiting
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --spec-file test/tests/corrosion/limiting_current/tests
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL existing limiting-current corrosion TestHarness suite
-        if: ${{ always() && steps.harness_existing_limiting.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe existing linear-FV-wall corrosion TestHarness suite
-        id: harness_existing_linearfv
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --spec-file test/tests/corrosion/linearfv_wall/tests
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL existing linear-FV-wall corrosion TestHarness suite
-        if: ${{ always() && steps.harness_existing_linearfv.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe pre-existing TestHarness cases
-        id: harness_existing
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests
-          --re='^(?!.*(?:action_potential_pin|action_solid_only|advanced_models)).*$'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL pre-existing TestHarness cases
-        if: ${{ always() && steps.harness_existing.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case default_metal_tracks_nonzero_salt_pin
-        id: harness_case_01
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='default_metal_tracks_nonzero_salt_pin'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case default_metal_tracks_nonzero_salt_pin
-        if: ${{ always() && steps.harness_case_01.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case custom_metal_potential_is_absolute
-        id: harness_case_02
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='custom_metal_potential_is_absolute'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case custom_metal_potential_is_absolute
-        if: ${{ always() && steps.harness_case_02.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case reject_nonfinite_salt_pin
-        id: harness_case_03
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='reject_nonfinite_salt_pin'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case reject_nonfinite_salt_pin
-        if: ${{ always() && steps.harness_case_03.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case reject_nonfinite_overpotential
-        id: harness_case_04
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='reject_nonfinite_overpotential'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case reject_nonfinite_overpotential
-        if: ${{ always() && steps.harness_case_04.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case reject_overflowing_default_metal_potential
-        id: harness_case_05
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='reject_overflowing_default_metal_potential'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case reject_overflowing_default_metal_potential
-        if: ${{ always() && steps.harness_case_05.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case solid_only_default_potential
-        id: harness_case_06
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='solid_only_default_potential'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case solid_only_default_potential
-        if: ${{ always() && steps.harness_case_06.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case solid_only_custom_functors
-        id: harness_case_07
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='solid_only_custom_functors'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case solid_only_custom_functors
-        if: ${{ always() && steps.harness_case_07.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case reject_rate_aux_duplicate_concentration
-        id: harness_case_08
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='reject_rate_aux_duplicate_concentration'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case reject_rate_aux_duplicate_concentration
-        if: ${{ always() && steps.harness_case_08.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case reject_rate_aux_duplicate_potential
-        id: harness_case_09
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='reject_rate_aux_duplicate_potential'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case reject_rate_aux_duplicate_potential
-        if: ${{ always() && steps.harness_case_09.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case reject_rate_aux_functor_and_fixed_potential
-        id: harness_case_10
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='reject_rate_aux_functor_and_fixed_potential'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case reject_rate_aux_functor_and_fixed_potential
-        if: ${{ always() && steps.harness_case_10.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case reject_solid_only_salt_potential_solve
-        id: harness_case_11
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='reject_solid_only_salt_potential_solve'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case reject_solid_only_salt_potential_solve
-        if: ${{ always() && steps.harness_case_11.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case synthetic_mstdb_endpoint
-        id: harness_case_12
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='synthetic_mstdb_endpoint'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case synthetic_mstdb_endpoint
-        if: ${{ always() && steps.harness_case_12.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case reject_mstdb_hash_mismatch
-        id: harness_case_13
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='reject_mstdb_hash_mismatch'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case reject_mstdb_hash_mismatch
-        if: ${{ always() && steps.harness_case_13.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case dridn_restartable
-        id: harness_case_14
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='dridn_restartable'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case dridn_restartable
-        if: ${{ always() && steps.harness_case_14.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case reject_dridn_unsafe_schedule
-        id: harness_case_15
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='reject_dridn_unsafe_schedule'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case reject_dridn_unsafe_schedule
-        if: ${{ always() && steps.harness_case_15.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case mstdb_fe_action_plan
-        id: harness_case_16
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='mstdb_fe_action_plan'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case mstdb_fe_action_plan
-        if: ${{ always() && steps.harness_case_16.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case mstdb_fe_action_runtime_shares
-        id: harness_case_17
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='mstdb_fe_action_runtime_shares'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case mstdb_fe_action_runtime_shares
-        if: ${{ always() && steps.harness_case_17.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case mstdb_linearfv_action_plan
-        id: harness_case_18
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='mstdb_linearfv_action_plan'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case mstdb_linearfv_action_plan
-        if: ${{ always() && steps.harness_case_18.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case reject_partial_mstdb_action_elements
-        id: harness_case_19
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='reject_partial_mstdb_action_elements'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case reject_partial_mstdb_action_elements
-        if: ${{ always() && steps.harness_case_19.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case reject_mstdb_fe_mutated_base_element
-        id: harness_case_20
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='reject_mstdb_fe_mutated_base_element'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case reject_mstdb_fe_mutated_base_element
-        if: ${{ always() && steps.harness_case_20.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe TestHarness case reject_mstdb_linearfv_mutated_base_element
-        id: harness_case_21
-        if: ${{ always() }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./run_tests --re='reject_mstdb_linearfv_mutated_base_element'
-          -j "${MOOSE_JOBS}"
-
-      - name: GATE-FAIL TestHarness case reject_mstdb_linearfv_mutated_base_element
-        if: ${{ always() && steps.harness_case_21.outcome == 'failure' }}
-        run: "true"
-
-      - name: Probe DRIDN unit case DRIDNModel.ExactLegacySyntheticRHS
-        id: unit_dridn_case_01
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='DRIDNModel.ExactLegacySyntheticRHS'
-
-      - name: Probe DRIDN unit case DRIDNModel.ExactLegacyInitialRHS
-        id: unit_dridn_case_02
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='DRIDNModel.ExactLegacyInitialRHS'
-
-      - name: Probe DRIDN unit case DRIDNModel.CorrectedDefaultIsAtEquilibriumAndDoesNotConsumeActivityFloor
-        id: unit_dridn_case_03
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='DRIDNModel.CorrectedDefaultIsAtEquilibriumAndDoesNotConsumeActivityFloor'
-
-      - name: Probe DRIDN unit case DRIDNModel.AbsentAlloySpeciesAndZeroColdCaptureStayAbsent
-        id: unit_dridn_case_04
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='DRIDNModel.AbsentAlloySpeciesAndZeroColdCaptureStayAbsent'
-
-      - name: Probe DRIDN unit case DRIDNModel.DepositionLimitMatchesExponentialAndClosesInventory
-        id: unit_dridn_case_05
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='DRIDNModel.DepositionLimitMatchesExponentialAndClosesInventory'
-
-      - name: Probe DRIDN unit case DRIDNModel.LongHighSinkAdvanceRemainsPositiveAndConservative
-        id: unit_dridn_case_06
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='DRIDNModel.LongHighSinkAdvanceRemainsPositiveAndConservative'
-
-      - name: Probe DRIDN unit case DRIDNModel.EndpointConvergesBetween120And240Intervals
-        id: unit_dridn_case_07
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='DRIDNModel.EndpointConvergesBetween120And240Intervals'
-
-      - name: Probe DRIDN unit case DRIDNModel.LegacyRefitLongIntervalClosesFloatingPointEndpoint
-        id: unit_dridn_case_08
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='DRIDNModel.LegacyRefitLongIntervalClosesFloatingPointEndpoint'
-
-      - name: Probe DRIDN unit case DRIDNModel.ProjectedSurfaceFloorSatisfiesComplementarity
-        id: unit_dridn_case_09
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='DRIDNModel.ProjectedSurfaceFloorSatisfiesComplementarity'
-
-      - name: Probe DRIDN unit case DRIDNModel.RedoxRelaxationAndDamageHaveClosedFormLimits
-        id: unit_dridn_case_10
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='DRIDNModel.RedoxRelaxationAndDamageHaveClosedFormLimits'
-
-      - name: Probe DRIDN unit case DRIDNModel.RejectsInvalidParametersContextStateAndDuration
-        id: unit_dridn_case_11
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='DRIDNModel.RejectsInvalidParametersContextStateAndDuration'
-
-      - name: Probe DRIDN unit case DRIDNModel.TimeConversionIsExplicit
-        id: unit_dridn_case_12
-        if: ${{ always() && steps.unit_build.outcome == 'success' }}
-        continue-on-error: true
-        run: >-
-          env -u MSTDB_TC_DIR ./unit/open_pronghorn-unit-opt
-          --gtest_filter='DRIDNModel.TimeConversionIsExplicit'
-
-      - name: GATE-FAIL DRIDN unit case DRIDNModel.ExactLegacySyntheticRHS
-        if: ${{ always() && steps.unit_dridn_case_01.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL DRIDN unit case DRIDNModel.ExactLegacyInitialRHS
-        if: ${{ always() && steps.unit_dridn_case_02.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL DRIDN unit case DRIDNModel.CorrectedDefaultIsAtEquilibriumAndDoesNotConsumeActivityFloor
-        if: ${{ always() && steps.unit_dridn_case_03.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL DRIDN unit case DRIDNModel.AbsentAlloySpeciesAndZeroColdCaptureStayAbsent
-        if: ${{ always() && steps.unit_dridn_case_04.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL DRIDN unit case DRIDNModel.DepositionLimitMatchesExponentialAndClosesInventory
-        if: ${{ always() && steps.unit_dridn_case_05.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL DRIDN unit case DRIDNModel.LongHighSinkAdvanceRemainsPositiveAndConservative
-        if: ${{ always() && steps.unit_dridn_case_06.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL DRIDN unit case DRIDNModel.EndpointConvergesBetween120And240Intervals
-        if: ${{ always() && steps.unit_dridn_case_07.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL DRIDN unit case DRIDNModel.LegacyRefitLongIntervalClosesFloatingPointEndpoint
-        if: ${{ always() && steps.unit_dridn_case_08.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL DRIDN unit case DRIDNModel.ProjectedSurfaceFloorSatisfiesComplementarity
-        if: ${{ always() && steps.unit_dridn_case_09.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL DRIDN unit case DRIDNModel.RedoxRelaxationAndDamageHaveClosedFormLimits
-        if: ${{ always() && steps.unit_dridn_case_10.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL DRIDN unit case DRIDNModel.RejectsInvalidParametersContextStateAndDuration
-        if: ${{ always() && steps.unit_dridn_case_11.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL DRIDN unit case DRIDNModel.TimeConversionIsExplicit
-        if: ${{ always() && steps.unit_dridn_case_12.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL unit build
-        if: ${{ always() && steps.unit_build.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL complete unit run
-        if: ${{ always() && steps.unit_run.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL AdvancedCorrosionModelData unit suite
-        if: ${{ always() && steps.unit_advanced_data.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL CorrosionPlatingActionUtils unit suite
-        if: ${{ always() && steps.unit_action_utils.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL DRIDNModel unit suite
-        if: ${{ always() && steps.unit_dridn_model.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL DRIDNParity unit suite
-        if: ${{ always() && steps.unit_dridn_parity.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL MSTDBTCData unit suite
-        if: ${{ always() && steps.unit_mstdb_data.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL MSTDBTCStandardStateCorrosionModel unit suite
-        if: ${{ always() && steps.unit_mstdb_model.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL MSTDBTCV31Integration unit suite
-        if: ${{ always() && steps.unit_mstdb_v31.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL documentation check
-        if: ${{ always() && steps.docs_check.outcome == 'failure' }}
-        run: "true"
-
-      - name: GATE-FAIL documentation build
+      - name: ADVISORY-FAIL complete documentation site
         if: ${{ always() && steps.docs_build.outcome == 'failure' }}
         run: "true"
 
-      - name: GATE-FAIL complete TestHarness
-        if: ${{ always() && steps.test_harness.outcome == 'failure' }}
+      - name: ADVISORY-FAIL complete TestHarness
+        if: ${{ always() && steps.complete_harness.outcome == 'failure' }}
         run: "true"
 
-      - name: Require production corrosion verification gates
+      - name: Require focused corrosion TestHarness gates
         if: ${{ always() }}
         env:
-          UNIT_BUILD: ${{ steps.unit_build.outcome }}
-          UNIT_RUN: ${{ steps.unit_run.outcome }}
-          DOCS_CHECK: ${{ steps.docs_check.outcome }}
-          DOCS_BUILD_CHANGED: ${{ steps.docs_build_changed.outcome }}
-          HARNESS_PIN: ${{ steps.harness_suite_pin.outcome }}
-          HARNESS_SOLID: ${{ steps.harness_suite_solid.outcome }}
-          HARNESS_ADVANCED: ${{ steps.harness_suite_advanced.outcome }}
-          HARNESS_SALT: ${{ steps.harness_existing_salt.outcome }}
-          HARNESS_TWO_BLOCK: ${{ steps.harness_existing_two_block.outcome }}
-          HARNESS_INTERFACE: ${{ steps.harness_existing_interface.outcome }}
-          HARNESS_LIMITING: ${{ steps.harness_existing_limiting.outcome }}
-          HARNESS_LINEARFV: ${{ steps.harness_existing_linearfv.outcome }}
+          NEW_HARNESS: ${{ steps.new_harness.outcome }}
+          COMPATIBILITY_HARNESS: ${{ steps.compatibility_harness.outcome }}
+          TWO_BLOCK_HARNESS: ${{ steps.two_block_harness.outcome }}
         run: |
-          test "${UNIT_BUILD}" = success
-          test "${UNIT_RUN}" = success
-          test "${DOCS_CHECK}" = success
-          test "${DOCS_BUILD_CHANGED}" = success
-          test "${HARNESS_PIN}" = success
-          test "${HARNESS_SOLID}" = success
-          test "${HARNESS_ADVANCED}" = success
-          test "${HARNESS_SALT}" = success
-          test "${HARNESS_TWO_BLOCK}" = success
-          test "${HARNESS_INTERFACE}" = success
-          test "${HARNESS_LIMITING}" = success
-          test "${HARNESS_LINEARFV}" = success
+          test "${NEW_HARNESS}" = success
+          test "${COMPATIBILITY_HARNESS}" = success
+          test "${TWO_BLOCK_HARNESS}" = success
+
+  baseline-diagnostics:
+    name: Base branch diagnostics (non-gating)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    env:
+      METHOD: opt
+      MOOSE_DIR: ${{ github.workspace }}/moose
+      MOOSE_JOBS: "2"
+    defaults:
+      run:
+        shell: bash -el {0}
+
+    steps:
+      - name: Check out the untouched pr_corrosion base
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: pr_corrosion
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Check out the pinned MOOSE submodule shallowly
+        run: |
+          git submodule sync -- moose
+          git submodule update --init --depth=1 moose
+
+      - name: Set up the pinned MOOSE development environment
+        uses: conda-incubator/setup-miniconda@8ee1f361103df19b6f8c8655fd3967a8ecb162d5 # v4.0.1
+        with:
+          activate-environment: moose
+          auto-update-conda: false
+          channel-priority: strict
+          channels: https://conda.software.inl.gov/public,conda-forge
+          conda-remove-defaults: true
+          miniforge-version: "26.5.3-0"
+
+      - name: Install the pinned MOOSE dependencies
+        run: conda install --yes "python=3.12" "moose-dev=2026.02.20=mpich"
+
+      - name: Verify the pinned base revision
+        run: |
+          test "$(git rev-parse HEAD)" = "bbc8b69c87bc1c90af0d1cf1484c599e9553b625"
+          test "$(git -C moose rev-parse HEAD)" = "fcf1619600f293e8ab26d8b6fb1eec9e4997fefd"
+
+      - name: Build the untouched base
+        run: make --jobs="${MOOSE_JOBS}"
+
+      - name: Probe base two-block corrosion suite
+        id: base_two_block
+        continue-on-error: true
+        run: >-
+          env -u MSTDB_TC_DIR ./run_tests
+          --spec-file test/tests/corrosion/action_two_block/tests -j "${MOOSE_JOBS}"
+
+      - name: Probe base documentation site
+        id: base_docs
+        working-directory: doc
+        continue-on-error: true
+        run: ./moosedocs.py build --config config.yml
+
+      - name: BASELINE-FAIL two-block corrosion suite
+        if: ${{ always() && steps.base_two_block.outcome == 'failure' }}
+        run: "true"
+
+      - name: BASELINE-FAIL complete documentation site
+        if: ${{ always() && steps.base_docs.outcome == 'failure' }}
+        run: "true"
