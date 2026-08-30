@@ -16,7 +16,73 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
+  portable-validation:
+    name: Portable model validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash -el {0}
+
+    steps:
+      - name: Check out OpenPronghorn
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Verify tracked artifacts and licensed-data exclusion
+        run: |
+          git ls-files --error-unmatch \
+            THIRD_PARTY_NOTICES.md \
+            data/advanced_corrosion_models.json \
+            unit/data/dridn/cpp_parity_cases.csv \
+            unit/data/dridn/fitted_parameters.csv \
+            test/tests/corrosion/advanced_models/advanced_models_synthetic.json
+
+          fluoride_sha="a7ca53e6061c3aa16d1932e35f908fa61b328b88625e8361e63881bfc8592000"
+          chloride_sha="460e8d7148cc76c597064e167b4afa98ea762e59a666f9c42962f3d2d013e5c1"
+          while IFS= read -r -d '' path; do
+            if [[ -f "${path}" && ! -L "${path}" ]]; then
+              digest="$(sha256sum -- "${path}" | cut -d ' ' -f 1)"
+              if [[ "${digest}" == "${fluoride_sha}" || "${digest}" == "${chloride_sha}" ]]; then
+                echo "Licensed MSTDB-TC V3.1 data must not be committed: ${path}" >&2
+                exit 1
+              fi
+            fi
+          done < <(git ls-files -z)
+
+      - name: Set up the pinned scientific Python environment
+        uses: conda-incubator/setup-miniconda@8ee1f361103df19b6f8c8655fd3967a8ecb162d5 # v4.0.1
+        with:
+          activate-environment: corrosion-validation
+          auto-update-conda: false
+          channel-priority: strict
+          channels: conda-forge
+          conda-remove-defaults: true
+          miniforge-version: "26.5.3-0"
+          python-version: "3.12.13"
+
+      - name: Install calibration requirements
+        run: |
+          python -m pip install --requirement validation/corrosion/calibration/requirements.txt
+          test "$(python -c 'import platform; print(platform.python_version())')" = "3.12.13"
+          python -m pip check
+
+      - name: Run portable corrosion-model validation
+        working-directory: validation/corrosion/calibration
+        env:
+          MPLBACKEND: Agg
+          PYTHONPATH: src
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: env -u MSTDB_TC_DIR python -m unittest discover --start-directory tests --verbose
+
+      - name: Validate the experimental target matrix
+        run: >-
+          python validation/corrosion/experimental_target_matrix.py
+          --output "${RUNNER_TEMP}/experimental_target_matrix.csv"
+
+  linked-moose:
     name: Linked MOOSE build and tests
     runs-on: ubuntu-24.04
     timeout-minutes: 180
@@ -40,27 +106,6 @@ jobs:
           git submodule sync -- moose
           git submodule update --init --depth=1 moose
 
-      - name: Verify tracked artifacts and licensed-data exclusion
-        run: |
-          git ls-files --error-unmatch \
-            THIRD_PARTY_NOTICES.md \
-            data/advanced_corrosion_models.json \
-            unit/data/dridn/cpp_parity_cases.csv \
-            unit/data/dridn/fitted_parameters.csv \
-            test/tests/corrosion/advanced_models/advanced_models_synthetic.json
-
-          fluoride_sha="a7ca53e6061c3aa16d1932e35f908fa61b328b88625e8361e63881bfc8592000"
-          chloride_sha="460e8d7148cc76c597064e167b4afa98ea762e59a666f9c42962f3d2d013e5c1"
-          while IFS= read -r -d '' path; do
-            if [[ -f "${path}" && ! -L "${path}" ]]; then
-              digest="$(sha256sum -- "${path}" | cut -d ' ' -f 1)"
-              if [[ "${digest}" == "${fluoride_sha}" || "${digest}" == "${chloride_sha}" ]]; then
-                echo "Licensed MSTDB-TC V3.1 data must not be committed: ${path}" >&2
-                exit 1
-              fi
-            fi
-          done < <(git ls-files -z)
-
       - name: Set up the pinned MOOSE development environment
         uses: conda-incubator/setup-miniconda@8ee1f361103df19b6f8c8655fd3967a8ecb162d5 # v4.0.1
         with:
@@ -70,14 +115,12 @@ jobs:
           channels: https://conda.software.inl.gov/public,conda-forge
           conda-remove-defaults: true
           miniforge-version: "26.5.3-0"
-          python-version: "3.12.13"
 
-      - name: Install MOOSE dependencies and calibration requirements
+      - name: Install the pinned MOOSE dependencies
         run: |
-          conda install --yes "moose-dev=2026.02.20=mpich"
-          python -m pip install --requirement validation/corrosion/calibration/requirements.txt
-          test "$(python -c 'import platform; print(platform.python_version())')" = "3.12.13"
-          python -m pip check
+          conda install --yes "python=3.12" "moose-dev=2026.02.20=mpich"
+          python -c 'import sys; assert sys.version_info[:2] == (3, 12), sys.version'
+          conda list --explicit
 
       - name: Verify the pinned MOOSE revision and dependency release
         run: |
@@ -95,19 +138,6 @@ jobs:
           if ((${#sources[@]})); then
             clang-format --dry-run --Werror "${sources[@]}"
           fi
-
-      - name: Run portable corrosion-model validation
-        working-directory: validation/corrosion/calibration
-        env:
-          MPLBACKEND: Agg
-          PYTHONPATH: src
-          PYTHONDONTWRITEBYTECODE: "1"
-        run: env -u MSTDB_TC_DIR python -m unittest discover --start-directory tests --verbose
-
-      - name: Validate the experimental target matrix
-        run: >-
-          python validation/corrosion/experimental_target_matrix.py
-          --output "${RUNNER_TEMP}/experimental_target_matrix.csv"
 
       - name: Build OpenPronghorn
         run: make --jobs="${MOOSE_JOBS}"
