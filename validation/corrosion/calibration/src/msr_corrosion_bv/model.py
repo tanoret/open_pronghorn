@@ -12,6 +12,9 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping
+import json
+from functools import lru_cache
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -30,6 +33,29 @@ from .chemistry import (
 def exp_clip(x: float | np.ndarray, lo: float = -60.0, hi: float = 60.0) -> float | np.ndarray:
     return np.exp(np.clip(x, lo, hi))
 
+@lru_cache(maxsize=1)
+def solid_diffusivities() -> dict[str, Any]:
+    """Load source-specific solid diffusivities from the production database."""
+    db_path = Path(__file__).resolve().parents[5] / "data" / "corrosion_database.json"
+    with db_path.open(encoding="utf-8") as stream:
+        database = json.load(stream)
+    return database["solid_diffusivities"]
+
+@lru_cache(maxsize=1)
+def solid_diffusivity_fallbacks() -> dict[str, str]:
+    """Load explicit solid-diffusivity material fallbacks from the production database."""
+    db_path = Path(__file__).resolve().parents[5] / "data" / "corrosion_database.json"
+    with db_path.open(encoding="utf-8") as stream:
+        database = json.load(stream)
+    return database.get("solid_diffusivity_fallbacks", {})
+
+def _case_insensitive_get(mapping: Mapping[str, Any], key: str) -> Any:
+    """Return a mapping value using case-insensitive string-key lookup."""
+    key_lower = key.lower()
+    for candidate, value in mapping.items():
+        if candidate.lower() == key_lower:
+            return value
+    return None
 
 @dataclass(frozen=True)
 class ParameterSpec:
@@ -45,8 +71,8 @@ class ParameterSpec:
 
 # Parameters are expressed in model space. Activation energies are in kJ/mol.
 # Every entry has a finite prior width and therefore contributes a residual to
-# the objective.  This regularization is necessary because 61 coefficients are
-# inferred from only 38 active experimental rows.
+# the objective. This regularization is necessary because 59 coefficients are
+# inferred from only 37 active calibration rows.
 PARAMETER_SPECS: tuple[ParameterSpec, ...] = (
     ParameterSpec("log_rate0_um_y", math.log(4.0), math.log(0.02), math.log(200.0), math.log(4.0), 1.5, "Reference anodic dissolution rate for Hastelloy N in fuel fluoride at 650 C, um/y."),
     ParameterSpec("Ea_corr_kJ_mol", 60.0, 20.0, 180.0, 60.0, 30.0, "Apparent activation energy for anodic dissolution."),
@@ -117,8 +143,6 @@ PARAMETER_SPECS: tuple[ParameterSpec, ...] = (
     ParameterSpec("log_ppm_scale_msre", math.log(9.0), math.log(0.01), math.log(500.0), math.log(9.0), 1.5, "Cr ppm per effective um source depth for MSRE-scale inventory closure."),
     ParameterSpec("log_ppm_scale_loop", math.log(120.0), math.log(0.1), math.log(5000.0), math.log(120.0), 1.8, "Cr ppm per effective um source depth for small loop inventory closure."),
     ParameterSpec("log_fe_to_cr_ppm_ratio", math.log(0.25), math.log(0.01), math.log(2.0), math.log(0.25), 1.2, "Magnitude ratio of Fe decrease to Cr increase in NCL inventory closure."),
-    ParameterSpec("log_Dcr_ref_cm2_s", math.log(4.0e-14), math.log(1.0e-16), math.log(5.0e-12), math.log(4.0e-14), 0.75, "Chromium diffusion coefficient at 650 C."),
-    ParameterSpec("Ea_Dcr_kJ_mol", 240.0, 50.0, 450.0, 240.0, 95.0, "Activation energy for solid-state Cr diffusion."),
     ParameterSpec("logit_offgas_fraction", math.log(0.001 / (1.0 - 0.001)), math.log(1.0e-6 / (1.0 - 1.0e-6)), math.log(0.20 / 0.80), math.log(0.001 / (1.0 - 0.001)), 2.0, "Noble-metal off-gas escape fraction as a logit."),
     ParameterSpec("log_te_soluble_ppm", math.log(2.0), math.log(0.01), math.log(100.0), math.log(2.0), 1.5, "Effective soluble tellurium upper-bound concentration."),
     ParameterSpec("log_te_threshold_ratio", math.log(150.0), math.log(5.0), math.log(2000.0), math.log(150.0), 0.90, "Critical U(IV)/U(III) ratio for telluride formation."),
@@ -393,7 +417,26 @@ class MoltenSaltBVModel:
 
     def cr_diffusion_cm2_s(self, row: pd.Series | Mapping[str, Any]) -> float:
         T = float(self._feature(row, "temperature_K", T_REF_K) or T_REF_K)
-        logD = self._param("log_Dcr_ref_cm2_s") + self.thermal_term(T, self._param("Ea_Dcr_kJ_mol"))
+        material = str(self._feature(row, "material_class", "generic_metal"))
+
+        diffusivities = solid_diffusivities()
+        fallbacks = solid_diffusivity_fallbacks()
+
+        material_data = _case_insensitive_get(diffusivities, material)
+
+        if material_data is None or "Cr" not in material_data:
+            fallback_material = _case_insensitive_get(fallbacks, material)
+            if fallback_material is not None:
+                material_data = _case_insensitive_get(diffusivities, fallback_material)
+
+        if material_data is None or "Cr" not in material_data:
+            material_data = diffusivities["generic_metal"]
+
+        props = material_data["Cr"]
+        D0_cm2_s = float(props["D0_cm2_s"])
+        Q_kJ_mol = float(props["Q_kJ_mol"])
+
+        logD = math.log(D0_cm2_s) - Q_kJ_mol * 1000.0 / (R_GAS * T)
         return float(exp_clip(logD, -80.0, -20.0))
 
     def salt_cr_ppm(self, row: pd.Series | Mapping[str, Any]) -> float:

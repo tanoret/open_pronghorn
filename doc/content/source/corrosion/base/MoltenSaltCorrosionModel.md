@@ -10,7 +10,8 @@ The model supplies:
 
 - the corrosion rate (harmonic mean of a kinetic and a transport-limited branch), deposition rate,
   IGC depth, mass loss/gain, salt chromium ppm, chromium diffusivity, effective overpotential and the
-  full `predict_response` dispatch,
+  full `predict_response` dispatch; `igcDepthFromCorrosionDepthUm` applies the calibrated IGC relation
+  directly to an already accumulated uniform corrosion depth,
 - the Faradaic conversions between current density and penetration rate (shared with the
   Butler-Volmer objects through `CorrosionChemistry`),
 - the seeds for the mechanistic exchange current density and solid-state chromium diffusivity used by

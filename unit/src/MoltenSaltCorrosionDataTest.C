@@ -81,18 +81,74 @@ TEST(MoltenSaltCorrosionData, densityAndChromiumFractionTables)
   EXPECT_DOUBLE_EQ(db.crWeightFraction("unobtanium"), 0.12);
 }
 
+TEST(MoltenSaltCorrosionData, solidDiffusivityProperties)
+{
+  const auto db = loadDatabase();
+
+  // Hastelloy N has an explicit chromium diffusivity correlation from DeVan.
+  EXPECT_TRUE(db.hasSolidDiffusivity("hastelloy_n", "Cr"));
+
+  // Material and element lookup are case-insensitive.
+  EXPECT_TRUE(db.hasSolidDiffusivity("HASTELLOY_N", "cr"));
+
+  const auto props = db.solidDiffusivity("hastelloy_n", "Cr");
+
+  EXPECT_DOUBLE_EQ(props.D0_cm2_s, 1.382126667841e-7);
+  EXPECT_DOUBLE_EQ(props.Q_kJ_mol, 120.620464930);
+  EXPECT_DOUBLE_EQ(props.measurement_temperature_min_K, 964.15);
+  EXPECT_DOUBLE_EQ(props.measurement_temperature_max_K, 1143.15);
+  EXPECT_EQ(props.source, "DeVan 1960, Table XVI, Loop 1248");
+  EXPECT_EQ(props.status, "direct_tracer_measurement");
+
+  // SUS316 has a direct chromium volume/lattice diffusivity correlation from Mizouchi et al.
+  EXPECT_TRUE(db.hasSolidDiffusivity("stainless_316", "Cr"));
+
+  const auto stainless_316 = db.solidDiffusivity("stainless_316", "Cr");
+  EXPECT_DOUBLE_EQ(stainless_316.D0_cm2_s, 1.13e-3);
+  EXPECT_DOUBLE_EQ(stainless_316.Q_kJ_mol, 234.0);
+  EXPECT_DOUBLE_EQ(stainless_316.measurement_temperature_min_K, 888.0);
+  EXPECT_DOUBLE_EQ(stainless_316.measurement_temperature_max_K, 1173.0);
+  EXPECT_EQ(stainless_316.source,
+            "Mizouchi et al. 2004, Sec. 3.1 and Fig. 2, 51Cr volume/lattice diffusion in SUS316");
+  EXPECT_EQ(stainless_316.status, "direct_tracer_measurement");
+
+  // Related stainless grades use the explicitly configured SUS316 engineering fallback.
+  EXPECT_TRUE(db.hasSolidDiffusivity("stainless_316h", "Cr"));
+  EXPECT_TRUE(db.hasSolidDiffusivity("stainless_316l", "Cr"));
+  EXPECT_TRUE(db.hasSolidDiffusivity("stainless_304", "Cr"));
+  EXPECT_TRUE(db.hasSolidDiffusivity("stainless_304l", "Cr"));
+
+  const auto stainless_316h = db.solidDiffusivity("stainless_316h", "Cr");
+  EXPECT_DOUBLE_EQ(stainless_316h.D0_cm2_s, stainless_316.D0_cm2_s);
+  EXPECT_DOUBLE_EQ(stainless_316h.Q_kJ_mol, stainless_316.Q_kJ_mol);
+  EXPECT_EQ(stainless_316h.source, stainless_316.source);
+  EXPECT_EQ(stainless_316h.status, "direct_tracer_measurement");
+
+  // Fallback lookup remains case-insensitive.
+  EXPECT_TRUE(db.hasSolidDiffusivity("STAINLESS_316H", "cr"));
+
+  // An unrelated material still has no alloy-specific or configured fallback entry.
+  EXPECT_FALSE(db.hasSolidDiffusivity("unobtanium", "Cr"));
+
+// Generic metal retains the old correlation as an explicit legacy fallback.
+  EXPECT_TRUE(db.hasSolidDiffusivity("generic_metal", "Cr"));
+
+  const auto legacy = db.solidDiffusivity("generic_metal", "Cr");
+  EXPECT_DOUBLE_EQ(legacy.D0_cm2_s, 1.5195890862355468);
+  EXPECT_DOUBLE_EQ(legacy.Q_kJ_mol, 240.0);
+  EXPECT_EQ(legacy.source, "Legacy 61-parameter corrosion calibration");
+  EXPECT_EQ(legacy.status, "legacy_fallback");
+}
+
 TEST(MoltenSaltCorrosionData, calibratedParameterLookups)
 {
   const auto db = loadDatabase();
 
   // A spot-check of the fitted parameters from results/parameters.json and validation corrections.
-  EXPECT_DOUBLE_EQ(db.parameter("log_rate0_um_y"), 0.2653718349421312);
-  EXPECT_DOUBLE_EQ(db.parameter("redox_oxidizing_fef2"), 1.5026092214000561);
-  EXPECT_DOUBLE_EQ(db.parameter("mat_stainless_304"), 1.5121011893045204);
-  EXPECT_DOUBLE_EQ(db.parameter("Ea_Dcr_kJ_mol"), 240.0);
-  EXPECT_DOUBLE_EQ(db.parameter("log_Dcr_ref_cm2_s"), -30.84989694079675);
-  EXPECT_DOUBLE_EQ(db.parameter("log_ncl16_cr_inventory_bonus"), 1.0250787771220031);
-  EXPECT_EQ(db.calibratedParameters().size(), 62u);
+  EXPECT_DOUBLE_EQ(db.parameter("log_rate0_um_y"), 0.26537174220781806);
+  EXPECT_DOUBLE_EQ(db.parameter("redox_oxidizing_fef2"), 1.5026093263788216);
+  EXPECT_DOUBLE_EQ(db.parameter("mat_stainless_304"), 1.5121011358409628);
+  EXPECT_EQ(db.calibratedParameters().size(), 60u);
 }
 
 TEST(MoltenSaltCorrosionData, faradaicConversionsRoundTrip)

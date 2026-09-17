@@ -1,0 +1,11 @@
+[Tests]
+  design = 'MoltenSaltCorrosionRateAux.md'
+  issues = '#000'
+  [local_temperature_rate]
+    type = CSVDiff
+    input = local_temperature_rate.i
+    csvdiff = local_temperature_rate_out.csv
+    requirement = 'The effective molten-salt corrosion diagnostic shall evaluate the shared '
+                  'corrosion model at each local temperature functor value.'
+  []
+[]

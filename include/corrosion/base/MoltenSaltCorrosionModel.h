@@ -113,6 +113,9 @@ public:
                         const std::string & redox_override = "") const;
   Real damageMultiplier(const CorrosionFeatures & feat) const;
   Real corrosionDepthUm(const CorrosionFeatures & feat) const;
+  /// IGC depth [um] corresponding to an already accumulated uniform corrosion depth [um].
+  Real igcDepthFromCorrosionDepthUm(const CorrosionFeatures & feat,
+                                    Real corrosion_depth_um) const;
   Real igcDepthUm(const CorrosionFeatures & feat) const;
   Real massLossMgCm2(const CorrosionFeatures & feat) const;
 
