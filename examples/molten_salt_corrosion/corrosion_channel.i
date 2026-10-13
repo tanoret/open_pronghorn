@@ -37,6 +37,12 @@ dose_width = 0.025    # m, Gaussian half-width of the dose region
 
 advected_interp_method = 'upwind'
 
+[FVInterpolationMethods]
+  [upwind]
+    type = FVAdvectedUpwind
+  []
+[]
+
 [Mesh]
   [channel]
     type = GeneratedMeshGenerator
@@ -111,7 +117,7 @@ advected_interp_method = 'upwind'
   [u_advection_stress]
     type = LinearWCNSFVMomentumFlux
     variable = vel_x
-    advected_interp_method = ${advected_interp_method}
+    advected_interp_method_name = 'upwind'
     mu = ${mu}
     u = vel_x
     v = vel_y
@@ -122,7 +128,7 @@ advected_interp_method = 'upwind'
   [v_advection_stress]
     type = LinearWCNSFVMomentumFlux
     variable = vel_y
-    advected_interp_method = ${advected_interp_method}
+    advected_interp_method_name = 'upwind'
     mu = ${mu}
     u = vel_x
     v = vel_y
@@ -143,7 +149,7 @@ advected_interp_method = 'upwind'
     momentum_component = 'y'
   []
   [p_diffusion]
-    type = LinearFVAnisotropicDiffusion
+    type = LinearFVPressureCorrectionDiffusion
     variable = pressure
     diffusion_tensor = Ainv
     use_nonorthogonal_correction = false

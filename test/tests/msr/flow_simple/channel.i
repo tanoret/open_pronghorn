@@ -10,6 +10,12 @@ mu = 2.6
 rho = 1.0
 advected_interp_method = 'upwind'
 
+[FVInterpolationMethods]
+  [upwind]
+    type = FVAdvectedUpwind
+  []
+[]
+
 [Mesh]
   [mesh]
     type = CartesianMeshGenerator
@@ -69,7 +75,7 @@ advected_interp_method = 'upwind'
   [u_advection_stress]
     type = LinearWCNSFVMomentumFlux
     variable = vel_x
-    advected_interp_method = ${advected_interp_method}
+    advected_interp_method_name = 'upwind'
     mu = ${mu}
     u = vel_x
     v = vel_y
@@ -80,7 +86,7 @@ advected_interp_method = 'upwind'
   [v_advection_stress]
     type = LinearWCNSFVMomentumFlux
     variable = vel_y
-    advected_interp_method = ${advected_interp_method}
+    advected_interp_method_name = 'upwind'
     mu = ${mu}
     u = vel_x
     v = vel_y
@@ -101,7 +107,7 @@ advected_interp_method = 'upwind'
     momentum_component = 'y'
   []
   [p_diffusion]
-    type = LinearFVAnisotropicDiffusion
+    type = LinearFVPressureCorrectionDiffusion
     variable = pressure
     diffusion_tensor = Ainv
     use_nonorthogonal_correction = false

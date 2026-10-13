@@ -22,6 +22,7 @@
 #include "AdvancedCorrosionModelData.h"
 #include "MSTDBTCData.h"
 #include "MSTDBTCStandardStateCorrosionModel.h"
+#include "LinearFVAdvectionUtils.h"
 
 #include <array>
 #include <cctype>
@@ -32,6 +33,9 @@ registerMooseAction("OpenPronghornApp", CorrosionPlatingFlowAction, "add_variabl
 registerMooseAction("OpenPronghornApp", CorrosionPlatingFlowAction, "add_ic");
 registerMooseAction("OpenPronghornApp", CorrosionPlatingFlowAction, "add_linear_fv_kernel");
 registerMooseAction("OpenPronghornApp", CorrosionPlatingFlowAction, "add_linear_fv_bc");
+registerMooseAction("OpenPronghornApp",
+                    CorrosionPlatingFlowAction,
+                    "add_interpolation_method_physics");
 
 namespace
 {
@@ -142,8 +146,7 @@ CorrosionPlatingFlowAction::validParams()
   params.addParam<UserObjectName>(
       "rhie_chow_user_object", "The Rhie-Chow user object for advection by the segregated flow.");
   params.addParam<RealVectorValue>("velocity", "A prescribed constant advection velocity.");
-  MooseEnum interp("average upwind", "upwind");
-  params.addParam<MooseEnum>("advected_interp_method", interp, "Advected interpolation method.");
+  OpenPronghorn::addAdvectedInterpolationParams(params);
   params.addParam<MooseFunctorName>(
       "diffusivity",
       "Explicit effective (molecular + turbulent) diffusivity functor [m^2/s], replacing the "
@@ -414,6 +417,11 @@ CorrosionPlatingFlowAction::act()
     addVariables();
   else if (_current_task == "add_ic")
     addInitialConditions();
+  else if (_current_task == "add_interpolation_method_physics")
+  {
+    if (isParamValid("rhie_chow_user_object") || isParamValid("velocity"))
+      OpenPronghorn::addAdvectedInterpolationMethod(parameters(), *_problem, _factory);
+  }
   else if (_current_task == "add_linear_fv_kernel")
     addKernels();
   else if (_current_task == "add_linear_fv_bc")
@@ -476,8 +484,8 @@ CorrosionPlatingFlowAction::addKernels()
       params.set<LinearVariableName>("variable") = e.salt_var;
       params.set<UserObjectName>("rhie_chow_user_object") =
           getParam<UserObjectName>("rhie_chow_user_object");
-      params.set<MooseEnum>("advected_interp_method") =
-          getParam<MooseEnum>("advected_interp_method");
+      params.set<InterpolationMethodName>("advected_interp_method_name") =
+          OpenPronghorn::advectedInterpolationMethodName(parameters());
       maybeAssignBlocks(params);
       _problem->addLinearFVKernel(
           "LinearFVScalarAdvection", "corr_" + e.salt_var + "_advection", params);
@@ -487,8 +495,8 @@ CorrosionPlatingFlowAction::addKernels()
       auto params = _factory.getValidParams("LinearFVAdvection");
       params.set<LinearVariableName>("variable") = e.salt_var;
       params.set<RealVectorValue>("velocity") = getParam<RealVectorValue>("velocity");
-      params.set<MooseEnum>("advected_interp_method") =
-          getParam<MooseEnum>("advected_interp_method");
+      params.set<InterpolationMethodName>("advected_interp_method_name") =
+          OpenPronghorn::advectedInterpolationMethodName(parameters());
       maybeAssignBlocks(params);
       _problem->addLinearFVKernel("LinearFVAdvection", "corr_" + e.salt_var + "_advection", params);
     }

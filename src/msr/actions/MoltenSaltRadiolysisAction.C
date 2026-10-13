@@ -10,11 +10,15 @@
 #include "MoltenSaltRadiolysisAction.h"
 #include "FEProblemBase.h"
 #include "Factory.h"
+#include "LinearFVAdvectionUtils.h"
 
 #include <algorithm>
 #include <sstream>
 
 registerMooseAction("OpenPronghornApp", MoltenSaltRadiolysisAction, "add_variable");
+registerMooseAction("OpenPronghornApp",
+                    MoltenSaltRadiolysisAction,
+                    "add_interpolation_method_physics");
 registerMooseAction("OpenPronghornApp", MoltenSaltRadiolysisAction, "add_ic");
 registerMooseAction("OpenPronghornApp", MoltenSaltRadiolysisAction, "add_linear_fv_kernel");
 
@@ -76,9 +80,7 @@ MoltenSaltRadiolysisAction::validParams()
       "velocity",
       "A prescribed constant advection velocity for the dissolved species. Used only when "
       "'rhie_chow_user_object' is not supplied.");
-  MooseEnum interp("average upwind", "upwind");
-  params.addParam<MooseEnum>(
-      "advected_interp_method", interp, "The advected interpolation method for the species.");
+  OpenPronghorn::addAdvectedInterpolationParams(params);
 
   params.addParam<Real>("kLa", 0.0, "Overall gas-liquid mass-transfer coefficient kLa [1/s].");
   params.addParam<Real>(
@@ -207,6 +209,12 @@ MoltenSaltRadiolysisAction::act()
     addVariables();
   else if (_current_task == "add_ic")
     addInitialConditions();
+  else if (_current_task == "add_interpolation_method_physics")
+  {
+    if (isParamValid("rhie_chow_user_object") || isParamValid("velocity") ||
+        isParamValid("gas_buoyancy_velocity"))
+      OpenPronghorn::addAdvectedInterpolationMethod(parameters(), *_problem, _factory);
+  }
   else if (_current_task == "add_linear_fv_kernel")
     addKernels();
 }
@@ -289,7 +297,8 @@ MoltenSaltRadiolysisAction::addKernels()
       params.set<LinearVariableName>("variable") = sp.name;
       params.set<UserObjectName>("rhie_chow_user_object") =
           getParam<UserObjectName>("rhie_chow_user_object");
-      params.set<MooseEnum>("advected_interp_method") = getParam<MooseEnum>("advected_interp_method");
+      params.set<InterpolationMethodName>("advected_interp_method_name") =
+        OpenPronghorn::advectedInterpolationMethodName(parameters());
       maybeAssignBlocks(params);
       _problem->addLinearFVKernel("LinearFVScalarAdvection", "msr_" + sp.name + "_advection", params);
     }
@@ -299,7 +308,8 @@ MoltenSaltRadiolysisAction::addKernels()
       auto params = _factory.getValidParams("LinearFVAdvection");
       params.set<LinearVariableName>("variable") = sp.name;
       params.set<RealVectorValue>("velocity") = getParam<RealVectorValue>("velocity");
-      params.set<MooseEnum>("advected_interp_method") = getParam<MooseEnum>("advected_interp_method");
+      params.set<InterpolationMethodName>("advected_interp_method_name") =
+        OpenPronghorn::advectedInterpolationMethodName(parameters());
       maybeAssignBlocks(params);
       _problem->addLinearFVKernel("LinearFVAdvection", "msr_" + sp.name + "_advection", params);
     }
@@ -381,7 +391,8 @@ MoltenSaltRadiolysisAction::addGasTransport(const std::string & name,
     params.set<LinearVariableName>("variable") = name;
     params.set<UserObjectName>("rhie_chow_user_object") =
         getParam<UserObjectName>("rhie_chow_user_object");
-    params.set<MooseEnum>("advected_interp_method") = getParam<MooseEnum>("advected_interp_method");
+    params.set<InterpolationMethodName>("advected_interp_method_name") =
+        OpenPronghorn::advectedInterpolationMethodName(parameters());
     if (has_buoyancy)
     {
       params.set<MooseFunctorName>("u_slip") = numberToFunctor(buoyancy(0));
@@ -398,7 +409,8 @@ MoltenSaltRadiolysisAction::addGasTransport(const std::string & name,
     auto params = _factory.getValidParams("LinearFVAdvection");
     params.set<LinearVariableName>("variable") = name;
     params.set<RealVectorValue>("velocity") = flow + buoyancy;
-    params.set<MooseEnum>("advected_interp_method") = getParam<MooseEnum>("advected_interp_method");
+    params.set<InterpolationMethodName>("advected_interp_method_name") =
+        OpenPronghorn::advectedInterpolationMethodName(parameters());
     maybeAssignBlocks(params);
     _problem->addLinearFVKernel("LinearFVAdvection", "msr_" + name + "_advection", params);
   }

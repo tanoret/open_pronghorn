@@ -134,9 +134,16 @@ advected_interp_method = 'upwind'
   previous_nl_solution_required = true
 []
 
+[FVInterpolationMethods]
+  [upwind]
+    type = FVAdvectedUpwind
+  []
+[]
+
 [GlobalParams]
   rhie_chow_user_object = 'rc'
   advected_interp_method = ${advected_interp_method}
+  advected_interp_method_name = 'upwind'
 []
 
 [UserObjects]
@@ -321,7 +328,7 @@ corr_rate_ref = 142.55
     momentum_component = 'y'
   []
   [p_diffusion]
-    type = LinearFVAnisotropicDiffusion
+    type = LinearFVPressureCorrectionDiffusion
     variable = pressure
     diffusion_tensor = Ainv
     use_nonorthogonal_correction = false

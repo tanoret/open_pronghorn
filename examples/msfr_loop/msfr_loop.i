@@ -114,9 +114,16 @@ wall_treatment = 'eq_newton'
   previous_nl_solution_required = true
 []
 
+[FVInterpolationMethods]
+  [upwind]
+    type = FVAdvectedUpwind
+  []
+[]
+
 [GlobalParams]
   rhie_chow_user_object = 'rc'
   advected_interp_method = 'upwind'
+  advected_interp_method_name = 'upwind'
 []
 
 [UserObjects]
@@ -398,7 +405,7 @@ wall_treatment = 'eq_newton'
     block = 'salt'
   []
   [p_diffusion]
-    type = LinearFVAnisotropicDiffusion
+    type = LinearFVPressureCorrectionDiffusion
     variable = pressure
     diffusion_tensor = Ainv
     use_nonorthogonal_correction = false
