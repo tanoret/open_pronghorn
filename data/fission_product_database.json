@@ -1,0 +1,669 @@
+{
+  "description": "Fission-product chains for the OpenPronghorn FissionProductInventory action.",
+  "units": {
+    "half_life": "s",
+    "cross_section": "barn (2200 m/s capture)",
+    "molar_mass": "g/mol",
+    "yields": "fraction per fission"
+  },
+  "provenance": {
+    "decay": "ENDF/B-VIII.0 decay sub-library, MF8/MT457 (half-lives, branching ratios).",
+    "yields": "ENDF/B-VIII.0 neutron fission yield sub-library, U-235, MT454 (independent) and MT459 (cumulative) at 0.0253 eV (thermal) and 500 keV (fast).",
+    "capture": "2200 m/s capture cross sections tabulated in the MF1/MT451 description of the ENDF/B-VIII.0 neutron evaluations (Mughabghab, Atlas of Neutron Resonances).",
+    "lumping": "Untracked isomeric states are lumped: their decay branches are followed to the next tracked nuclide (e.g. I135 -> Xe135m -> Xe135).",
+    "generator": "scripts/fission_products/build_fission_product_database.py"
+  },
+  "groups": {
+    "noble_gas": "Insoluble noble gases (Kr, Xe): removed by sparging/off-gas.",
+    "noble_metal": "Noble and semi-noble metals (Nb, Mo, Tc, Ru, Rh, Te): insoluble in the salt as metals; plate on metal surfaces and are entrained in the off-gas.",
+    "halogen": "Halogens (I): remain in the salt as iodide.",
+    "salt_seeking": "Salt-seeking fission products (Sr, Y, Zr, Cs, Pm, Sm): stable fluorides or chlorides that remain dissolved."
+  },
+  "nuclides": {
+    "Kr85": {
+      "Z": 36,
+      "A": 85,
+      "isomeric_state": 0,
+      "group": "noble_gas",
+      "molar_mass": 84.912529,
+      "half_life": 339433500.0,
+      "decay": [
+        {
+          "daughter": "Rb85",
+          "branching": 1.0
+        }
+      ],
+      "capture": {
+        "cross_section": 1.662,
+        "product": "Kr86"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 0.000255332,
+          "cumulative": 0.00283404
+        },
+        "U235_fast": {
+          "independent": 3.09397e-05,
+          "cumulative": 0.00274946
+        }
+      }
+    },
+    "Sr90": {
+      "Z": 38,
+      "A": 90,
+      "isomeric_state": 0,
+      "group": "salt_seeking",
+      "molar_mass": 89.907741,
+      "half_life": 908543300.0,
+      "decay": [
+        {
+          "daughter": "Y90",
+          "branching": 1.0
+        }
+      ],
+      "capture": {
+        "cross_section": 0.015,
+        "product": "Sr91"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 0.000737128,
+          "cumulative": 0.0578194
+        },
+        "U235_fast": {
+          "independent": 0.000343157,
+          "cumulative": 0.05465
+        }
+      }
+    },
+    "Y90": {
+      "Z": 39,
+      "A": 90,
+      "isomeric_state": 0,
+      "group": "salt_seeking",
+      "molar_mass": 89.907156,
+      "half_life": 230400.0,
+      "decay": [
+        {
+          "daughter": "Zr90",
+          "branching": 1.0
+        }
+      ],
+      "capture": {
+        "cross_section": 3.3,
+        "product": "Y91"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 4.48468e-08,
+          "cumulative": 0.0578194
+        },
+        "U235_fast": {
+          "independent": 2.29498e-08,
+          "cumulative": 0.05465
+        }
+      }
+    },
+    "Zr95": {
+      "Z": 40,
+      "A": 95,
+      "isomeric_state": 0,
+      "group": "salt_seeking",
+      "molar_mass": 94.908046,
+      "half_life": 5532365.0,
+      "decay": [
+        {
+          "daughter": "Nb95",
+          "branching": 0.99939508
+        },
+        {
+          "daughter": "Mo95",
+          "branching": 0.00060492
+        }
+      ],
+      "capture": {
+        "cross_section": 1.2,
+        "product": "Zr96"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 0.00127244,
+          "cumulative": 0.0650274
+        },
+        "U235_fast": {
+          "independent": 0.000147749,
+          "cumulative": 0.0643197
+        }
+      }
+    },
+    "Nb95": {
+      "Z": 41,
+      "A": 95,
+      "isomeric_state": 0,
+      "group": "noble_metal",
+      "molar_mass": 94.906835,
+      "half_life": 3023222.0,
+      "decay": [
+        {
+          "daughter": "Mo95",
+          "branching": 1.0
+        }
+      ],
+      "capture": {
+        "cross_section": 7.0,
+        "product": "Nb96"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 1.05993e-06,
+          "cumulative": 0.0650287
+        },
+        "U235_fast": {
+          "independent": 4.41996e-08,
+          "cumulative": 0.0643198
+        }
+      }
+    },
+    "Mo95": {
+      "Z": 42,
+      "A": 95,
+      "isomeric_state": 0,
+      "group": "noble_metal",
+      "molar_mass": 94.905847,
+      "half_life": null,
+      "decay": [],
+      "capture": {
+        "cross_section": 13.39,
+        "product": "Mo96"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 4.93965e-12,
+          "cumulative": 0.0650287
+        },
+        "U235_fast": {
+          "independent": 1.49999e-12,
+          "cumulative": 0.0643198
+        }
+      }
+    },
+    "Mo99": {
+      "Z": 42,
+      "A": 99,
+      "isomeric_state": 0,
+      "group": "noble_metal",
+      "molar_mass": 98.907715,
+      "half_life": 237513.6,
+      "decay": [
+        {
+          "daughter": "Tc99m",
+          "branching": 0.8788641
+        },
+        {
+          "daughter": "Tc99",
+          "branching": 0.1211359
+        }
+      ],
+      "capture": {
+        "cross_section": 8.0,
+        "product": "Mo100"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 0.00042814,
+          "cumulative": 0.0610873
+        },
+        "U235_fast": {
+          "independent": 7.23994e-06,
+          "cumulative": 0.0594313
+        }
+      }
+    },
+    "Tc99m": {
+      "Z": 43,
+      "A": 99,
+      "isomeric_state": 1,
+      "group": "noble_metal",
+      "molar_mass": 98.906252,
+      "half_life": 21624.12,
+      "decay": [
+        {
+          "daughter": "Tc99",
+          "branching": 0.999963
+        },
+        {
+          "daughter": "Ru99",
+          "branching": 3.7e-05
+        }
+      ],
+      "capture": {
+        "cross_section": 0.0,
+        "product": "Tc100"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 2.8898e-10,
+          "cumulative": 0.0537569
+        },
+        "U235_fast": {
+          "independent": 9.93991e-11,
+          "cumulative": 0.0522996
+        }
+      }
+    },
+    "Tc99": {
+      "Z": 43,
+      "A": 99,
+      "isomeric_state": 0,
+      "group": "noble_metal",
+      "molar_mass": 98.906252,
+      "half_life": 6661810000000.0,
+      "decay": [
+        {
+          "daughter": "Ru99",
+          "branching": 1.0
+        }
+      ],
+      "capture": {
+        "cross_section": 20.0015,
+        "product": "Tc100"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 1.22991e-09,
+          "cumulative": 0.0610873
+        },
+        "U235_fast": {
+          "independent": 4.84996e-10,
+          "cumulative": 0.0594313
+        }
+      }
+    },
+    "Ru103": {
+      "Z": 44,
+      "A": 103,
+      "isomeric_state": 0,
+      "group": "noble_metal",
+      "molar_mass": 102.906315,
+      "half_life": 3390941.0,
+      "decay": [
+        {
+          "daughter": "Rh103",
+          "branching": 1.0
+        }
+      ],
+      "capture": {
+        "cross_section": 8.0,
+        "product": "Ru104"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 2.35983e-07,
+          "cumulative": 0.0303093
+        },
+        "U235_fast": {
+          "independent": 9.93991e-08,
+          "cumulative": 0.032439
+        }
+      }
+    },
+    "Rh103": {
+      "Z": 45,
+      "A": 103,
+      "isomeric_state": 0,
+      "group": "noble_metal",
+      "molar_mass": 102.905508,
+      "half_life": null,
+      "decay": [],
+      "capture": {
+        "cross_section": 141.995,
+        "product": "Rh104"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 6.37955e-13,
+          "cumulative": 0.0303093
+        },
+        "U235_fast": {
+          "independent": 2.03998e-13,
+          "cumulative": 0.032439
+        }
+      }
+    },
+    "Ru106": {
+      "Z": 44,
+      "A": 106,
+      "isomeric_state": 0,
+      "group": "noble_metal",
+      "molar_mass": 105.907295,
+      "half_life": 32123520.0,
+      "decay": [
+        {
+          "daughter": "Rh106",
+          "branching": 1.0
+        }
+      ],
+      "capture": {
+        "cross_section": 0.146,
+        "product": "Ru107"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 9.06936e-09,
+          "cumulative": 0.00401548
+        },
+        "U235_fast": {
+          "independent": 8.69992e-09,
+          "cumulative": 0.00532394
+        }
+      }
+    },
+    "Te132": {
+      "Z": 52,
+      "A": 132,
+      "isomeric_state": 0,
+      "group": "noble_metal",
+      "molar_mass": 131.908558,
+      "half_life": 276825.6,
+      "decay": [
+        {
+          "daughter": "I132",
+          "branching": 1.0
+        }
+      ],
+      "capture": {
+        "cross_section": 0.125,
+        "product": "Te133"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 0.0153084,
+          "cumulative": 0.042948
+        },
+        "U235_fast": {
+          "independent": 0.0107473,
+          "cumulative": 0.0466077
+        }
+      }
+    },
+    "I131": {
+      "Z": 53,
+      "A": 131,
+      "isomeric_state": 0,
+      "group": "halogen",
+      "molar_mass": 130.906147,
+      "half_life": 693377.3,
+      "decay": [
+        {
+          "daughter": "Xe131",
+          "branching": 1.0
+        }
+      ],
+      "capture": {
+        "cross_section": 80.0,
+        "product": "I132"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 3.91572e-05,
+          "cumulative": 0.0289069
+        },
+        "U235_fast": {
+          "independent": 1.08099e-05,
+          "cumulative": 0.0321952
+        }
+      }
+    },
+    "I132": {
+      "Z": 53,
+      "A": 132,
+      "isomeric_state": 0,
+      "group": "halogen",
+      "molar_mass": 131.907953,
+      "half_life": 8262.0,
+      "decay": [
+        {
+          "daughter": "Xe132",
+          "branching": 1.0
+        }
+      ],
+      "capture": {
+        "cross_section": 0.0,
+        "product": "I133"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 9.13085e-05,
+          "cumulative": 0.0431185
+        },
+        "U235_fast": {
+          "independent": 5.12146e-05,
+          "cumulative": 0.0467034
+        }
+      }
+    },
+    "I133": {
+      "Z": 53,
+      "A": 133,
+      "isomeric_state": 0,
+      "group": "halogen",
+      "molar_mass": 132.907842,
+      "half_life": 74880.0,
+      "decay": [
+        {
+          "daughter": "Xe133",
+          "branching": 1.0
+        }
+      ],
+      "capture": {
+        "cross_section": 0.0,
+        "product": "I134"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 0.000825122,
+          "cumulative": 0.0669654
+        },
+        "U235_fast": {
+          "independent": 0.00191884,
+          "cumulative": 0.0671794
+        }
+      }
+    },
+    "Xe133": {
+      "Z": 54,
+      "A": 133,
+      "isomeric_state": 0,
+      "group": "noble_gas",
+      "molar_mass": 132.905926,
+      "half_life": 452995.2,
+      "decay": [
+        {
+          "daughter": "Cs133",
+          "branching": 1.0
+        }
+      ],
+      "capture": {
+        "cross_section": 190.0,
+        "product": "Xe134"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 6.65953e-06,
+          "cumulative": 0.0669909
+        },
+        "U235_fast": {
+          "independent": 1.45499e-05,
+          "cumulative": 0.0672362
+        }
+      }
+    },
+    "I135": {
+      "Z": 53,
+      "A": 135,
+      "isomeric_state": 0,
+      "group": "halogen",
+      "molar_mass": 134.910042,
+      "half_life": 23652.0,
+      "decay": [
+        {
+          "daughter": "Xe135",
+          "branching": 0.99950473
+        },
+        {
+          "daughter": "Cs135",
+          "branching": 0.00049527
+        }
+      ],
+      "capture": {
+        "cross_section": 80.0,
+        "product": "I136"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 0.0292737,
+          "cumulative": 0.0628187
+        },
+        "U235_fast": {
+          "independent": 0.0360323,
+          "cumulative": 0.0629589
+        }
+      }
+    },
+    "Xe135": {
+      "Z": 54,
+      "A": 135,
+      "isomeric_state": 0,
+      "group": "noble_gas",
+      "molar_mass": 134.907218,
+      "half_life": 32904.0,
+      "decay": [
+        {
+          "daughter": "Cs135",
+          "branching": 1.0
+        }
+      ],
+      "capture": {
+        "cross_section": 2647600.0,
+        "product": "Xe136"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 0.000785125,
+          "cumulative": 0.065385
+        },
+        "U235_fast": {
+          "independent": 0.0011961,
+          "cumulative": 0.0660108
+        }
+      }
+    },
+    "Cs135": {
+      "Z": 55,
+      "A": 135,
+      "isomeric_state": 0,
+      "group": "salt_seeking",
+      "molar_mass": 134.906007,
+      "half_life": 72582500000000.0,
+      "decay": [
+        {
+          "daughter": "Ba135",
+          "branching": 1.0
+        }
+      ],
+      "capture": {
+        "cross_section": 8.702,
+        "product": "Cs136"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 2.45483e-06,
+          "cumulative": 0.0653899
+        },
+        "U235_fast": {
+          "independent": 1.02999e-06,
+          "cumulative": 0.0660129
+        }
+      }
+    },
+    "Cs137": {
+      "Z": 55,
+      "A": 137,
+      "isomeric_state": 0,
+      "group": "salt_seeking",
+      "molar_mass": 136.907098,
+      "half_life": 949252600.0,
+      "decay": [
+        {
+          "daughter": "Ba137",
+          "branching": 0.99999999
+        }
+      ],
+      "capture": {
+        "cross_section": 0.25,
+        "product": "Cs138"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 0.000599988,
+          "cumulative": 0.0618832
+        },
+        "U235_fast": {
+          "independent": 0.00228352,
+          "cumulative": 0.0622142
+        }
+      }
+    },
+    "Pm149": {
+      "Z": 61,
+      "A": 149,
+      "isomeric_state": 0,
+      "group": "salt_seeking",
+      "molar_mass": 148.91838,
+      "half_life": 191088.0,
+      "decay": [
+        {
+          "daughter": "Sm149",
+          "branching": 1.0
+        }
+      ],
+      "capture": {
+        "cross_section": 1400.0,
+        "product": "Pm150"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 3.86973e-08,
+          "cumulative": 0.0108163
+        },
+        "U235_fast": {
+          "independent": 1.63999e-08,
+          "cumulative": 0.0103697
+        }
+      }
+    },
+    "Sm149": {
+      "Z": 62,
+      "A": 149,
+      "isomeric_state": 0,
+      "group": "salt_seeking",
+      "molar_mass": 148.91717,
+      "half_life": null,
+      "decay": [],
+      "capture": {
+        "cross_section": 40138.7,
+        "product": "Sm150"
+      },
+      "yields": {
+        "U235_thermal": {
+          "independent": 1.70988e-12,
+          "cumulative": 0.0108163
+        },
+        "U235_fast": {
+          "independent": 5.71995e-13,
+          "cumulative": 0.0103697
+        }
+      }
+    }
+  }
+}

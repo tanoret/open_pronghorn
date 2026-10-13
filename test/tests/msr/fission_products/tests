@@ -1,0 +1,90 @@
+[Tests]
+  design = 'FissionProductInventoryAction.md'
+  issues = '#000'
+  [saturation]
+    type = 'CSVDiff'
+    input = 'saturation.i'
+    csvdiff = 'saturation_out.csv'
+    abs_zero = 1e-14
+    rel_err = 1e-8
+    requirement = 'The system shall build fission-product inventories from the nuclide database and '
+                  'reproduce the analytic saturation of a nuclide produced by fission and lost by '
+                  'decay.'
+  []
+  [bateman_chain]
+    type = 'CSVDiff'
+    input = 'bateman_chain.i'
+    csvdiff = 'bateman_chain_out.csv'
+    abs_zero = 1e-14
+    rel_err = 1e-8
+    requirement = 'The system shall order the decay chain parent before daughter and solve the '
+                  'Bateman equations of the Mo-99 / Tc-99m / Tc-99 chain exactly in one sweep per '
+                  'time step.'
+  []
+  [xe_equilibrium]
+    type = 'CSVDiff'
+    input = 'xe_equilibrium.i'
+    csvdiff = 'xe_equilibrium_out.csv'
+    abs_zero = 1e-14
+    rel_err = 1e-8
+    requirement = 'The system shall reproduce the analytic I-135 / Xe-135 equilibrium with neutron '
+                  'burnout and off-gas sparging, without double counting the cumulative yields.'
+  []
+  [noble_metal_plating]
+    type = 'CSVDiff'
+    input = 'noble_metal_plating.i'
+    csvdiff = 'noble_metal_plating_out.csv'
+    abs_zero = 1e-14
+    rel_err = 1e-8
+    requirement = 'The system shall partition noble metals between the salt, the plated and the '
+                  'off-gas inventories, letting the removed inventories keep decaying, and conserve '
+                  'the total chain inventory.'
+  []
+  [wall_plating]
+    type = 'CSVDiff'
+    input = 'wall_plating.i'
+    csvdiff = 'wall_plating_out.csv'
+    abs_zero = 1e-14
+    rel_err = 1e-8
+    requirement = 'The system shall plate noble metals on boundaries with a mass-transfer flux and '
+                  'approach the well-mixed plating limit when diffusion is fast.'
+  []
+  [errors]
+    requirement = 'The system shall report an error'
+    [unknown_nuclide]
+      type = RunException
+      input = 'saturation.i'
+      cli_args = "FissionProductInventory/nuclides='I131 Xx999'"
+      expect_err = "Nuclide 'Xx999' is not in the database"
+      detail = 'when a nuclide is not in the database,'
+    []
+    [removal_length]
+      type = RunException
+      input = 'saturation.i'
+      cli_args = "FissionProductInventory/removal_groups='noble_gas' FissionProductInventory/removal_rates='1 2' FissionProductInventory/removal_destinations='offgas'"
+      expect_err = "must have equal length"
+      detail = 'when the removal pathway parameters have different lengths,'
+    []
+    [no_source]
+      type = RunException
+      input = 'saturation.i'
+      cli_args = "FissionProductInventory/power_density=1"
+      expect_err = "Exactly one of 'fission_rate_density' and 'power_density'"
+      detail = 'when both or neither of the fission rate and power density are given,'
+    []
+    [bad_yield_set]
+      type = RunException
+      input = 'saturation.i'
+      cli_args = "FissionProductInventory/yield_set=Pu239_thermal"
+      expect_err = "is not in the database; available"
+      detail = 'when the fission yield set is not in the database, and'
+    []
+    [plating_without_diffusion]
+      type = RunException
+      input = 'saturation.i'
+      cli_args = "FissionProductInventory/plating_boundaries=left FissionProductInventory/plating_mass_transfer_coefficient=1"
+      expect_err = "supply 'diffusivity'"
+      detail = 'when wall plating is requested without a diffusivity.'
+    []
+  []
+[]

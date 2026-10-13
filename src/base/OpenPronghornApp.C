@@ -50,6 +50,10 @@ OpenPronghornApp::registerAll(Factory & f, ActionFactory & af, Syntax & syntax)
   // Molten salt radiolysis action: builds species variables and chemistry kernels
   registerSyntax("MoltenSaltRadiolysisAction", "MoltenSaltRadiolysis");
 
+  // Fission-product inventory action: Bateman depletion chains with MSR removal pathways
+  // (off-gas sparging, noble-metal plating) as linear finite-volume variables
+  registerSyntax("FissionProductInventoryAction", "FissionProductInventory");
+
   // Molten salt corrosion and plating action: builds species variables, transport, the electric
   // potential equation and the Butler-Volmer electrode kinetics (finite-element / Newton)
   registerSyntax("CorrosionPlatingAction", "CorrosionPlating");
