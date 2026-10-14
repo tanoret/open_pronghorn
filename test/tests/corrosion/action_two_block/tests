@@ -12,4 +12,23 @@
                   'correlation, transfers chromium from the solid into the salt while conserving '
                   'the total chromium inventory and accumulating the metal recession.'
   []
+  [solid_activity]
+    type = CSVDiff
+    input = 'solid_activity.i'
+    csvdiff = 'solid_activity_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-6
+    requirement = 'The CorrosionPlating action shall optionally scale the anodic Butler-Volmer branch '
+                  'of a two-block coupon by the alloy-surface activity c_s / c_s,0, so that the '
+                  'dissolution slows as the alloy surface depletes, while conserving the total '
+                  'chromium inventory.'
+  []
+  [solid_activity_requires_two_block]
+    type = RunException
+    input = '../action_salt_only/salt_only.i'
+    cli_args = 'CorrosionPlating/solid_activity=true'
+    expect_err = 'The alloy-surface activity requires the two_block topology'
+    requirement = 'The CorrosionPlating action shall reject the alloy-surface activity option for '
+                  'topologies without a solid block.'
+  []
 []

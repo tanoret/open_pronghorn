@@ -28,9 +28,12 @@
  * plating.
  *
  * The metal and salt phase potentials drive the overpotential. They may be supplied as coupled
- * variables (phi_solid on the neighbor block, phi_salt on this block; fully coupled, AD-exact) or as
- * fixed constants (metal_potential, salt_potential) for a supporting-electrolyte problem in which
- * the potential field is not solved.
+ * variables (phi_solid on the neighbor block, phi_salt on this block; fully coupled, AD-exact) or
+ * as fixed constants (metal_potential, salt_potential) for a supporting-electrolyte problem in
+ * which the potential field is not solved.
+ *
+ * Optionally (solid_reference_concentration), the anodic branch carries the alloy-surface activity
+ * c_s / c_s,0 so the dissolution rate falls as a depletion layer forms in the solid.
  */
 class ButlerVolmerInterface : public ADInterfaceKernel
 {
@@ -69,4 +72,8 @@ protected:
   const Real _salt_potential;
   /// Fixed metal-phase potential when not coupled [V].
   const Real _metal_potential;
+  /// Whether the anodic branch carries the solid-side metal activity c_s / c_s,0.
+  const bool _has_solid_activity;
+  /// Solid concentration of unit metal activity c_s,0 [mol/m^3].
+  const Real _solid_reference_concentration;
 };

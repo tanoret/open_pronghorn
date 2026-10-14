@@ -44,6 +44,13 @@ CorrosionRateAux::validParams()
   params.addParam<Real>("alpha_c", 0.5, "Cathodic charge-transfer coefficient.");
   params.addRequiredParam<Real>("temperature", "Temperature [K].");
   params.addParam<Real>("c_ref", 1.0, "Reference concentration for the Nernst term [mol/m^3].");
+  params.addCoupledVar("solid_concentration",
+                       "Solid-side metal concentration [mol/m^3]. When coupled, the anodic branch "
+                       "carries the alloy-surface activity solid_concentration / "
+                       "solid_reference_concentration.");
+  params.addParam<Real>("solid_reference_concentration",
+                        1.0,
+                        "Solid concentration of unit metal activity [mol/m^3].");
 
   params.addCoupledVar("salt_potential", "Salt-phase electric potential variable [V].");
   params.addParam<MooseFunctorName>("salt_potential_functor",
@@ -91,8 +98,14 @@ CorrosionRateAux::CorrosionRateAux(const InputParameters & parameters)
                                  ? &getFunctor<Real>("metal_potential_functor")
                                  : nullptr),
     _metal_potential(getParam<Real>("metal_potential_value")),
+    _has_solid_concentration(isCoupled("solid_concentration")),
+    _solid_concentration(_has_solid_concentration ? coupledValue("solid_concentration") : _zero),
+    _solid_reference_concentration(getParam<Real>("solid_reference_concentration")),
     _u_old(uOld())
 {
+  if (_has_solid_concentration && !(_solid_reference_concentration > 0.0))
+    paramError("solid_reference_concentration", "Must be positive.");
+
   if (_has_concentration == static_cast<bool>(_concentration_functor))
     paramError(_has_concentration ? "concentration_functor" : "concentration",
                "Supply exactly one salt concentration source: the coupled 'concentration' "
@@ -155,19 +168,31 @@ CorrosionRateAux::functorValue(const Moose::Functor<Real> & functor) const
 Real
 CorrosionRateAux::computeValue()
 {
-  const Real phi_salt = _has_salt_potential
-                            ? _salt_potential_var[_qp]
-                            : (_salt_potential_functor ? functorValue(*_salt_potential_functor)
-                                                       : _salt_potential);
-  const Real phi_metal = _has_metal_potential
-                             ? _metal_potential_var[_qp]
-                             : (_metal_potential_functor ? functorValue(*_metal_potential_functor)
-                                                        : _metal_potential);
-  const Real c_ion = _has_concentration ? _concentration[_qp]
-                                        : functorValue(*_concentration_functor);
+  const Real phi_salt =
+      _has_salt_potential
+          ? _salt_potential_var[_qp]
+          : (_salt_potential_functor ? functorValue(*_salt_potential_functor) : _salt_potential);
+  const Real phi_metal =
+      _has_metal_potential
+          ? _metal_potential_var[_qp]
+          : (_metal_potential_functor ? functorValue(*_metal_potential_functor) : _metal_potential);
+  const Real c_ion =
+      _has_concentration ? _concentration[_qp] : functorValue(*_concentration_functor);
 
-  const Real i_bv = Corrosion::bvCurrent(
-      phi_metal, phi_salt, c_ion, _E0, _valence, _i0, _alpha_a, _alpha_c, _temperature, _c_ref);
+  const Real metal_activity =
+      _has_solid_concentration ? _solid_concentration[_qp] / _solid_reference_concentration : 1.0;
+
+  const Real i_bv = Corrosion::bvCurrent(phi_metal,
+                                         phi_salt,
+                                         c_ion,
+                                         _E0,
+                                         _valence,
+                                         _i0,
+                                         _alpha_a,
+                                         _alpha_c,
+                                         _temperature,
+                                         _c_ref,
+                                         metal_activity);
 
   if (_mode == Mode::Current)
     return i_bv;

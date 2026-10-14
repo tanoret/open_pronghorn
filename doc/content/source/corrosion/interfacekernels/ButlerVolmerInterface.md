@@ -9,6 +9,10 @@ dissolution (anodic, $i_{BV}>0$) and plating (cathodic, $i_{BV}<0$).
 !equation
 i_{BV} = i_0\left[\exp\!\left(\frac{\alpha_a z F\,\eta}{RT}\right) - \frac{c}{c_{ref}}\exp\!\left(-\frac{\alpha_c z F\,\eta}{RT}\right)\right], \qquad \eta = (\phi_{metal} - \phi_{salt}) - E_0
 
+When `solid_reference_concentration` $c_{s,0}$ is supplied, the anodic branch is multiplied by the
+alloy-surface activity $a_s = \max(c_s, 0)/c_{s,0}$ (the neighbor value at the interface), so the
+dissolution slows as the alloy surface depletes; without it the metal activity is one.
+
 The phase potentials may be coupled variables (`phi_salt`, `phi_solid`; fully coupled, AD-exact) or
 fixed constants (`salt_potential`, `metal_potential`) for a supporting-electrolyte problem. The
 companion [ButlerVolmerPotentialInterface](ButlerVolmerPotentialInterface.md) couples the current into

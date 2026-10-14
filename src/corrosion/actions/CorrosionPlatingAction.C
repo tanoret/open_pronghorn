@@ -184,12 +184,12 @@ CorrosionPlatingAction::validParams()
       "be representable as a finite Real.");
 
   // Advection by an external (one-way) velocity field.
-  params.addParam<MooseFunctorName>(
-      "velocity_x", "x-velocity functor [m/s] for salt-ion advection.");
-  params.addParam<MooseFunctorName>(
-      "velocity_y", "y-velocity functor [m/s] for salt-ion advection.");
-  params.addParam<MooseFunctorName>(
-      "velocity_z", "z-velocity functor [m/s] for salt-ion advection.");
+  params.addParam<MooseFunctorName>("velocity_x",
+                                    "x-velocity functor [m/s] for salt-ion advection.");
+  params.addParam<MooseFunctorName>("velocity_y",
+                                    "y-velocity functor [m/s] for salt-ion advection.");
+  params.addParam<MooseFunctorName>("velocity_z",
+                                    "z-velocity functor [m/s] for salt-ion advection.");
 
   params.addParam<Real>("salt_diffusivity",
                         "Override the salt-ion diffusivity [m^2/s] for all elements (e.g. an "
@@ -214,6 +214,12 @@ CorrosionPlatingAction::validParams()
   params.addParam<std::vector<Real>>(
       "initial_condition_values", {}, "Initial values matching 'initial_condition_variables'.");
 
+  params.addParam<bool>(
+      "solid_activity",
+      false,
+      "two_block only: let the anodic Butler-Volmer branch carry the alloy-surface activity "
+      "c_s / c_s,0 (c_s,0 = the initial solid concentration), so dissolution slows as a depletion "
+      "layer forms. The default keeps unit metal activity (reference-correlation behavior).");
   params.addParam<bool>("transient", true, "Add a time derivative to every transported species.");
   params.addParam<bool>("verbose", false, "Print the generated variables and kinetics.");
 
@@ -245,6 +251,12 @@ CorrosionPlatingAction::CorrosionPlatingAction(const InputParameters & parameter
   }
   else if (!isParamValid("reaction_boundary"))
     mooseError("CorrosionPlating: single-domain topology requires 'reaction_boundary'.");
+
+  if (getParam<bool>("solid_activity") && _topology != Topology::TwoBlock)
+    paramError("solid_activity", "The alloy-surface activity requires the two_block topology.");
+  if (getParam<bool>("solid_activity") && _use_mstdb_tc)
+    paramError("solid_activity",
+               "The alloy-surface activity is not available with MSTDB-TC kinetics.");
 
   if (_topology == Topology::SolidOnly && !isParamValid("counter_concentration"))
     paramError("counter_concentration",
@@ -443,9 +455,8 @@ CorrosionPlatingAction::buildPlan()
     plan.solid_var = "cs_" + plan.name;
     plan.valence = props.valence;
     plan.molar_mass = props.molar_mass_g_mol;
-    plan.diffusivity = isParamValid("salt_diffusivity")
-                           ? getParam<Real>("salt_diffusivity")
-                           : props.diffusivity_m2_s;
+    plan.diffusivity = isParamValid("salt_diffusivity") ? getParam<Real>("salt_diffusivity")
+                                                        : props.diffusivity_m2_s;
     plan.solid_diffusivity = solid_diffusivity;
     plan.alpha_a = props.alpha_a;
     plan.alpha_c = props.alpha_c;
@@ -473,11 +484,8 @@ CorrosionPlatingAction::buildPlan()
     // The input is the metal-minus-salt potential difference.  The boundary objects subtract E0,
     // so use the same effective overpotential and exponent clipping here; otherwise a custom
     // nonzero-E0 database would not reproduce the requested reference current.
-    const Real i_ref_a_cm2 =
-        Corrosion::umYToCorrosionCurrent(plan.planned_rate_um_y,
-                                         plan.valence,
-                                         plan.molar_mass,
-                                         density);
+    const Real i_ref_a_cm2 = Corrosion::umYToCorrosionCurrent(
+        plan.planned_rate_um_y, plan.valence, plan.molar_mass, density);
     const Real i_ref_a_m2 = i_ref_a_cm2 * 1.0e4;
     const Real bracket = Corrosion::ActionKinetics::butlerVolmerSeedBracket(
         eta, plan.E0, plan.valence, plan.alpha_a, plan.alpha_c, _reference_temperature);
@@ -505,8 +513,8 @@ CorrosionPlatingAction::buildPlan()
       _console << "[CorrosionPlating] reference corrosion rate " << rate_um_y << " um/y; "
                << _elements.size() << " elements:\n";
       for (const auto & e : _elements)
-        _console << "  " << e.name << " z=" << e.valence << " D=" << e.diffusivity
-                 << " i0=" << e.i0 << " A/m^2\n";
+        _console << "  " << e.name << " z=" << e.valence << " D=" << e.diffusivity << " i0=" << e.i0
+                 << " A/m^2\n";
     }
     else
     {
@@ -514,20 +522,20 @@ CorrosionPlatingAction::buildPlan()
                << " calibration=" << calibration_id << " MSTDB-TC=" << mstdb_version << '\n'
                << "  fluoride_sha256=" << fluoride_sha256 << '\n'
                << "  chloride_sha256=" << chloride_sha256 << '\n'
-               << "  total front rate=" << rate_um_y << " um/y; hot="
-               << _reference_temperature << " K, cold="
-               << getParam<Real>("reference_cold_temperature") << " K, exposure="
-               << getParam<Real>("reference_exposure_time") << " s, area/salt="
-               << getParam<Real>("area_to_salt_mass") << " cm^2/g, inventory coupling="
-               << getParam<Real>("inventory_coupling_factor") << '\n';
+               << "  total front rate=" << rate_um_y << " um/y; hot=" << _reference_temperature
+               << " K, cold=" << getParam<Real>("reference_cold_temperature")
+               << " K, exposure=" << getParam<Real>("reference_exposure_time")
+               << " s, area/salt=" << getParam<Real>("area_to_salt_mass")
+               << " cm^2/g, inventory coupling=" << getParam<Real>("inventory_coupling_factor")
+               << '\n';
       for (const auto & element : _elements)
       {
         const unsigned int i = element.name == "Cr" ? 0 : (element.name == "Fe" ? 1 : 2);
         _console << "  " << element.name << " source_fraction=" << source_fractions[i]
                  << " affinity_log_K_over_Q=" << affinities[i]
                  << " planned_rate=" << element.planned_rate_um_y << " um/y"
-                 << " z=" << element.valence << " D=" << element.diffusivity
-                 << " i0=" << element.i0 << " A/m^2\n";
+                 << " z=" << element.valence << " D=" << element.diffusivity << " i0=" << element.i0
+                 << " A/m^2\n";
       }
     }
     if (_solve_potential)
@@ -659,8 +667,8 @@ CorrosionPlatingAction::addInitialConditions()
 void
 CorrosionPlatingAction::addKernels()
 {
-  const bool has_velocity = isParamValid("velocity_x") || isParamValid("velocity_y") ||
-                            isParamValid("velocity_z");
+  const bool has_velocity =
+      isParamValid("velocity_x") || isParamValid("velocity_y") || isParamValid("velocity_z");
 
   for (const auto & e : _elements)
   {
@@ -769,6 +777,8 @@ CorrosionPlatingAction::addInterfaceKernels()
     // The metal carries the pinned salt's absolute offset so their reference difference is eta.
     params.set<Real>("metal_potential") = default_metal_potential;
     params.set<Real>("salt_potential") = 0.0;
+    if (getParam<bool>("solid_activity"))
+      params.set<Real>("solid_reference_concentration") = e.initial_solid;
     if (_solve_potential)
       params.set<std::vector<VariableName>>("phi_salt") = {saltPotential()};
     _problem->addInterfaceKernel("ButlerVolmerInterface", "bv_" + e.name, params);
@@ -943,10 +953,8 @@ CorrosionPlatingAction::addAuxKernels()
     };
 
     make_total_aux("recession_um", "recession", "recession_aux", "TIMESTEP_END");
-    make_total_aux("corrosion_rate_um_y",
-                   "penetration_rate",
-                   "corrosion_rate_aux",
-                   "INITIAL TIMESTEP_END");
+    make_total_aux(
+        "corrosion_rate_um_y", "penetration_rate", "corrosion_rate_aux", "INITIAL TIMESTEP_END");
     return;
   }
 
@@ -974,6 +982,11 @@ CorrosionPlatingAction::addAuxKernels()
     params.set<Real>("alpha_c") = e.alpha_c;
     params.set<Real>("temperature") = _reference_temperature;
     params.set<Real>("c_ref") = e.c_ref;
+    if (getParam<bool>("solid_activity"))
+    {
+      params.set<std::vector<VariableName>>("solid_concentration") = {e.solid_var};
+      params.set<Real>("solid_reference_concentration") = e.initial_solid;
+    }
     if (_topology == Topology::TwoBlock)
       params.set<Real>("metal_potential_value") = default_metal_potential;
     else if (metal_domain)

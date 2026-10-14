@@ -16,6 +16,11 @@ functor forms let a solid-only diagnostic evaluate the same external-salt concen
 potential used by its [ButlerVolmerBC](../bcs/ButlerVolmerBC.md), including spatially or temporally
 varying inputs.
 
+The optional coupled `solid_concentration` with `solid_reference_concentration` applies the same
+alloy-surface activity $c_s/c_{s,0}$ to the anodic branch as
+[ButlerVolmerInterface](../interfacekernels/ButlerVolmerInterface.md), so the diagnostic matches the
+interface flux of a two-block coupon run with `solid_activity = true`.
+
 For a source-resolved model whose front rate is the sum of several species' equivalent penetration
 rates, use [CorrosionTotalRateAux](CorrosionTotalRateAux.md). `CorrosionRateAux` intentionally keeps
 its original single-species semantics.

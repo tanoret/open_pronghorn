@@ -83,6 +83,11 @@ protected:
   const Moose::Functor<Real> * const _metal_potential_functor;
   const Real _metal_potential;
 
+  /// Optional alloy-surface metal activity source for the anodic branch.
+  const bool _has_solid_concentration;
+  const VariableValue & _solid_concentration;
+  const Real _solid_reference_concentration;
+
   /// Old value of the recession variable (for time accumulation).
   const VariableValue & _u_old;
 };

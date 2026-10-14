@@ -32,13 +32,20 @@ ButlerVolmerInterface::validParams()
   params.addParam<Real>("alpha_c", 0.5, "Cathodic charge-transfer coefficient.");
   params.addRequiredParam<Real>("temperature", "Temperature [K].");
   params.addParam<Real>("c_ref", 1.0, "Reference concentration for the Nernst term [mol/m^3].");
+  params.addParam<Real>(
+      "solid_reference_concentration",
+      "Solid-side metal concentration c_s,0 [mol/m^3] at which the alloy surface has unit "
+      "activity. "
+      "When set, the anodic branch carries c_s / c_s,0 (the neighbor variable), so dissolution "
+      "slows as the alloy surface depletes; otherwise the metal activity is 1.");
 
   params.addCoupledVar("phi_salt", "Salt-phase electric potential on this block [V].");
   params.addCoupledVar("phi_solid", "Metal-phase electric potential on the neighbor block [V].");
   params.addParam<Real>(
       "salt_potential", 0.0, "Fixed salt-phase potential [V] used when phi_salt is not coupled.");
-  params.addParam<Real>(
-      "metal_potential", 0.0, "Fixed metal-phase potential [V] used when phi_solid is not coupled.");
+  params.addParam<Real>("metal_potential",
+                        0.0,
+                        "Fixed metal-phase potential [V] used when phi_solid is not coupled.");
   return params;
 }
 
@@ -56,8 +63,13 @@ ButlerVolmerInterface::ButlerVolmerInterface(const InputParameters & parameters)
     _has_metal_potential(isCoupled("phi_solid")),
     _phi_solid(_has_metal_potential ? &adCoupledNeighborValue("phi_solid") : nullptr),
     _salt_potential(getParam<Real>("salt_potential")),
-    _metal_potential(getParam<Real>("metal_potential"))
+    _metal_potential(getParam<Real>("metal_potential")),
+    _has_solid_activity(isParamValid("solid_reference_concentration")),
+    _solid_reference_concentration(
+        _has_solid_activity ? getParam<Real>("solid_reference_concentration") : 1.0)
 {
+  if (_has_solid_activity && !(_solid_reference_concentration > 0.0))
+    paramError("solid_reference_concentration", "Must be positive.");
 }
 
 ADReal
@@ -66,9 +78,20 @@ ButlerVolmerInterface::computeQpResidual(Moose::DGResidualType type)
   const ADReal phi_salt = _has_salt_potential ? (*_phi_salt)[_qp] : ADReal(_salt_potential);
   const ADReal phi_metal = _has_metal_potential ? (*_phi_solid)[_qp] : ADReal(_metal_potential);
   const ADReal c_ion = _u[_qp];
+  const ADReal metal_activity =
+      _has_solid_activity ? _neighbor_value[_qp] / _solid_reference_concentration : ADReal(1.0);
 
-  const ADReal i_bv = Corrosion::bvCurrent(
-      phi_metal, phi_salt, c_ion, _E0, _valence, _i0, _alpha_a, _alpha_c, _temperature, _c_ref);
+  const ADReal i_bv = Corrosion::bvCurrent(phi_metal,
+                                           phi_salt,
+                                           c_ion,
+                                           _E0,
+                                           _valence,
+                                           _i0,
+                                           _alpha_a,
+                                           _alpha_c,
+                                           _temperature,
+                                           _c_ref,
+                                           metal_activity);
   // Faradaic molar flux of the cation into the salt [mol/m^2/s].
   const ADReal flux = i_bv / (_valence * Corrosion::faraday);
 

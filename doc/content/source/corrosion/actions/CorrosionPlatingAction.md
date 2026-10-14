@@ -37,6 +37,18 @@ single-domain topology. The anodic branch carries the (constant) metal activity 
 branch the dissolved-ion activity $c/c_{ref}$, so fresh salt corrodes at a bounded calibrated rate
 while the dissolved metal accumulates and the reaction approaches equilibrium.
 
+With `solid_activity = true` (two-block topology only, not with MSTDB-TC kinetics) the anodic branch
+instead carries the alloy-surface activity $a_s = c_s/c_{s,0}$, the solid concentration at the
+interface relative to the initial (bulk) solid concentration,
+
+!equation
+i_{BV} = i_0\left[a_s\exp\!\left(\frac{\alpha_a z F\,\eta}{RT}\right) - \frac{c}{c_{ref}}\exp\!\left(-\frac{\alpha_c z F\,\eta}{RT}\right)\right],
+
+so the dissolution slows as a depletion layer forms in the alloy and the surface concentration cannot
+become negative when the solid diffusion is slow. The seed is unchanged ($a_s = 1$ for a fresh
+alloy), so the initial rate is still the calibrated correlation rate. The same activity is passed to
+the `corrosion_rate_um_y` and `recession_um` diagnostics.
+
 ## Topologies
 
 | `topology` | Phases modeled | Butler-Volmer object |

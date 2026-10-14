@@ -52,14 +52,14 @@ clampedExp(const T & arg)
  *   i_BV   = i0 [ exp(alpha_a z F eta / R T)
  *                 - (c_ion / c_ref) exp(-alpha_c z F eta / R T) ]
  *
- * The anodic (dissolution) branch carries the solid metal activity, taken constant (= 1), so the
- * corrosion rate is set by the overpotential, not by how much metal has already dissolved. The
- * cathodic (plating) branch carries the dissolved-ion activity c_ion / c_ref, so plating accelerates
- * as the salt loads and the reaction reaches equilibrium (i_BV = 0) when
- * c_ion = c_ref exp[(alpha_a + alpha_c) z F eta / R T]. A positive (anodic) current dissolves metal
- * into the salt; a negative (cathodic) current plates it out, so one expression covers both
- * corrosion and deposition. This is the form used for metal electrodes, and it keeps the dissolution
- * rate bounded for fresh (nearly clean) salt.
+ * The anodic (dissolution) branch carries the solid metal activity, by default constant (= 1), so
+ * the corrosion rate is set by the overpotential, not by how much metal has already dissolved. The
+ * cathodic (plating) branch carries the dissolved-ion activity c_ion / c_ref, so plating
+ * accelerates as the salt loads and the reaction reaches equilibrium (i_BV = 0) when c_ion = c_ref
+ * exp[(alpha_a + alpha_c) z F eta / R T]. A positive (anodic) current dissolves metal into the
+ * salt; a negative (cathodic) current plates it out, so one expression covers both corrosion and
+ * deposition. This is the form used for metal electrodes, and it keeps the dissolution rate bounded
+ * for fresh (nearly clean) salt.
  *
  * @param phi_metal Electric potential of the metal phase [V].
  * @param phi_salt  Electric potential of the salt phase [V].
@@ -71,6 +71,9 @@ clampedExp(const T & arg)
  * @param alpha_c   Cathodic charge-transfer coefficient.
  * @param temperature Absolute temperature [K].
  * @param c_ref     Reference concentration at which i0 is defined [mol/m^3].
+ * @param metal_activity Activity of the metal in the alloy surface for the anodic branch (default
+ *                  1). A two-block model may pass c_s / c_s,0 so dissolution slows as the alloy
+ *                  surface depletes; it is floored at zero like the ion activity.
  * @return Butler-Volmer current density [A/m^2].
  */
 template <typename T>
@@ -84,14 +87,16 @@ bvCurrent(const T & phi_metal,
           Real alpha_a,
           Real alpha_c,
           Real temperature,
-          Real c_ref)
+          Real c_ref,
+          const T & metal_activity = T(1.0))
 {
   const Real f = faraday / (R_gas * temperature);
   const T eta = (phi_metal - phi_salt) - E0;
   // Dissolved-ion activity for the cathodic (plating) branch, floored at zero so a Newton overshoot
   // to a slightly negative concentration cannot create a spurious deposition current.
   const T activity = ((c_ion > T(0.0)) ? c_ion : T(0.0)) / c_ref;
-  const T anodic = clampedExp(static_cast<T>(alpha_a * valence * f * eta));
+  const T solid_activity = (metal_activity > T(0.0)) ? metal_activity : T(0.0);
+  const T anodic = solid_activity * clampedExp(static_cast<T>(alpha_a * valence * f * eta));
   const T cathodic = activity * clampedExp(static_cast<T>(-alpha_c * valence * f * eta));
   return i0 * (anodic - cathodic);
 }
