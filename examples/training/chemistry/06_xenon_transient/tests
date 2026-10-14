@@ -1,0 +1,13 @@
+[Tests]
+  design = 'FissionProductInventoryAction.md'
+  issues = '#000'
+  [xenon_transient]
+    type = CSVDiff
+    input = 'xenon_transient.i'
+    csvdiff = 'xenon_transient_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    requirement = 'The system shall reproduce the equilibrium I-135/Xe-135 inventory and the post- '
+                  'shutdown xenon peak (training case 06).'
+  []
+[]

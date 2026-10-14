@@ -1,0 +1,13 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md'
+  issues = '#000'
+  [cr_redox]
+    type = CSVDiff
+    input = 'cr_redox.i'
+    csvdiff = 'cr_redox_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    requirement = 'The system shall model the gamma-driven Cr(II)/Cr(III) redox of dissolved chromium '
+                  'in a chloride salt while conserving the total chromium (training case 03).'
+  []
+[]

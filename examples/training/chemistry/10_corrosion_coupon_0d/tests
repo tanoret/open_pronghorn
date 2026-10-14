@@ -1,0 +1,14 @@
+[Tests]
+  design = 'CorrosionPlatingAction.md'
+  issues = '#000'
+  [corrosion_coupon_0d]
+    type = CSVDiff
+    input = 'corrosion_coupon_0d.i'
+    csvdiff = 'corrosion_coupon_0d_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    requirement = 'The system shall reproduce the calibrated corrosion rate of a stainless steel coupon '
+                  'in fluoride fuel salt and its relaxation to the Nernst equilibrium, consistent with '
+                  'Faraday law (training case 10).'
+  []
+[]

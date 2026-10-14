@@ -1,0 +1,13 @@
+[Tests]
+  design = 'FissionProductInventoryAction.md'
+  issues = '#000'
+  [xenon_stripping]
+    type = CSVDiff
+    input = 'xenon_stripping.i'
+    csvdiff = 'xenon_stripping_out.csv xenon_stripping_out_scan_0721.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    requirement = 'The system shall reproduce the analytic reduction of the Xe-135 inventory and '
+                  'poisoning by off-gas sparging (training case 07).'
+  []
+[]

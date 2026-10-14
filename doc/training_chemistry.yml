@@ -1,0 +1,49 @@
+# MooseDocs configuration for the chemistry training slides (reveal.js), kept separate from the
+# main site configuration (config.yml). Build with:
+#   ./moosedocs.py build --config training_chemistry.yml --serve
+Content:
+    training:
+        root_dir: ${ROOT_DIR}/doc/content
+        content:
+            - training/**
+    figures:
+        root_dir: ${ROOT_DIR}/examples/training/chemistry/figures
+    framework:
+        root_dir: ${MOOSE_DIR}/framework/doc/content
+        content:
+            - contrib/**
+            - css/**
+            - js/**
+
+Executioner:
+    type: MooseDocs.base.Serial
+
+Renderer:
+    type: MooseDocs.base.RevealRenderer
+    theme: simple
+
+Extensions:
+    disable_defaults: True
+    MooseDocs.extensions.comment: default
+    MooseDocs.extensions.command: default
+    MooseDocs.extensions.core: default
+    MooseDocs.extensions.config: default
+    MooseDocs.extensions.media: default
+    MooseDocs.extensions.floats: default
+    MooseDocs.extensions.include: default
+    MooseDocs.extensions.katex: default
+    MooseDocs.extensions.style: default
+    MooseDocs.extensions.autolink: default
+    MooseDocs.extensions.heading: default
+    MooseDocs.extensions.shortcut: default
+    MooseDocs.extensions.table: default
+    MooseDocs.extensions.layout: default
+    MooseDocs.extensions.modal: default
+    MooseDocs.extensions.alert: default
+    MooseDocs.extensions.materialicon: default
+    MooseDocs.extensions.content: default
+    MooseDocs.extensions.datetime: default
+    MooseDocs.extensions.listing:
+        modal-link: False
+    MooseDocs.extensions.reveal:
+        translate: training/chemistry/index.md

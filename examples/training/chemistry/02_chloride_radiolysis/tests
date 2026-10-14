@@ -1,0 +1,13 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md'
+  issues = '#000'
+  [chloride_radiolysis]
+    type = CSVDiff
+    input = 'chloride_radiolysis.i'
+    csvdiff = 'chloride_radiolysis_out.csv chloride_radiolysis_out_dose_scan_0068.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    requirement = 'The system shall solve the stiff chloride radical chain to its radiolytic steady '
+                  'state and report the dose scaling of the steady oxidant (training case 02).'
+  []
+[]

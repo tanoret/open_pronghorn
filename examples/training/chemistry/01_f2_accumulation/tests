@@ -1,0 +1,13 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md'
+  issues = '#000'
+  [f2_accumulation]
+    type = CSVDiff
+    input = 'f2_accumulation.i'
+    csvdiff = 'f2_accumulation_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    requirement = 'The system shall reproduce the analytic linear accumulation of radiolytic F2 in a 0D '
+                  'fluoride salt with a constant dose rate (training case 01).'
+  []
+[]

@@ -1,0 +1,16 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md'
+  issues = '#000'
+  [fuel_salt_redox_offgas]
+    type = CSVDiff
+    input = 'fuel_salt_redox.i'
+    csvdiff = 'fuel_salt_redox_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    heavy = true
+    max_time = 1200
+    requirement = 'The system shall model the radiolytic oxidation of a UF3/UF4-buffered fuel salt with '
+                  'Henry-law transfer of F2 to the off-gas, conserving uranium and the redox balance '
+                  '(training case 04).'
+  []
+[]

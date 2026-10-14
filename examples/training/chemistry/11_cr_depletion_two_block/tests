@@ -1,0 +1,14 @@
+[Tests]
+  design = 'CorrosionPlatingAction.md'
+  issues = '#000'
+  [cr_depletion_two_block]
+    type = CSVDiff
+    input = 'cr_depletion.i'
+    csvdiff = 'cr_depletion_out.csv cr_depletion_out_alloy_profile_0082.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    requirement = 'The system shall model the chromium depletion layer of a 316 stainless steel coupon '
+                  'with the alloy-surface activity while conserving the total chromium (training case '
+                  '11).'
+  []
+[]

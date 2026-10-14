@@ -1,0 +1,18 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md CorrosionPlatingFlowAction.md FissionProductInventoryAction.md'
+  issues = '#000'
+  [msfr_loop_capstone]
+    type = CSVDiff
+    input = 'msfr_loop_capstone.i'
+    csvdiff = 'msfr_loop_capstone_out.csv msfr_loop_capstone_out_loop_line_0002.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    heavy = true
+    min_parallel = 8
+    max_time = 1800
+    requirement = 'The system shall model the MSFR primary loop with radiolysis, corrosion and the '
+                  'fission-product inventory with xenon stripping and heat-exchanger plating, '
+                  'reproducing the 0D equilibrium inventories and closing the energy balance (training '
+                  'case 16).'
+  []
+[]
