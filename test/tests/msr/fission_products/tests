@@ -87,4 +87,14 @@
       detail = 'when wall plating is requested without a diffusivity.'
     []
   []
+  [duplicate_removal_pathway]
+    type = RunException
+    input = 'noble_metal_plating.i'
+    cli_args = "FissionProductInventory/removal_groups='noble_metal noble_metal' "
+               "FissionProductInventory/removal_rates='1e-4 1e-5' "
+               "FissionProductInventory/removal_destinations='plated plated'"
+    expect_err = 'is removed to .* more than once'
+    requirement = 'The system shall reject two removal pathways with the same chemical group and '
+                  'destination, whose rates could otherwise be silently dropped.'
+  []
 []

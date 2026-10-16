@@ -12,4 +12,40 @@
                   'rate (16.821 um/y for the 304L hot-fluoride-loop case) in a well-mixed salt cell, '
                   'consistent with the finite-element Butler-Volmer implementation.'
   []
+  [hot_cold_loop]
+    type = CSVDiff
+    input = 'hot_cold_loop.i'
+    csvdiff = 'hot_cold_loop_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-6
+    requirement = 'The CorrosionPlatingFlow action shall optionally drive each element toward its '
+                  'own temperature-dependent equilibrium concentration, so that a closed salt '
+                  'between a hot and a cold wall settles between the two wall equilibria (the hot '
+                  'wall dissolves and the cold wall plates), a noble element with a small '
+                  'equilibrium barely dissolves, and the calibrated rate is apportioned among the '
+                  'elements instead of being counted once per element.'
+  []
+  [equilibrium_count_mismatch]
+    type = RunException
+    input = 'hot_cold_loop.i'
+    cli_args = "CorrosionPlatingFlow/equilibrium_concentrations='10'"
+    expect_err = 'Must have one entry per tracked element'
+    requirement = 'The CorrosionPlatingFlow action shall reject an equilibrium-concentration list '
+                  'whose length differs from the number of tracked elements.'
+  []
+  [seed_fraction_count_mismatch]
+    type = RunException
+    input = 'hot_cold_loop.i'
+    cli_args = "CorrosionPlatingFlow/seed_fractions='1'"
+    expect_err = 'Must have one entry per tracked element'
+    requirement = 'The CorrosionPlatingFlow action shall reject a seed-fraction list whose length '
+                  'differs from the number of tracked elements.'
+  []
+  [potential_and_equilibrium]
+    type = RunException
+    input = 'bc_conflict.i'
+    expect_err = 'Give either the equilibrium concentration or the metal/salt potentials'
+    requirement = 'The linear finite-volume Butler-Volmer wall condition shall reject an '
+                  'equilibrium concentration given together with explicit metal or salt potentials.'
+  []
 []

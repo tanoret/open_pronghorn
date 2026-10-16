@@ -27,8 +27,17 @@
  *   B = (i0 / (zF c_ref)) exp(-alpha_c z F eta / R T),  (cathodic, dissolved-ion activity c/c_ref)
  * so it assembles directly into the linear system without lagging (the outward boundary flux is
  * B c - A). The exchange current is Arrhenius in the local temperature, so the wall corrodes faster
- * where the salt is hotter; the temperature, metal potential and salt potential are read as functors,
- * which lets the boundary couple one-way to a flow / energy / radiolysis solution.
+ * where the salt is hotter; the temperature, metal potential and salt potential are read as
+ * functors, which lets the boundary couple one-way to a flow / energy / radiolysis solution.
+ *
+ * Optionally the overpotential is set by a temperature-dependent equilibrium concentration instead
+ * of the potential functors,
+ *   c_eq(T) = c_eq,ref exp[-dH / R (1/T - 1/T_ref)],   eta(T) = ln(c_eq(T) / c_ref) / ((alpha_a +
+ *   alpha_c) z F / R T),
+ * so the net flux vanishes at c = c_eq(T). With a positive dissolution enthalpy dH the equilibrium
+ * rises with temperature: a closed loop then dissolves the alloy at hot walls and plates it at cold
+ * walls, which a constant overpotential cannot do (its c_eq = c_ref exp(z F eta / R T) falls with
+ * T).
  */
 class CorrosionLinearFVButlerVolmerBC : public LinearFVAdvectionDiffusionBC
 {
@@ -70,6 +79,10 @@ protected:
   const Real _reference_temperature;
   /// Activation energy of the exchange current [kJ/mol] (0 disables the temperature dependence).
   const Real _activation_energy;
+  /// Equilibrium salt concentration at the reference temperature [mol/m^3]; 0 uses the potentials.
+  const Real _equilibrium_concentration;
+  /// Dissolution enthalpy setting the temperature dependence of the equilibrium [kJ/mol].
+  const Real _dissolution_enthalpy;
 
   /// Local temperature functor [K].
   const Moose::Functor<Real> & _temperature;

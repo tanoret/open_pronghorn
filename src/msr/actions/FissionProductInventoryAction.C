@@ -159,6 +159,21 @@ FissionProductInventoryAction::FissionProductInventoryAction(const InputParamete
     paramError("removal_rates",
                "'removal_groups', 'removal_rates' and 'removal_destinations' must have equal "
                "length.");
+  {
+    // Each (group, destination) pair carries one rate; a second one would be silently ignored.
+    const auto & groups = getParam<MultiMooseEnum>("removal_groups");
+    const auto & destinations = getParam<MultiMooseEnum>("removal_destinations");
+    std::set<std::pair<std::string, std::string>> pathways;
+    for (const auto i : make_range(n_groups))
+      if (!pathways.emplace(MooseUtils::toLower(groups[i]), MooseUtils::toLower(destinations[i]))
+               .second)
+        paramError("removal_groups",
+                   "The group '",
+                   groups[i],
+                   "' is removed to '",
+                   destinations[i],
+                   "' more than once. Combine the rates of such pathways into one functor.");
+  }
 
   if (!getParam<std::vector<BoundaryName>>("plating_boundaries").empty())
   {

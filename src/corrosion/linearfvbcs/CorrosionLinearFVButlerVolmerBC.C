@@ -28,8 +28,9 @@ CorrosionLinearFVButlerVolmerBC::validParams()
                              "finite-volume wall boundary condition for a flowing molten salt.");
 
   params.addRequiredParam<Real>("valence", "Charge number z of the cation.");
-  params.addRequiredParam<Real>("exchange_current_density",
-                                "Exchange current density i0 at the reference temperature [A/m^2].");
+  params.addRequiredParam<Real>(
+      "exchange_current_density",
+      "Exchange current density i0 at the reference temperature [A/m^2].");
   params.addParam<Real>("E0", 0.0, "Standard electrode potential [V].");
   params.addParam<Real>("alpha_a", 0.5, "Anodic charge-transfer coefficient.");
   params.addParam<Real>("alpha_c", 0.5, "Cathodic charge-transfer coefficient.");
@@ -40,6 +41,20 @@ CorrosionLinearFVButlerVolmerBC::validParams()
                         0.0,
                         "Activation energy of the exchange current [kJ/mol]; 0 disables the "
                         "temperature dependence.");
+
+  params.addRangeCheckedParam<Real>(
+      "equilibrium_concentration",
+      0.0,
+      "equilibrium_concentration>=0",
+      "Equilibrium salt concentration of the cation at the reference temperature [mol/m^3]. When "
+      "positive, the overpotential follows from c_eq(T) instead of the potential functors, so the "
+      "net flux vanishes at c = c_eq(T). 0 (default) uses metal_potential - salt_potential - E0.");
+  params.addParam<Real>(
+      "dissolution_enthalpy",
+      0.0,
+      "Dissolution enthalpy [kJ/mol] of the equilibrium concentration: c_eq(T) = c_eq,ref "
+      "exp[-dH / R (1/T - 1/T_ref)]. Positive values make the equilibrium rise with temperature "
+      "(hot walls dissolve, cold walls plate). Used only with equilibrium_concentration.");
 
   params.addRequiredParam<MooseFunctorName>("temperature", "Local temperature functor [K].");
   params.addParam<MooseFunctorName>("metal_potential", "0", "Metal-phase potential functor [V].");
@@ -57,10 +72,20 @@ CorrosionLinearFVButlerVolmerBC::CorrosionLinearFVButlerVolmerBC(const InputPara
     _c_ref(getParam<Real>("c_ref")),
     _reference_temperature(getParam<Real>("reference_temperature")),
     _activation_energy(getParam<Real>("activation_energy")),
+    _equilibrium_concentration(getParam<Real>("equilibrium_concentration")),
+    _dissolution_enthalpy(getParam<Real>("dissolution_enthalpy")),
     _temperature(getFunctor<Real>("temperature")),
     _metal_potential(getFunctor<Real>("metal_potential")),
     _salt_potential(getFunctor<Real>("salt_potential"))
 {
+  if (_equilibrium_concentration > 0.0 && !(_alpha_a + _alpha_c > 0.0))
+    paramError("alpha_a", "alpha_a + alpha_c must be positive with an equilibrium_concentration.");
+  if (_equilibrium_concentration > 0.0 &&
+      (isParamSetByUser("metal_potential") || isParamSetByUser("salt_potential")))
+    paramError("equilibrium_concentration",
+               "Give either the equilibrium concentration or the metal/salt potentials, not both.");
+  if (_dissolution_enthalpy != 0.0 && !(_equilibrium_concentration > 0.0))
+    paramError("dissolution_enthalpy", "Requires a positive equilibrium_concentration.");
   _var.computeCellGradients();
 }
 
@@ -71,11 +96,21 @@ CorrosionLinearFVButlerVolmerBC::computeFluxCoefficients(Real & A, Real & B) con
   const auto state = determineState();
 
   const Real temperature = _temperature(face, state);
-  const Real eta = _metal_potential(face, state) - _salt_potential(face, state) - _E0;
   const Real f = Corrosion::faraday / (Corrosion::R_gas * temperature);
+  Real eta;
+  if (_equilibrium_concentration > 0.0)
+  {
+    // Overpotential at which the net Butler-Volmer flux vanishes at c = c_eq(T).
+    const Real c_eq =
+        _equilibrium_concentration * std::exp(-_dissolution_enthalpy * 1000.0 / Corrosion::R_gas *
+                                              (1.0 / temperature - 1.0 / _reference_temperature));
+    eta = std::log(c_eq / _c_ref) / ((_alpha_a + _alpha_c) * _valence * f);
+  }
+  else
+    eta = _metal_potential(face, state) - _salt_potential(face, state) - _E0;
 
-  // Arrhenius exchange current, anchored so that i0(reference_temperature) reproduces the calibrated
-  // value.
+  // Arrhenius exchange current, anchored so that i0(reference_temperature) reproduces the
+  // calibrated value.
   Real i0 = _i0;
   if (_activation_energy != 0.0)
     i0 *= std::exp(_activation_energy * 1000.0 / Corrosion::R_gas *

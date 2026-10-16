@@ -65,6 +65,24 @@ full electromigration / electric-potential (electrophoresis) solve and two-block
 interface kinetics are provided by the finite-element [CorrosionPlating](CorrosionPlatingAction.md)
 action; both share the same kinetics options and databases.
 
+## Element-resolved thermodynamic wall law
+
+By default every tracked element shares the `applied_overpotential` equilibrium and each one is
+seeded with the full calibrated rate (the legacy behavior). Two opt-in parameters make the wall law
+element-resolved:
+
+- `equilibrium_concentrations` and `dissolution_enthalpies` give each element its own equilibrium
+  $c_{eq,k}(T)$ (see [CorrosionLinearFVButlerVolmerBC](../linearfvbcs/CorrosionLinearFVButlerVolmerBC.md)),
+  so in a closed loop the hot walls dissolve and the cold walls plate, and a noble element with a
+  small equilibrium barely dissolves. The exchange current of each element is seeded so that its
+  fresh-salt ($c = 0$) dissolution rate reproduces its share of the calibrated rate at the reference
+  temperature.
+- `seed_fractions` apportions the calibrated reduced-empirical rate among the elements (weights
+  normalized to one), so that the total fresh-salt metal loss equals the calibrated rate instead of
+  being counted once per element. Use `'1 0 0'` for selective Cr dissolution from a Ni-based alloy.
+
+!listing test/tests/corrosion/linearfv_wall/hot_cold_loop.i block=CorrosionPlatingFlow
+
 ## Example
 
 !listing examples/flowing_msr_corrosion/flowing_msr_corrosion.i block=CorrosionPlatingFlow

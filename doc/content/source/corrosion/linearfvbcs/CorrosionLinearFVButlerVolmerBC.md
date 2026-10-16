@@ -21,6 +21,24 @@ corrodes faster where the salt is hotter; the temperature, metal potential and s
 as functors, which lets the boundary couple one-way to a flow / energy / radiolysis solution. A
 diffusion kernel must be present on the variable for the wall flux to be assembled.
 
+## Temperature-dependent equilibrium
+
+With a constant overpotential the zero-current concentration
+$c_{eq} = c_{ref}\exp[(\alpha_a + \alpha_c) z F \eta / R T]$ *falls* with temperature, so a closed
+loop would plate at its hot walls and dissolve at its cold walls, the opposite of what is observed.
+When `equilibrium_concentration` is positive the overpotential is instead derived from a
+temperature-dependent equilibrium,
+
+!equation
+c_{eq}(T) = c_{eq,ref}\,\exp\!\left[-\frac{\Delta H}{R}\left(\frac{1}{T} - \frac{1}{T_{ref}}\right)\right],
+\qquad
+\eta(T) = \frac{RT}{(\alpha_a + \alpha_c) z F}\ln\frac{c_{eq}(T)}{c_{ref}},
+
+so the net flux vanishes at $c = c_{eq}(T)$. A positive dissolution enthalpy $\Delta H$
+(`dissolution_enthalpy`) makes the equilibrium rise with temperature: hot walls dissolve and cold
+walls plate. Different elements are given different equilibria, so a noble component (Ni) barely
+dissolves while Cr does. The potential functors must not be given in this mode.
+
 !syntax parameters /LinearFVBCs/CorrosionLinearFVButlerVolmerBC
 
 !syntax inputs /LinearFVBCs/CorrosionLinearFVButlerVolmerBC

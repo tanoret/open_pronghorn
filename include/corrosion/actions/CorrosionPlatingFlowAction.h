@@ -60,6 +60,10 @@ protected:
     Real E0 = 0.0;
     Real c_ref = 1.0;
     Real initial_salt = 0.0;
+    /// Equilibrium salt concentration at the reference temperature (0: applied-overpotential law).
+    Real equilibrium_concentration = 0.0;
+    /// Dissolution enthalpy of the equilibrium concentration [kJ/mol].
+    Real dissolution_enthalpy = 0.0;
     /// Whether this action owns the variable (creates it and its transport) or releases the
     /// corrosion product into an existing variable (e.g. the radiolysis-tracked cation).
     bool owns_variable = true;

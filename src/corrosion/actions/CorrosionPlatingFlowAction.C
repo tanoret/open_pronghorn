@@ -140,6 +140,30 @@ CorrosionPlatingFlowAction::validParams()
       "Explicit runtime reference concentration c_ref [mol/m^3], replacing the provenance-bound "
       "base database default without disabling its provenance check.");
 
+  params.addParam<std::vector<Real>>(
+      "equilibrium_concentrations",
+      {},
+      "Opt-in thermodynamic wall law: one equilibrium salt concentration per tracked element at "
+      "the reference temperature [mol/m^3] (for example the Cr, Fe and Ni solubilities set by the "
+      "salt redox state; noble elements get much smaller values). Each wall then drives its "
+      "element toward c_eq,k(T) instead of the common applied_overpotential equilibrium. Empty "
+      "(default) keeps the applied_overpotential law. The exchange currents are still seeded "
+      "from the calibrated rate at c = 0.");
+  params.addParam<std::vector<Real>>(
+      "dissolution_enthalpies",
+      {},
+      "Dissolution enthalpy of each element's equilibrium [kJ/mol]: c_eq,k(T) = c_eq,k "
+      "exp[-dH_k / R (1/T - 1/T_ref)]. Positive values make hot walls dissolve and cold walls "
+      "plate. One entry per element, or one entry for all; requires equilibrium_concentrations.");
+  params.addParam<std::vector<Real>>(
+      "seed_fractions",
+      {},
+      "How the calibrated reduced-empirical rate is apportioned among the tracked elements: one "
+      "nonnegative weight per element, normalized to sum to one, so the total metal loss matches "
+      "the calibrated rate. Use '1 0 0' for selective Cr dissolution from a Ni alloy, or the alloy "
+      "mass fractions for congruent dissolution. Empty (default, legacy) seeds every element with "
+      "the full rate.");
+
   params.addRequiredParam<std::vector<BoundaryName>>("reaction_boundary",
                                                      "The corroding wall boundary(ies).");
 
@@ -312,6 +336,35 @@ CorrosionPlatingFlowAction::buildPlan()
                "corrosion is released into, or 'none' for an element that gets its own c_<El> "
                "variable. Leave the whole parameter empty to create c_<El> for every element.");
 
+  const auto & equilibria = getParam<std::vector<Real>>("equilibrium_concentrations");
+  const auto & enthalpies = getParam<std::vector<Real>>("dissolution_enthalpies");
+  if (!equilibria.empty() && equilibria.size() != elements.size())
+    paramError("equilibrium_concentrations", "Must have one entry per tracked element.");
+  for (const auto c : equilibria)
+    if (!std::isfinite(c) || c <= 0.0)
+      paramError("equilibrium_concentrations", "Entries must be finite and positive.");
+  if (!enthalpies.empty() && equilibria.empty())
+    paramError("dissolution_enthalpies", "Requires equilibrium_concentrations.");
+  if (enthalpies.size() > 1 && enthalpies.size() != elements.size())
+    paramError("dissolution_enthalpies", "Must have one entry, or one entry per element.");
+
+  const auto & seed_fractions = getParam<std::vector<Real>>("seed_fractions");
+  const bool split_seed = !seed_fractions.empty();
+  if (split_seed && _use_mstdb_tc)
+    paramError("seed_fractions",
+               "MSTDB-TC mode already apportions the rate with its source fractions.");
+  if (split_seed && seed_fractions.size() != elements.size())
+    paramError("seed_fractions", "Must have one entry per tracked element.");
+  Real fraction_total = 0.0;
+  for (const auto x : seed_fractions)
+  {
+    if (!std::isfinite(x) || x < 0.0)
+      paramError("seed_fractions", "Entries must be finite and nonnegative.");
+    fraction_total += x;
+  }
+  if (split_seed && !(fraction_total > 0.0))
+    paramError("seed_fractions", "At least one entry must be positive.");
+
   unsigned int index = 0;
   for (const auto & el : elements)
   {
@@ -329,8 +382,16 @@ CorrosionPlatingFlowAction::buildPlan()
     plan.E0 = props.E0_V;
     plan.c_ref = c_ref;
     plan.initial_salt = initial;
+    if (!equilibria.empty())
+    {
+      plan.equilibrium_concentration = equilibria[index];
+      if (!enthalpies.empty())
+        plan.dissolution_enthalpy = enthalpies.size() == 1 ? enthalpies[0] : enthalpies[index];
+    }
 
-    if (!_use_mstdb_tc)
+    if (!_use_mstdb_tc && split_seed)
+      plan.planned_rate_um_y = rate_um_y * seed_fractions[index] / fraction_total;
+    else if (!_use_mstdb_tc)
       plan.planned_rate_um_y = rate_um_y;
     else if (plan.name == "Cr")
       plan.planned_rate_um_y = rate_um_y * source_fractions[0];
@@ -343,14 +404,25 @@ CorrosionPlatingFlowAction::buildPlan()
 
     // The input is the metal-minus-salt potential difference.  Match the boundary object's E0
     // subtraction and clipped exponents so custom nonzero-E0 data reproduce the reference current.
-    const Real i_ref_a_m2 =
-        Corrosion::umYToCorrosionCurrent(plan.planned_rate_um_y,
-                                         plan.valence,
-                                         plan.molar_mass,
-                                         density) *
-        1.0e4;
-    const Real bracket = Corrosion::ActionKinetics::butlerVolmerSeedBracket(
-        eta, plan.E0, plan.valence, plan.alpha_a, plan.alpha_c, _reference_temperature);
+    const Real i_ref_a_m2 = Corrosion::umYToCorrosionCurrent(
+                                plan.planned_rate_um_y, plan.valence, plan.molar_mass, density) *
+                            1.0e4;
+    // With an equilibrium concentration the seed is the fresh-salt (c = 0) anodic branch at the
+    // overpotential that makes c_eq the zero-current concentration.
+    const Real seed_eta =
+        plan.equilibrium_concentration > 0.0
+            ? plan.E0 + std::log(plan.equilibrium_concentration / plan.c_ref) /
+                            ((plan.alpha_a + plan.alpha_c) * plan.valence * Corrosion::faraday /
+                             (Corrosion::R_gas * _reference_temperature))
+            : eta;
+    const Real bracket =
+        plan.equilibrium_concentration > 0.0
+            ? std::exp(std::min(plan.alpha_a * plan.valence * Corrosion::faraday /
+                                    (Corrosion::R_gas * _reference_temperature) *
+                                    (seed_eta - plan.E0),
+                                60.0))
+            : Corrosion::ActionKinetics::butlerVolmerSeedBracket(
+                  eta, plan.E0, plan.valence, plan.alpha_a, plan.alpha_c, _reference_temperature);
     if (i_ref_a_m2 > 0.0 && (!std::isfinite(bracket) || bracket <= 1.0e-30))
       paramError("applied_overpotential",
                  "The metal-minus-salt potential difference must produce a positive anodic "
@@ -374,7 +446,14 @@ CorrosionPlatingFlowAction::buildPlan()
       _console << "[CorrosionPlatingFlow] reference corrosion rate " << rate_um_y << " um/y; "
                << _elements.size() << " elements\n";
       for (const auto & e : _elements)
-        _console << "  " << e.name << " -> " << e.salt_var << "  i0=" << e.i0 << " A/m^2\n";
+      {
+        _console << "  " << e.name << " -> " << e.salt_var << "  i0=" << e.i0
+                 << " A/m^2  planned_rate=" << e.planned_rate_um_y << " um/y";
+        if (e.equilibrium_concentration > 0.0)
+          _console << "  c_eq(T_ref)=" << e.equilibrium_concentration
+                   << " mol/m^3  dH=" << e.dissolution_enthalpy << " kJ/mol";
+        _console << "\n";
+      }
     }
     else
     {
@@ -382,12 +461,12 @@ CorrosionPlatingFlowAction::buildPlan()
                << " calibration=" << calibration_id << " MSTDB-TC=" << mstdb_version << '\n'
                << "  fluoride_sha256=" << fluoride_sha256 << '\n'
                << "  chloride_sha256=" << chloride_sha256 << '\n'
-               << "  total front rate=" << rate_um_y << " um/y; hot="
-               << _reference_temperature << " K, cold="
-               << getParam<Real>("reference_cold_temperature") << " K, exposure="
-               << getParam<Real>("reference_exposure_time") << " s, area/salt="
-               << getParam<Real>("area_to_salt_mass") << " cm^2/g, inventory coupling="
-               << getParam<Real>("inventory_coupling_factor") << '\n';
+               << "  total front rate=" << rate_um_y << " um/y; hot=" << _reference_temperature
+               << " K, cold=" << getParam<Real>("reference_cold_temperature")
+               << " K, exposure=" << getParam<Real>("reference_exposure_time")
+               << " s, area/salt=" << getParam<Real>("area_to_salt_mass")
+               << " cm^2/g, inventory coupling=" << getParam<Real>("inventory_coupling_factor")
+               << '\n';
       for (const auto & element : _elements)
       {
         const unsigned int i = element.name == "Cr" ? 0 : (element.name == "Fe" ? 1 : 2);
@@ -542,8 +621,14 @@ CorrosionPlatingFlowAction::addBoundaryConditions()
       params.set<Real>("reference_temperature") = _reference_temperature;
       params.set<Real>("activation_energy") = Ea;
       params.set<MooseFunctorName>("temperature") = _temperature;
-      params.set<MooseFunctorName>("metal_potential") =
-          Corrosion::ActionKinetics::realFunctorName(eta);
+      if (e.equilibrium_concentration > 0.0)
+      {
+        params.set<Real>("equilibrium_concentration") = e.equilibrium_concentration;
+        params.set<Real>("dissolution_enthalpy") = e.dissolution_enthalpy;
+      }
+      else
+        params.set<MooseFunctorName>("metal_potential") =
+            Corrosion::ActionKinetics::realFunctorName(eta);
       _problem->addLinearFVBC(
           "CorrosionLinearFVButlerVolmerBC", "corr_" + e.salt_var + "_wall", params);
     }
