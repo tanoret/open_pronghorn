@@ -1,0 +1,32 @@
+[Tests]
+  design = 'CorrosionPlatingAction.md CorrosionPlatingFlowAction.md DRIDNCorrosionUserObject.md'
+  issues = '#000'
+  [ncl16_capsule_bv]
+    type = CSVDiff
+    input = 'ncl16_capsule_bv.i'
+    csvdiff = 'ncl16_capsule_bv_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    requirement = 'The system shall show that a closed isothermal Butler-Volmer capsule at the NCL-16 '
+                  'hot-leg conditions saturates at its Nernst limit (training case 03).'
+  []
+  [ncl16_loop_flow]
+    type = CSVDiff
+    input = 'ncl16_loop_flow.i'
+    csvdiff = 'ncl16_loop_flow_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    requirement = 'The system shall dissolve chromium at the hot wall and plate it at the cold wall of '
+                  'a closed hot/cold salt gap with the thermodynamic flow wall law, conserving the '
+                  'dissolved inventory (training case 03).'
+  []
+  [ncl16_dridn]
+    type = CSVDiff
+    input = 'ncl16_dridn.i'
+    csvdiff = 'ncl16_dridn_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    requirement = 'The system shall integrate the long-term chromium inventory of the NCL-16 Hastelloy N '
+                  'thermal-convection loop with the calibrated DRIDN model (training case 03).'
+  []
+[]

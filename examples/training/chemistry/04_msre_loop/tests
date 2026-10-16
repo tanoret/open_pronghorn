@@ -1,0 +1,25 @@
+[Tests]
+  design = 'FissionProductInventoryAction.md CorrosionPlatingAction.md'
+  issues = '#000'
+  [msre_loop]
+    type = CSVDiff
+    input = 'msre_loop.i'
+    csvdiff = 'msre_loop_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    requirement = 'The system shall model the MSRE fuel loop as a lumped region network, reproducing the '
+                  'analytic xenon and Mo-99 equilibria with graphite, spray and metal-surface sinks '
+                  'together with the calibrated Hastelloy N corrosion (training case 04).'
+  []
+  [msre_loop_bubbles]
+    type = CSVDiff
+    input = 'msre_loop.i'
+    cli_args = 'r_bubble=2.1414e-3 Outputs/file_base=msre_loop_bubbles'
+    csvdiff = 'msre_loop_bubbles.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    prereq = 'msre_loop'
+    requirement = 'The system shall reproduce the measured MSRE xenon poisoning of 0.27 % dk/k when a '
+                  'circulating-bubble stripping rate is calibrated to it (training case 04).'
+  []
+[]

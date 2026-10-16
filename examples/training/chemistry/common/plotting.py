@@ -86,16 +86,18 @@ def latest_vpp(case_dir, prefix):
     return pathlib.Path(files[-1])
 
 
-def ensure_output(case_dir, input_file, csv_file, extra_args=()):
+def ensure_output(case_dir, input_file, csv_file, extra_args=(), ranks=1):
     """Run the input with open_pronghorn-opt if its CSV output is missing.
 
-    The executable is taken from $OPEN_PRONGHORN_EXE, else from the repository root."""
+    The executable is taken from $OPEN_PRONGHORN_EXE, else from the repository root. With ranks > 1
+    the input is run with 'mpiexec -n <ranks>'."""
     case_dir = pathlib.Path(case_dir)
     if (case_dir / csv_file).exists():
         return
     exe = os.environ.get("OPEN_PRONGHORN_EXE", str(TRAINING_DIR.parents[2] / "open_pronghorn-opt"))
-    print(f"running {input_file} ...")
-    subprocess.run([exe, "-i", input_file, *extra_args], cwd=case_dir, check=True,
+    print(f"running {input_file} on {ranks} rank(s) ...")
+    launcher = ["mpiexec", "-n", str(ranks)] if ranks > 1 else []
+    subprocess.run([*launcher, exe, "-i", input_file, *extra_args], cwd=case_dir, check=True,
                    stdout=subprocess.DEVNULL)
 
 
@@ -108,8 +110,8 @@ def save(fig, case_dir, name):
     plt.close(fig)
 
 
-def case_setup(case_file, input_file, csv_file, extra_args=()):
+def case_setup(case_file, input_file, csv_file, extra_args=(), ranks=1):
     """Common start of a plot.py: return (case_dir, data) after running the input if needed."""
     case_dir = pathlib.Path(case_file).resolve().parent
-    ensure_output(case_dir, input_file, csv_file, extra_args)
+    ensure_output(case_dir, input_file, csv_file, extra_args, ranks)
     return case_dir, read_csv(case_dir / csv_file)

@@ -1,10 +1,10 @@
 # MSR Chemistry and Radiochemistry with OpenPronghorn
 
 !style halign=center fontsize=120%
-Radiolysis, fission-product inventory, corrosion and plating
+Redox, fission products, corrosion and plating: from one cell to the MSFR
 
 !style halign=center
-One-day hands-on training
+Hands-on training in five cases
 
 !---
 
@@ -12,19 +12,7 @@ One-day hands-on training
 
 !---
 
-!include training/chemistry/module1_radiolysis.md
-
-!---
-
-!include training/chemistry/module2_fission_products.md
-
-!---
-
-!include training/chemistry/module3_corrosion.md
-
-!---
-
-!include training/chemistry/module4_coupled.md
+!include training/chemistry/cases.md
 
 !---
 

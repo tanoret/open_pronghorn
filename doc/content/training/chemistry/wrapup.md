@@ -2,40 +2,38 @@
 
 !---
 
-## What we validated
+## Verification, calibration, validation
 
-| check | cases | result |
+| kind | meaning | in this training |
 | :- | :- | :- |
-| analytic solutions | 01, 02, 05, 06, 07, 08 | $10^{-4}$ – $10^{-15}$ |
-| exact invariants | 03, 04, 11, 13 | $10^{-6}$ – $10^{-16}$ |
-| measured data | 07 (MSRE), 08 (MSRE), 12 (7 loops), 13 (NCL-16) | within 2x |
-| balances | 15, 16 | < $5\times10^{-4}$ |
-| 2D = 0D equilibrium | 16 | $4\times10^{-4}$ |
+| **Verification** | analytic solutions and exact conservation | all five cases |
+| **Calibration** | reproduces data the model was fitted to | 03 (NCL-16), 04 (bubble rate, Cr) |
+| **Code-to-code** | another code or model for the same problem | 04 (ORNL design model), 05 (VTB) |
+| **Validation** | independent measured data | 04: MSRE Xe and noble metals (**both fail**) |
 
-All 16 cases are regression tests: `./run_tests --test-root examples/training [--heavy]`.
+All five cases are regression tests: `./run_tests --test-root examples/training [--heavy]`.
 
 !---
 
 ## Limits of the models
 
-- **Radiolysis**: literature G values and rate constants for idealized melts. Impurities (moisture,
-  oxides) dominate real salt redox.
-- **Corrosion**: calibrated to the loop/capsule database. New alloys, chlorides or high dose are
-  extrapolations. The radiolysis-corrosion coupling (case 14) is a hypothesis, not yet validated.
-- **Fission products**: selected chains, one-group cross sections. Plating is a mass-transfer
-  coefficient (no sticking, re-entrainment or graphite).
-- **Coupled loops**: steady. Power transients in a resolved loop need a transient executioner or a
-  frozen-flow restart.
+- **Radiolysis and redox:** G values are assumed gamma yields, while fission fragments dominate the
+  dose. Fission oxidation is ~0.8 eq/fission. Impurities are not modelled.
+- **Fission products:** selected chains with one-group cross sections; lumped precursors (Xe-137).
+  Noble metals are a perfect mass-transfer sink, which fails against the MSRE.
+- **Corrosion:** the correlation, MSTDB-TC and DRIDN are calibrated in-sample. The equilibria of the
+  element-resolved wall law are assumptions. Wall comproportionation and film mass transfer are
+  missing.
+- **Reactor models:** the MSRE is lumped (loop time much shorter than the chemistry times). The MSFR
+  is steady 2D-RZ with one lumped loop, and its T$_{max}$ is uncertain by ±200 K.
 
 !---
 
 ## Where to go next
 
-- Theory: `doc/content/theory/fissionProductInventory.md` and the action pages under
-  `doc/content/source/`.
-- Validation: `validation/corrosion` and `validation/msr`.
-- Larger examples: `examples/operating_msr_corrosion`, `examples/msfr_loop`,
-  `examples/flowing_msr_corrosion`.
+- `examples/training/chemistry/THEORY.md`: the equations, usage and pitfalls of every model.
+- Validation data: `validation/corrosion` (76 cases) and `validation/msr`.
+- The VTB MSFR and MSRE models: `virtual_test_bed/msr`.
 
 !style halign=center fontsize=150%
 Questions?

@@ -1,0 +1,15 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md'
+  issues = '#000'
+  [fuel_salt_redox]
+    type = CSVDiff
+    input = 'fuel_salt_redox.i'
+    csvdiff = 'fuel_salt_redox_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-5
+    max_time = 600
+    requirement = 'The system shall model the fission oxidation of a UF3/UF4-buffered MSRE fuel salt '
+                  'with Henry-law transfer of F2 to the off-gas once the buffer is spent, conserving '
+                  'uranium, fluorine and the redox balance (training case 01).'
+  []
+[]

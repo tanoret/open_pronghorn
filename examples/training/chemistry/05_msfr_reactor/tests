@@ -1,0 +1,56 @@
+[Tests]
+  design = 'MoltenSaltRadiolysisAction.md CorrosionPlatingFlowAction.md FissionProductInventoryAction.md'
+  issues = '#000'
+  [msfr_flow]
+    type = CSVDiff
+    input = 'msfr_flow.i'
+    csvdiff = 'msfr_flow_out.csv msfr_flow_out_midplane_0001.csv msfr_flow_out_axis_0001.csv '
+              'msfr_flow_out_loop_0001.csv'
+    abs_zero = 1e-6
+    rel_err = 1e-4
+    heavy = true
+    min_parallel = 8
+    max_parallel = 8
+    max_time = 900
+    requirement = 'The system shall solve the 2D-RZ flow, k-epsilon turbulence and energy of the EVOL / '
+                  'VTB molten salt fast reactor primary circuit with the Griffin power density, closing '
+                  'the energy balance and reproducing the VTB mass flow rate (training case 05, step 1).'
+  []
+  [msfr_chemistry]
+    type = CSVDiff
+    input = 'msfr_chemistry.i'
+    prereq = 'msfr_flow'
+    csvdiff = 'msfr_chemistry_out.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-4
+    # residual-level checks (ratios of nearly cancelling sums): only their order of magnitude is tested
+    override_columns = 'Cr_wall_balance Cr_wall_net Fe_wall_net Ni_wall_net redox_balance_error Mo99_balance_error'
+    override_rel_err = '0.5 1 1 1 1 1'
+    override_abs_zero = '1e-4 1e-9 1e-9 1e-9 1e-6 1e-6'
+    heavy = true
+    min_parallel = 8
+    max_parallel = 8
+    max_time = 1800
+    requirement = 'The system shall couple the fuel-salt redox (fission oxidation balanced by the redox '
+                  'control), element-resolved wall corrosion and plating, and the fission-product '
+                  'inventory with helium bubbling and noble-metal plating to the restarted MSFR flow, '
+                  'conserving the redox equivalents, the wall chromium and the Mo-99 inventory and '
+                  'reproducing the 0D loop equilibria (training case 05, step 2).'
+  []
+  [msfr_chemistry_profiles]
+    type = CSVDiff
+    input = 'msfr_chemistry.i'
+    prereq = 'msfr_chemistry'
+    should_execute = false     # compares the profiles written by msfr_chemistry
+    csvdiff = 'msfr_chemistry_out_loop_0001.csv msfr_chemistry_out_midplane_0001.csv '
+              'msfr_chemistry_out_shield_profile_0001.csv msfr_chemistry_out_reflector_profile_0001.csv'
+    abs_zero = 1e-9
+    rel_err = 1e-4
+    heavy = true
+    min_parallel = 8
+    max_parallel = 8
+    requirement = 'The system shall reproduce the loop, mid-plane and wall profiles (wall-cell temperature, '
+                  'Cr concentration and the element-resolved wall fluxes) of the MSFR chemistry '
+                  '(training case 05, step 2).'
+  []
+[]
