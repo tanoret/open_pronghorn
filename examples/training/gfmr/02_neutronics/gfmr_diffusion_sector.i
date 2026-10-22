@@ -134,7 +134,8 @@ helium = 'helium helium_tri'
     block = 'salt_cr'
   []
   # ---- graphite: the mesh does not split the moderator by zone, the inner/outer/cr graphite
-  # constants differ by < 0.5 %; the outer-zone set (88 % of the moderator) is used
+  # D differs by < 0.2 % and the removal by up to 2.4 % (cr graphite, fast groups); the outer-zone
+  # set (88 % of the moderator) is used
   [graphite]
     type = GenericConstantArray
     prop_name = D
@@ -203,7 +204,8 @@ helium = 'helium helium_tri'
     block = ${absorber}
   []
   # absorber removal matrix with the transport correction of the black Hf rod
-  # (make_diffusion_input.py --rod-factor, calibrated by calibrate_rod.py)
+  # (make_diffusion_input.py --rod-factor 0.602, calibrated by hand against the OpenMC total
+  # worth; see README)
   [absorber_R]
     type = GenericConstant2DArray
     prop_name = R

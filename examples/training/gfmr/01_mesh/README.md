@@ -10,7 +10,7 @@ training.
 | `gfmr_mesh_3d.i` | `gfmr_sector_3d.e`: 3-D 60° sector, explicit channels | 540 k | diffusion (stage 2) |
 | `gfmr_mesh_3d.i` (zone inlets) | `gfmr_sector_3d_cfd.e` | 540 k | CFD (stage 3) |
 | `gfmr_mesh_3d.i` (overrides, see below) | `gfmr_sector_3d_rods_in.e`, `_rods_out.e` | 540 k | rod worth (stage 2) |
-| `gfmr_mesh_homog.i` | `gfmr_homog_3d.e`: homogenized hex columns, full core | 117 k | (transients, not done) |
+| `gfmr_mesh_homog.i` | `gfmr_homog_3d.e`: homogenized hex columns, full core | 117 k | not used yet (for a future space-time transient) |
 
 Run any of them with `open_pronghorn-opt -i <input> --mesh-only <output.e>`. The rod-position
 meshes use command-line overrides of the extruder swaps:
@@ -56,9 +56,9 @@ nominal flow:
 
 | Zone | Velocity | y⁺ of first cell |
 |---|---|---|
-| inner | 1.70 m/s | 45 |
-| outer | 1.03 m/s | 29 |
-| rod annulus | 1.74 m/s | ≈ 40 |
+| inner | 1.70 m/s | 40 |
+| outer | 1.03 m/s | 26 |
+| rod annulus | 1.74 m/s | ≈ 40 (two walls) |
 
 Without the ring (three uniform rings over the 2 cm radius) y⁺ is 60–90.
 

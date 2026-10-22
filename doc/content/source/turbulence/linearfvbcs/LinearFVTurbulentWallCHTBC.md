@@ -28,7 +28,7 @@ function ([!param](/LinearFVBCs/LinearFVTurbulentWallCHTBC/wall_treatment)). The
 carries the thermal sublayer resistance, which grows strongly with the Prandtl number: for a
 molten fluoride salt ($Pr \approx 15$-$20$) it is the dominant resistance, and a model that only
 conducts through the near-wall cell with $k + \mu_t c_p / Pr_t$ overpredicts the wall heat transfer
-by an order of magnitude.
+by more than an order of magnitude (46-fold for the GFMR inner channel at $y^+ = 40$).
 
 ## Coupling
 

@@ -5,7 +5,7 @@ Two homogenizations are written:
   core       volume-weighted fuel salt + graphite of the active lattice (one unit cell is
              ~6.6 % salt by volume); used in the RZ diffusion model for the core region
   reflector  graphite
-The core constants are flux-volume weighted from the material-wise MGXS of the nominal case:
+The core constants are flux-volume weighted over the cell-domain MGXS of the nominal case:
   Sigma_x,core,g = (sum_m Sigma_x,m,g phi_m,g V_m) / (sum_m phi_m,g V_m)
 which is exact for reaction rates when the intra-cell flux is resolved by the tallies (it is: the
 material tallies integrate over the actual heterogeneous geometry). The graphite material MGXS

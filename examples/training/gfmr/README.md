@@ -18,9 +18,25 @@ against correlations). Nothing here is validated against measurements.
 |---|---|---|---|
 | 1 | [01_mesh](01_mesh/README.md) | Reactor-module mesh generators: 2-D cross section, 3-D 60° CFD sector, homogenized full core | complete |
 | 2 | [02_neutronics](02_neutronics/README.md) | OpenMC continuous-energy reference, 8-group cross sections, MOOSE multigroup diffusion on the CFD mesh | complete |
-| 3 | [03_cfd](03_cfd/README.md) | 3-D conjugate k-epsilon CFD of the sector with the diffusion power map | see README |
-| 4 | 04_chemistry | radiolysis and corrosion on the CFD flow field | **not done** |
-| 5 | 05_transients | rod withdrawal, loss of flow, overcooling, loss of heat sink | **not done** |
+| 3 | [03_cfd](03_cfd/README.md) | 3-D conjugate k-epsilon CFD of the sector with the diffusion power map | complete |
+| 4 | [04_chemistry](04_chemistry/README.md) | redox, guide-tube corrosion, I-135 / Xe-135 on the CFD flow, with a 0-D loop balance | complete (redox and corrosion from the 0-D loop: the 3-D fields are below the numerical floor) |
+| 5 | [05_transients](05_transients/README.md) | 0.3 $ rod step: point kinetics with precursor drift and two-temperature feedback | one scenario (loss of flow, overcooling, loss of heat sink need a loop model) |
+
+[THEORY.md](THEORY.md) is the theory manual for all five stages.
+
+## Headline results
+
+| Quantity | Value | Stage |
+|---|---|---|
+| k-eff, nominal (OpenMC) | 0.99510 ± 0.00014 (≈ 490 pcm subcritical as specified) | 2 |
+| Total rod worth | 4844 ± 21 pcm (7.1 $) | 2 |
+| Temperature coefficients, fuel / graphite | −2.7 / −4.1 pcm/K | 2 |
+| β_eff / prompt generation time | 681 pcm / 0.61 ms | 2 |
+| Diffusion vs OpenMC k | +115 pcm | 2 |
+| Channel Δp vs SPEC | within 1–4 % | 3 |
+| Graphite moderator average / maximum | 721 / 830 °C (reflector 859 °C) | 3 |
+| Reactivity lost to precursor drift | 295 pcm (0.43 $) | 5 |
+| 0.3 $ rod step, unprotected | peak 2.78 × nominal at 15 s, settles at 1.38 × | 5 |
 
 ## Shared data
 

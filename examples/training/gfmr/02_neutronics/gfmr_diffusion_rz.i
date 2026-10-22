@@ -16,8 +16,8 @@
 #              of OpenMC is the reference and the smeared Hf density is calibrated to it)
 # Boundaries: Marshak vacuum on the top, bottom and outer surfaces.
 #
-# Outputs: k_eff, the power density (W/m^3, normalized to 150 MW), the fast flux (> 0.1 MeV,
-# groups 1-2) for the graphite lifetime, and axial/radial profiles.
+# Outputs: k_eff, the power density (W/m^3, normalized to 150 MW), the E > 5.53 keV flux
+# (groups 1-2, an upper bound on the > 0.1 MeV graphite-lifetime flux) and axial/radial profiles.
 ################################################################################
 
 !include xs/gfmr_xs.i
@@ -27,8 +27,6 @@ R_refl = 1.75
 # 397 hexagonal unit cells of pitch 0.14 m: area 397 * sqrt(3)/2 * 0.14^2 = 6.739 m^2
 R_core = ${fparse sqrt(397 * sqrt(3) / 2 * 0.14^2 / pi)}
 power = 150e6
-# fraction of the total heating deposited in the fuel salt (OpenMC coupled n-gamma heating)
-f_salt = 0.92
 
 nr_core = 30
 nr_refl = 8

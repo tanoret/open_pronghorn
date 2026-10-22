@@ -6,7 +6,8 @@
 #
 #   salt      : incompressible turbulent flow, standard k-epsilon with equilibrium wall functions,
 #               energy with turbulent conduction (Pr_t = 0.85), FUNaK properties at 650 C (SPEC)
-#   graphite  : conduction, k = 25 W/m/K (SPEC)
+#   graphite  : conduction, k = 25 W/m/K (SPEC); the guide tube uses the same k (simplification:
+#               Hastelloy N ~21 W/m/K; the tube carries no net heat, see README)
 #   walls     : LinearFVTurbulentWallCHTBC on both sides (Jayatilleke thermal wall function for
 #               Pr ~ 17; verified in test/tests/kEpsilon/salt_pipe_heat_transfer)
 #   power     : the 8-group diffusion power map (../02_neutronics, calibrated against OpenMC),

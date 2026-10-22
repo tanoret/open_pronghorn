@@ -8,3 +8,5 @@ __pycache__/
 !03_cfd/results/*.csv
 !02_neutronics/xs/*.json
 !02_neutronics/xs/openmc_run.log
+!04_chemistry/results/*.csv
+!05_transients/results/*.csv

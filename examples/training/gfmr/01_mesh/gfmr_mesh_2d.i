@@ -23,7 +23,7 @@ r_reflector = 1.75      # m
 # Azimuthal resolution: 4 sectors per hexagon side = 24 cells around each channel
 nsec = 4
 # Near-wall salt layer (wall functions): a 3 mm ring next to the graphite puts the first cell
-# centre at y = 1.5 mm, y+ = 26 (outer, 1.03 m/s) to 45 (inner, 1.70 m/s) at nominal flow
+# centre at y = 1.5 mm, y+ = 26 (outer, 1.03 m/s) to 40 (inner, 1.70 m/s) at nominal flow
 wall_layer = 0.003
 
 [Mesh]

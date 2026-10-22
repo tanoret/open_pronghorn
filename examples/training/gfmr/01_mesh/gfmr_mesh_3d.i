@@ -20,7 +20,7 @@
 height = 3.6
 cr_insertion = 0.36
 
-# axial cells: 40 below the rod tip (9 cm), 6 in the rodded zone (6 cm)
+# axial cells: 40 below the rod tip (8.1 cm), 6 in the rodded zone (6 cm)
 nz_lower = 40
 nz_rodded = 6
 

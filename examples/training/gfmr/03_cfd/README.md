@@ -10,9 +10,10 @@ map of stage 2.
 |---|---|
 | Salt flow | incompressible, standard k-ε, equilibrium (Newton) wall functions |
 | Salt energy | advection + conduction k + μ_t c_p / Pr_t (Pr_t = 0.85) |
-| Graphite, guide tube | conduction, k = 25 W/m/K (SPEC) |
+| Graphite | conduction, k = 25 W/m/K (SPEC) |
+| Hastelloy N guide tube | conduction with the graphite k = 25 W/m/K (simplification: Hastelloy N is ~21 W/m/K near 700 °C; the 2 mm tube carries no net heat) |
 | Salt-solid interfaces | `LinearFVTurbulentWallCHTBC` on both sides (Jayatilleke wall function) |
-| Power | diffusion power map: 92.1 % in the salt as mapped, 7.9 % in the graphite shaped like the fast flux |
+| Power | diffusion power map: 92.1 % in the salt as mapped, 7.9 % in the graphite shaped like the E > 5.53 keV flux (groups 1-2) |
 | Inlets | SPEC zone velocities 1.70 / 1.03 / 1.74 m/s at 613.8 °C |
 | Outlet | p = 0, outflow |
 | Symmetry planes | slip / adiabatic |
@@ -27,7 +28,7 @@ FUNaK properties are taken at 650 °C from the SPEC correlations: ρ = 4073.5 kg
 At Pr ≈ 17 most of the thermal resistance between the salt and the graphite sits in the
 conductive sublayer, a fraction of a millimetre thick. A wall-function mesh does not resolve
 that layer. Conducting through the near-wall cell with k + μ_t c_p / Pr_t overestimates the heat
-transfer about tenfold.
+transfer about 46-fold for the inner channel (1.8×10⁵ against 3.8×10³ W/m²/K at y⁺ = 40).
 
 `LinearFVTurbulentWallCHTBC` uses the Jayatilleke P-function, which carries that resistance. It
 is verified in `test/tests/kEpsilon/salt_pipe_heat_transfer`: a GFMR inner channel gives
@@ -36,7 +37,7 @@ correlation. See `doc/content/source/turbulence/linearfvbcs/LinearFVTurbulentWal
 
 ## Results
 
-600 SIMPLE iterations, 24 ranks, 20 min. Momentum residuals reach 1e-6. The energy residual
+600 SIMPLE iterations, 24 ranks, 19 min. Momentum residuals reach 1e-6. The energy residual
 levels off near 3e-5 while the interface heat flows are steady to 1e-5.
 
 ### Balances (verification)
@@ -98,7 +99,7 @@ reflector's outer surface has no heat sink; a real vessel or downcomer would coo
   film drop).
 - The power map is frozen: no temperature feedback on the neutronics (one-way coupling).
 - The salt conductivity (0.8 W/m/K) is assumed.
-- The graphite heat source follows the fast flux, not a gamma transport solution; the
+- The graphite heat source follows the E > 5.53 keV flux (groups 1-2), not a gamma transport solution; the
   OpenMC heating tally (`heating_mesh`, 10 cm mesh) would give the real distribution.
 - The outer reflector surface is adiabatic.
 
@@ -108,7 +109,7 @@ reflector's outer surface has no heat sink; a real vessel or downcomer would coo
 # needs ../02_neutronics/sector_power.e (the diffusion power map on the CFD mesh):
 #   cd ../02_neutronics && mpirun -n 24 open_pronghorn-opt -i gfmr_diffusion_sector.i -w \
 #     Outputs/file_base=sector_power mesh_file=../01_mesh/gfmr_sector_3d_cfd.e
-mpirun -n 24 open_pronghorn-opt -i gfmr_core_cfd.i     # ~25 min, 600 SIMPLE iterations
+mpirun -n 24 open_pronghorn-opt -i gfmr_core_cfd.i     # ~19 min, 600 SIMPLE iterations
 ```
 
 ## Exercises

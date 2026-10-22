@@ -25,7 +25,7 @@
  * h_wf = rho cp u_tau / T+ in the log layer (y+ >= 30), k / y in the viscous sublayer
  * (y+ <= 5) and a linear blend in between. The P-function makes the coefficient correct for
  * Prandtl numbers far from one: for a molten fluoride salt (Pr ~ 15-20) the near-wall cell
- * conduction k_eff / y overpredicts h by an order of magnitude.
+ * conduction k_eff / y overpredicts h by more than an order of magnitude.
  *
  * Between the fluid cell P (temperature T_P) and the solid cell S (T_S) there are two
  * resistances in series: the wall function 1/h_wf and the half solid cell d_S/k_S.
