@@ -1,0 +1,10 @@
+# generated meshes and results are rebuilt by the inputs (see each README)
+*_cp/
+*.log
+.jitcache/
+__pycache__/
+# keep the OpenMC-derived data and the summary results the READMEs quote
+!02_neutronics/xs/*.csv
+!03_cfd/results/*.csv
+!02_neutronics/xs/*.json
+!02_neutronics/xs/openmc_run.log

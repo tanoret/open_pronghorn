@@ -1,0 +1,26 @@
+[Tests]
+  design = 'LinearFVTurbulentWallCHTBC.md'
+  issues = '#000'
+  [salt_pipe]
+    type = CSVDiff
+    input = 'salt_pipe.i'
+    csvdiff = 'salt_pipe_out.csv salt_pipe_out_radial_0002.csv salt_pipe_out_radial_solid_0002.csv'
+    abs_zero = 1e-6
+    rel_err = 1e-5
+    min_parallel = 4
+    max_parallel = 4
+    heavy = true
+    requirement = 'The wall-function conjugate heat transfer condition shall couple a turbulent '
+                  'molten-salt pipe flow (Re 1.85e4, Pr 16.8) to a heated graphite sleeve with the '
+                  'Jayatilleke thermal law of the wall, conserve energy to 1e-4, and give a '
+                  'Nusselt number within the uncertainty of the Gnielinski correlation.'
+  []
+  [neq_needs_tke]
+    type = RunException
+    input = 'salt_pipe.i'
+    cli_args = "LinearFVBCs/fluid_wall_T/wall_treatment=neq Executioner/num_iterations=1"
+    expect_err = 'The non-equilibrium wall treatment needs the turbulent kinetic energy'
+    requirement = 'The wall-function conjugate heat transfer condition shall reject the '
+                  'non-equilibrium wall treatment when no turbulent kinetic energy is given.'
+  []
+[]

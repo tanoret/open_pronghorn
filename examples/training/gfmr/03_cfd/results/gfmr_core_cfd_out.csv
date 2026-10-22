@@ -1,0 +1,2 @@
+time,T_graphite_avg,T_graphite_max,T_guide_max,T_outlet_mixed,T_salt_max,energy_balance,enthalpy_in,enthalpy_out,fast_integral,graphite_scale,heat_graphite,heat_salt,mdot_core,mdot_sector,p_inlet_cr,p_inlet_inner,p_inlet_outer,q_salt_integral,salt_scale
+2,998.16118152039,1132.370854454,963.07365553967,686.44881819732,992.63893865647,4.4832293537334e-05,-305216197.91562,330217318.72295,2.0404202718334e+18,9.6426213126773e-13,1967500,23032500,2294.1345380374,382.35575633957,35427.119931648,14402.90191048,6153.0090456206,25000000,0.9213
