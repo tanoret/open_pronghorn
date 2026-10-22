@@ -7,8 +7,7 @@ training.
 | Input | Product | Cells | Used by |
 |---|---|---|---|
 | `gfmr_mesh_2d.i` | 2-D full cross section | 70 k | inspection, the base of the 3-D sector |
-| `gfmr_mesh_3d.i` | `gfmr_sector_3d.e`: 3-D 60° sector, explicit channels | 540 k | diffusion (stage 2) |
-| `gfmr_mesh_3d.i` (zone inlets) | `gfmr_sector_3d_cfd.e` | 540 k | CFD (stage 3) |
+| `gfmr_mesh_3d.i` | `gfmr_sector_3d_cfd.e`: 3-D 60° sector, explicit channels, zone inlets | 540 k | diffusion (stage 2), CFD (stage 3) |
 | `gfmr_mesh_3d.i` (overrides, see below) | `gfmr_sector_3d_rods_in.e`, `_rods_out.e` | 540 k | rod worth (stage 2) |
 | `gfmr_mesh_homog.i` | `gfmr_homog_3d.e`: homogenized hex columns, full core | 117 k | not used yet (for a future space-time transient) |
 
@@ -64,7 +63,7 @@ Without the ring (three uniform rings over the 2 cm radius) y⁺ is 60–90.
 
 ## Exercises
 
-1. Plot `gfmr_sector_3d.e` and identify the nine-rod pattern in the 60° wedge (rods at the
+1. Plot `gfmr_sector_3d_cfd.e` and identify the nine-rod pattern in the 60° wedge (rods at the
    wedge apex and on the ring-4 corner).
 2. Change `nsec` in `gfmr_mesh_2d.i` from 4 to 6 and compare the cell count.
 3. Explain why `BoundaryDeletionGenerator` is needed before a linear-FV solve.

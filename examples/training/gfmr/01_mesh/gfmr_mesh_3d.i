@@ -14,7 +14,7 @@
 # The fuel channels are open at z = 0 (inlet) and z = 3.6 m (outlet); the lower and upper
 # plena are not part of the GFMR specification and are not meshed.
 #
-# Run:  open_pronghorn-opt -i gfmr_mesh_3d.i --mesh-only gfmr_sector_3d.e
+# Run:  open_pronghorn-opt -i gfmr_mesh_3d.i --mesh-only gfmr_sector_3d_cfd.e
 ################################################################################
 
 height = 3.6

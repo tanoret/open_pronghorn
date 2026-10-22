@@ -2,7 +2,7 @@
 # GFMR training -- Stage 2b: 8-group heterogeneous neutron diffusion on the 3-D CFD sector mesh
 #
 # Same physics as gfmr_diffusion_rz.i, but on the 60-degree sector mesh of the CFD
-# (../01_mesh/gfmr_sector_3d.e): every fuel channel, control-rod guide tube, absorber, helium gap
+# (../01_mesh/gfmr_sector_3d_cfd.e): every fuel channel, control-rod guide tube, absorber, helium gap
 # and the graphite around them is resolved. Each mesh block carries the 8-group constants of the
 # matching OpenMC cell region (cell-domain MGXS of the nominal case, xs/gfmr_xs.i), so the power
 # density lands on the CFD cells without any mapping.
@@ -25,8 +25,8 @@ power = 150e6
 power_sector = ${fparse power / 6}
 
 salt = 'salt_inner_tri salt_inner salt_outer_tri salt_outer salt_cr'
-# mesh of the rod position: gfmr_sector_3d.e (nominal, 36 cm), _rods_in.e or _rods_out.e
-mesh_file = '../01_mesh/gfmr_sector_3d.e'
+# mesh of the rod position: gfmr_sector_3d_cfd.e (nominal, 36 cm), gfmr_sector_3d_rods_in.e or _rods_out.e
+mesh_file = '../01_mesh/gfmr_sector_3d_cfd.e'
 # blocks holding Hf / He in that mesh (rods out: absorber = '' and helium also the core)
 absorber = 'absorber_tri absorber'
 helium = 'helium helium_tri'

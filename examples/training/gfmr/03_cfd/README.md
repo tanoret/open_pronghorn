@@ -108,7 +108,7 @@ reflector's outer surface has no heat sink; a real vessel or downcomer would coo
 ```bash
 # needs ../02_neutronics/sector_power.e (the diffusion power map on the CFD mesh):
 #   cd ../02_neutronics && mpirun -n 24 open_pronghorn-opt -i gfmr_diffusion_sector.i -w \
-#     Outputs/file_base=sector_power mesh_file=../01_mesh/gfmr_sector_3d_cfd.e
+#     Outputs/file_base=sector_power
 mpirun -n 24 open_pronghorn-opt -i gfmr_core_cfd.i     # ~19 min, 600 SIMPLE iterations
 ```
 
