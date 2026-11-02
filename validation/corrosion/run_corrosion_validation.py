@@ -7,7 +7,7 @@ For every case in the calibrated reference dataset (msr_corrosion_plating_model)
 boundary current Faradaically reproduces the reference effective-correlation dissolution rate. The
 exchange current is seeded from the calibrated rate, so the reproduction is essentially exact; the
 script reports the maximum relative error and the within-factor-2 / within-factor-5 fractions and
-fails if the reproduction or the agreement with the experimental targets degrades.
+fails if the reference-rate reproduction degrades beyond the configured tolerance.
 
 The full reference correlation (all 76 cases, 43 targets and the NCL-16 loop) is reproduced term for
 term by the C++ unit tests in unit/src/MoltenSaltCorrosion*Test.C; this script adds the end-to-end

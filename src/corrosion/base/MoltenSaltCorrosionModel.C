@@ -205,16 +205,20 @@ MoltenSaltCorrosionModel::corrosionDepthUm(const CorrosionFeatures & feat) const
 }
 
 Real
+MoltenSaltCorrosionModel::igcDepthFromCorrosionDepthUm(const CorrosionFeatures & feat,
+                                                       Real corrosion_depth_um) const
+{
+  const Real uniform = std::max(corrosion_depth_um, 0.0);
+  // Mixed linear/parabolic morphology: the square-root term allows deep IGC/void penetration with
+  // limited mass loss while remaining tied to the accumulated uniform corrosion depth.
+  const Real dmg = damageMultiplier(feat);
+  return uniform * dmg + std::sqrt(uniform) * dmg;
+}
+
+Real
 MoltenSaltCorrosionModel::igcDepthUm(const CorrosionFeatures & feat) const
 {
-  Real time_y = (feat.time_years == 0.0) ? std::numeric_limits<Real>::quiet_NaN() : feat.time_years;
-  if (!std::isfinite(time_y))
-    return std::numeric_limits<Real>::quiet_NaN();
-  const Real uniform = corrosionRateUmY(feat) * std::max(time_y, 0.0);
-  // Mixed linear/parabolic morphology: the square-root term allows deep IGC/void penetration with
-  // limited mass loss while remaining tied to the Butler-Volmer corrosion drive.
-  const Real dmg = damageMultiplier(feat);
-  return uniform * dmg + std::sqrt(std::max(uniform, 0.0)) * dmg;
+  return igcDepthFromCorrosionDepthUm(feat, corrosionDepthUm(feat));
 }
 
 Real
@@ -296,10 +300,20 @@ Real
 MoltenSaltCorrosionModel::crDiffusionCm2S(const CorrosionFeatures & feat) const
 {
   const Real T = pyOr(feat.temperature_K, T_ref_K);
-  const Real logD = param("log_Dcr_ref_cm2_s") + thermalTerm(T, param("Ea_Dcr_kJ_mol"));
+
+  if (_db.hasSolidDiffusivity(feat.material_class, "Cr"))
+  {
+    const auto props = _db.solidDiffusivity(feat.material_class, "Cr");
+    const Real logD =
+        std::log(props.D0_cm2_s) - props.Q_kJ_mol * 1000.0 / (R_gas * T);
+    return expClip(logD, -80.0, -20.0);
+  }
+
+  const auto props = _db.solidDiffusivity("generic_metal", "Cr");
+  const Real logD =
+      std::log(props.D0_cm2_s) - props.Q_kJ_mol * 1000.0 / (R_gas * T);
   return expClip(logD, -80.0, -20.0);
 }
-
 Real
 MoltenSaltCorrosionModel::saltCrPpmBase(const CorrosionFeatures & feat) const
 {

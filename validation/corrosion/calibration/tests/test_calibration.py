@@ -25,11 +25,11 @@ from msr_corrosion_bv.calibrate import (  # noqa: E402
     objective_vector,
 )
 from msr_corrosion_bv.ingest import build_model_tables  # noqa: E402
-from msr_corrosion_bv.model import (  # noqa: E402
+from msr_corrosion_bv.model import (    # noqa: E402
+    MoltenSaltBVModel,
     PARAMETER_SPECS,
     initial_parameter_vector,
 )
-
 
 def read_json(path: Path) -> dict[str, object]:
     with path.open(encoding="utf-8") as stream:
@@ -47,18 +47,18 @@ class CalibrationDataTests(unittest.TestCase):
 
         self.assertEqual(len(self.tables["case_features"]), 76)
         self.assertEqual(len(targets), 43)
-        self.assertEqual(len(active), 38)
+        self.assertEqual(len(active), 37)
         self.assertEqual(active["source_id"].nunique(), 14)
 
     def test_objective_contains_data_and_prior_residuals(self) -> None:
         targets = self.tables["targets"]
         objective = objective_vector(initial_parameter_vector(), targets)
 
-        # Thirty-eight active rows produce 39 data residuals because the one
-        # deposition-ranking row encodes two inequalities.  Every one of the
-        # 61 parameters contributes a regularizing prior residual.
-        self.assertEqual(len(PARAMETER_SPECS), 61)
-        self.assertEqual(len(objective), 39 + 61)
+        # Thirty-seven active rows produce 38 data residuals because the one
+        # deposition-ranking row encodes two inequalities. Every one of the
+        # 59 parameters contributes a regularizing prior residual.
+        self.assertEqual(len(PARAMETER_SPECS), 59)
+        self.assertEqual(len(objective), 38 + 59)
 
     def test_frozen_parameters_match_existing_vendored_copy(self) -> None:
         frozen = read_json(REFERENCE / "parameters.json")
@@ -77,6 +77,29 @@ class CalibrationDataTests(unittest.TestCase):
         self.assertEqual(set(frozen) - set(production), set())
         for name, value in frozen.items():
             self.assertEqual(value, production[name], msg=name)
+
+    def test_solid_diffusivity_material_fallback(self) -> None:
+        model = MoltenSaltBVModel()
+
+        direct = model.cr_diffusion_cm2_s(
+            {"material_class": "stainless_316", "temperature_K": 923.15}
+        )
+        fallback = model.cr_diffusion_cm2_s(
+            {"material_class": "stainless_316h", "temperature_K": 923.15}
+        )
+
+        case_insensitive_fallback = model.cr_diffusion_cm2_s(
+            {"material_class": "STAINLESS_316H", "temperature_K": 923.15}
+        )
+        self.assertAlmostEqual(case_insensitive_fallback, direct, delta=6.5e-29)
+
+        generic = model.cr_diffusion_cm2_s(
+            {"material_class": "unobtanium", "temperature_K": 923.15}
+        )
+
+        self.assertAlmostEqual(direct, 6.499858816091512e-17, delta=6.5e-29)
+        self.assertAlmostEqual(fallback, direct, delta=6.5e-29)
+        self.assertAlmostEqual(generic, 4.0e-14, delta=4.0e-26)
 
 
 class CalibrationFitTests(unittest.TestCase):

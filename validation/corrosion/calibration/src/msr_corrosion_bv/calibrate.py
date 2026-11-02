@@ -1,9 +1,9 @@
 """Fit and audit the effective MSR corrosion/plating correlation.
 
-Terminology matters here.  This module estimates the 61-parameter correlation
-from the workbook's active rows and reports in-sample fit diagnostics.  It does
-not create an independent validation split.  OpenPronghorn's separate 0D replay
-tests software consistency between this Python correlation and the C++ model.
+Terminology matters here. This module estimates the 59-parameter corrosion/plating
+correlation from the workbook's active calibration rows and reports in-sample fit
+diagnostics. Validation-only targets are withheld from the objective and scored
+separately.
 """
 
 from __future__ import annotations
@@ -60,8 +60,8 @@ def residuals_for_targets(
 
     A direct or range row contributes a signed log residual.  Upper and lower
     rows contribute only when their inequality is violated.  The single MSRE
-    deposition-ranking row contributes two ordering residuals, so 38 active
-    workbook rows produce 39 scalar data residuals.
+    deposition-ranking row contributes two ordering residuals, so 37 active
+    calibration rows produce 38 scalar data residuals.
     """
     residuals: list[float] = []
     details: list[dict[str, Any]] = []
@@ -282,11 +282,58 @@ def compute_metrics(predictions: pd.DataFrame, residual_details: pd.DataFrame) -
         metrics["constraint_pass_fraction"] = None
         metrics["max_abs_weighted_residual"] = None
 
+    validation_only = predictions[predictions["fit_role"] == "validation_only"].copy()
+    validation_only = validation_only[
+        _positive_mask(validation_only["prediction"])
+        & _positive_mask(validation_only["target_mid"])
+    ]
+
+    metrics["n_validation_only_targets"] = int(len(validation_only))
+
+    if len(validation_only):
+        ln_err = np.log(
+            validation_only["prediction"].astype(float).to_numpy()
+            / validation_only["target_mid"].astype(float).to_numpy()
+        )
+        metrics["median_factor_error_validation_only"] = float(
+            np.exp(np.median(np.abs(ln_err)))
+        )
+        metrics["within_factor_2_validation_only"] = float(
+            np.mean(np.abs(ln_err) <= math.log(2.0))
+        )
+    else:
+        metrics["median_factor_error_validation_only"] = None
+        metrics["within_factor_2_validation_only"] = None
+
+    all_quantitative = pd.concat([direct, validation_only], ignore_index=True)
+
+    metrics["n_all_quantitative_targets"] = int(len(all_quantitative))
+
+    if len(all_quantitative):
+        ln_err = np.log(
+            all_quantitative["prediction"].astype(float).to_numpy()
+            / all_quantitative["target_mid"].astype(float).to_numpy()
+        )
+        metrics["median_factor_error_all_quantitative"] = float(
+            np.exp(np.median(np.abs(ln_err)))
+        )
+        metrics["within_factor_2_all_quantitative"] = float(
+            np.mean(np.abs(ln_err) <= math.log(2.0))
+        )
+        metrics["within_factor_5_all_quantitative"] = float(
+            np.mean(np.abs(ln_err) <= math.log(5.0))
+        )
+    else:
+        metrics["median_factor_error_all_quantitative"] = None
+        metrics["within_factor_2_all_quantitative"] = None
+        metrics["within_factor_5_all_quantitative"] = None
+
     role_counts = predictions.groupby("fit_role", dropna=False).size().to_dict()
     metrics["fit_role_counts"] = {str(k): int(v) for k, v in role_counts.items()}
     kind_counts = predictions.groupby("response_kind", dropna=False).size().to_dict()
     metrics["response_kind_counts"] = {str(k): int(v) for k, v in kind_counts.items()}
     return metrics
+
 
 
 def _positive_mask(series: pd.Series) -> pd.Series:

@@ -12,6 +12,12 @@ The model should therefore be used for source-term screening and sensitivity ana
 material, salt, temperature, flow, and redox classes represented by the workbook. Extrapolation
 outside that domain should carry an explicit model-form uncertainty.
 
+Chromium solid diffusivity is treated separately from the fitted corrosion/plating coefficients.
+Material-specific Arrhenius properties are read from `data/corrosion_database.json` under
+`solid_diffusivities`. Hastelloy N uses the DeVan chromium tracer-diffusion correlation.
+`generic_metal` retains the historical diffusion correlation as an explicitly labeled legacy
+fallback.
+
 ## Corrosion branch
 
 The kinetic corrosion rate is
@@ -53,18 +59,44 @@ activity, speciation, and electrochemical-potential effects shared by a named re
 
 The deposition branch contains its own intercept, temperature and flow terms, salt offsets,
 cold-leg enhancement, and surface-affinity terms. Its redox contribution has the opposite sense
-and a reduced empirical magnitude. Additional closures map the common corrosion/deposition drive
-to:
+and a reduced empirical magnitude. Additional fitted closures map the common
+corrosion/deposition drive to:
 
 - uniform and intergranular attack depth;
 - areal mass loss and gain;
 - salt chromium and iron inventory changes;
-- chromium solid-state diffusivity;
 - noble-metal off-gas fraction; and
 - tellurium solubility and redox threshold.
 
-These closures are jointly fitted effective responses. Agreement in one branch does not establish a
-mechanistic validation of every underlying process.
+Chromium solid-state diffusivity is not one of these fitted closures in the current model. It is an
+independent material property supplied from `solid_diffusivities`.
+
+Agreement in one fitted branch does not establish a mechanistic validation of every underlying
+process.
+
+## Chromium solid diffusivity
+
+For a material with chromium Arrhenius properties,
+
+```text
+D_Cr(T) = D0 * exp[-Q/(R*T)].
+```
+
+The production C++ model and the Python calibration model read the same material-property entries
+from `data/corrosion_database.json`.
+
+For exact `hastelloy_n`, the chromium diffusivity uses the DeVan tracer-derived correlation. The
+temperature range stored with that entry is provenance metadata for the measured range; the model
+does not clamp, reject, or switch correlations outside that range.
+
+If no material-specific chromium entry is present, the model uses the explicitly labeled
+`generic_metal` legacy fallback. That fallback reproduces the historical 61-parameter diffusion
+correlation but is not presented as a source-specific alloy property.
+
+M-005, the ORNL-TM-3063 chromium-diffusion value at 650 C, is retained as a quantitative
+`validation_only` target. It is not used to fit the 59 corrosion/plating coefficients. In the
+current framework it checks the independently supplied Hastelloy N diffusivity against the
+historical surveillance-derived value.
 
 ## Relation-aware residuals
 
@@ -73,6 +105,7 @@ The calibration does not convert every literature statement into an artificial e
 - Direct and range targets use weighted log residuals.
 - Upper and lower bounds use one-sided residuals that are zero when the inequality is satisfied.
 - The deposition-ranking row contributes two ordering residuals.
+- `validation_only` targets are predicted and scored but do not enter the fit objective.
 - Input-only and excluded auxiliary rows remain in the audit tables but do not enter the objective.
 
 For a direct target,
@@ -83,15 +116,17 @@ r_i = sqrt(quality_weight_i)
       / sigma_ln_i.
 ```
 
-The optimizer minimizes a robust `soft_l1` loss over the data residuals and 61 Gaussian-style prior
+The optimizer minimizes a robust `soft_l1` loss over the data residuals and 59 Gaussian-style prior
 residuals:
 
 ```text
 r_prior,j = prior_strength * (parameter_j - prior_j) / prior_sigma_j.
 ```
 
-The default `prior_strength` is `0.35`. Bounds, initial values, prior centers, and prior widths are
-defined next to every parameter in `src/msr_corrosion_bv/model.py`.
+The 37 active calibration rows produce 38 data residuals because the single deposition-ranking row
+encodes two inequalities. The default `prior_strength` is `0.35`. Bounds, initial values, prior
+centers, and prior widths are defined next to every fitted parameter in
+`src/msr_corrosion_bv/model.py`.
 
 ## Optimization
 
@@ -109,17 +144,31 @@ deterministic, no random seed is involved.
 
 ## Interpretation of reported performance
 
-The current fit used 43 measurement rows, 38 active constraint rows, and 61 fitted parameters plus
-priors. Its frozen metrics were:
+The current fit uses 43 measurement rows, 37 active calibration rows, and 59 fitted
+corrosion/plating parameters plus priors. M-005 is withheld from fitting as one validation-only
+quantitative target.
+
+Current quantitative summary metrics are:
 
 | Metric | Value |
 |---|---:|
-| Direct/range targets | 29 |
-| Median direct/range factor error | 1.114 |
-| Direct/range targets within factor 2 | 93.1% |
+| Direct/range calibration targets | 28 |
+| Median direct/range factor error | 1.1166 |
+| Direct/range targets within factor 2 | 92.9% |
 | Direct/range targets within factor 5 | 100% |
-| Active constraint pass fraction | 94.7% |
+| Validation-only quantitative targets | 1 |
+| Median validation-only factor error | 1.9340 |
+| Validation-only targets within factor 2 | 100% |
+| All quantitative calibration + validation targets | 29 |
+| Median factor error across all quantitative targets | 1.1187 |
+| All quantitative targets within factor 2 | 93.1% |
+| All quantitative targets within factor 5 | 100% |
 
-These are in-sample calibration diagnostics. They are not an independent test-set accuracy claim.
+The direct/range metrics are in-sample calibration diagnostics. The M-005 value is an independent
+validation of the chromium-diffusivity material property with respect to the current fit, because it
+is withheld from calibration. The combined 29-target metric is a useful descriptive summary across
+calibration and validation targets, but it must not be described as an independent-validation
+metric.
+
 The OpenPronghorn 0D replay is a separate software-verification test showing that the C++ model
-reproduces this correlation.
+reproduces the frozen correlation and material-property behavior.
