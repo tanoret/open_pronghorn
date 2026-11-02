@@ -1,0 +1,29 @@
+parameter,value,prior,prior_sigma,lower,upper,description
+log_front_rate0_um_y,0.0036741915643164766,0.0575,1.0,-4.605170185988091,4.605170185988092,"Reference selective-dissolution front rate at 650 C, log(um/y)."
+cr_activity_exponent,1.9377105315290408,1.86,0.9,0.2,4.0,Exponent mapping bulk alloy Cr fraction to reaction-front kinetics.
+log_gamma_cr_flinak,-8.056846922178943,-5.9,2.0,-12.0,4.0,Inferred Cr(II) activity-coefficient correction in FLiNaK; replaceable by native Thermochimica output.
+log_gamma_cr_flibe,-7.952946123602618,-5.42,2.0,-12.0,4.0,Inferred Cr(II) activity-coefficient correction in FLiBe; replaceable by native Thermochimica output.
+log_gamma_cr_fluoroborate,-6.104700544239199,-5.45,2.0,-12.0,4.0,Inferred Cr(II) activity-coefficient correction in fluoroborate salt.
+log_gamma_cr_chloride,-8.032934911003895,-6.03,2.5,-14.0,4.0,Inferred Cr(II) activity-coefficient correction in chloride salt.
+selectivity_affinity_scale,0.004817896232653154,0.1,0.2,0.0,1.0,Scale converting relative MSTDB Cr/Fe/Ni affinities into selective-dissolution fractions.
+log_exchange_fe_relative,-1.0237419112804005,-1.0,1.0,-5.0,2.0,Fe exchange-current offset relative to Cr for species partitioning.
+log_exchange_ni_relative,-2.3170915670911314,-2.5,1.2,-7.0,1.0,Ni exchange-current offset relative to Cr for species partitioning.
+log_product_floor_ppm,-0.0011774412594148596,0.0,2.0,-9.210340371976182,5.703782474656201,"Initial dissolved corrosion-product floor in the Nernst quotient, log(ppm)."
+log_mass_transfer_cap_um_y,6.811524772950171,6.81,1.4,2.302585092994046,11.512925464970229,"Reference salt-side mass-transfer capacity, log(um/y)."
+Ea_mass_transfer_kJ_mol,14.046772812008651,23.4,35.0,0.0,120.0,Apparent activation energy for salt-side transport.
+flow_mass_transfer_exponent,0.961859474258656,0.75,0.55,0.05,2.0,Flow-factor exponent for salt-side transport.
+gb_diffusion_multiplier,0.5864505148098346,0.63,0.6,0.05,3.0,Multiplier on Cr solid-state diffusion length for ordinary IGC.
+multi_alloy_gb_multiplier,5.786031223945427,6.42,8.0,1.0,40.0,Galvanic/grain-boundary penetration multiplier in multi-alloy tests.
+x750_gb_multiplier,13.92782040427138,12.62,10.0,1.0,40.0,Additional X-750 susceptibility multiplier.
+chloride_reaction_multiplier,7.997270450558367,5.62,7.0,0.5,30.0,Reaction-front multiplier for impure chloride IGC.
+chloride_gb_multiplier,6.673676747209084,3.74,7.0,0.5,30.0,Diffusion-length multiplier for impure chloride IGC.
+tellurium_gb_multiplier,1.9866481685441078,8.0,10.0,1.0,40.0,Diffusion-length multiplier for tellurium-assisted IGC.
+deposition_capture_area_factor_fuel,0.7064515294093227,1.6,1.5,0.02,8.0,Fuel-salt cold-leg capture efficiency times donor/cold surface-area ratio.
+deposition_capture_area_factor_flinak,0.6259218506340758,3.0,2.0,0.02,10.0,FLiNaK cold-leg capture efficiency times donor/cold surface-area ratio.
+log_area_to_salt_mass_msre_cm2_g,-1.98,-1.98,1.2,-6.214608098422191,1.6094379124341003,Effective exposed-area/salt-mass ratio for MSRE-scale inventory closure.
+log_area_to_salt_mass_loop_cm2_g,2.05,2.05,1.4,-3.506557897319982,4.382026634673881,Effective exposed-area/salt-mass ratio for small-loop inventory closure.
+log_initial_fe2_ppm,4.605170185988091,4.605170185988092,1.2,0.0,8.006367567650246,"Initial dissolved Fe(II) inventory available for Cr/Fe cementation, log(ppm)."
+mass_loss_fraction_logit,0.731867648371773,1.47,1.2,-5.0,5.0,Reference fraction of the selectively affected layer removed as net mass.
+mass_loss_cr_exponent,0.4500860169897487,0.23,0.7,-2.5,1.5,Cr-content exponent for non-congruent mass loss.
+flinak_high_cr_selectivity_exponent,-1.1854481554832377,-1.55,0.9,-3.5,0.5,Additional selective-leaching exponent for high-Cr alloys in FLiNaK.
+log_inventory_capacity_ppm,6.732335021258909,6.19,1.0,4.605170185988092,9.903487552536127,"Effective mixed-salt corrosion-product inventory capacity, log(ppm)."

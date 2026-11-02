@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0",
+  "source_repository": "tanoret/open_pronghorn",
+  "source_branch": "pr_corrosion",
+  "source_commit": "bbc8b69c87bc1c90af0d1cf1484c599e9553b625",
+  "calibration_date_utc": "2026-08-28",
+  "calibration_id": "pr-corrosion-advanced-explicit-context-2026-08-28-v5",
+  "model_revision": "mstdb-nst-v2-fe-identity_dridn-v2-explicit-geometry",
+  "case_context_revision": "explicit-geometry-v2",
+  "python": "3.12.13",
+  "checked_dependencies": {
+    "numpy": "2.3.5",
+    "pandas": "2.2.3",
+    "scipy": "1.17.0",
+    "matplotlib": "3.10.8",
+    "openpyxl": "3.1.5"
+  },
+  "inputs": {
+    "validation/corrosion/calibration/data/targets.csv": "c1404e530ac14efbbe47e326fd07bcd50e51dce3cc07aa42e3f635f7484016cc",
+    "validation/corrosion/calibration/data/parameters.json": "e7d262098ba929250e11b03fb550027a83daeaf9d5292657fe11dc67962602f8",
+    "validation/corrosion/calibration/requirements.txt": "272366dee016ab3d45ae224b69b7b16d8b1d6e0859284749a29148343ca1767c",
+    "validation/corrosion/calibration/results/advanced/advanced_case_context.csv": "8c37486472736834de1a373a0662baa272534c61207c94199bccf0df79e961c3",
+    "data/corrosion_database.json": "bfad8e09ada73900b800c4df262ae70192296e6c7b95cf5fc20943272637d0e6"
+  },
+  "mstdb_tc": {
+    "version": "3.1",
+    "redistributed": false,
+    "fluoride_filename": "MSTDB-TC_V3.1_Fluorides_No_Func.dat",
+    "fluoride_records": 677,
+    "fluoride_sha256": "a7ca53e6061c3aa16d1932e35f908fa61b328b88625e8361e63881bfc8592000",
+    "chloride_filename": "MSTDB-TC_V3.1_Chlorides_No_Func.dat",
+    "chloride_records": 649,
+    "chloride_sha256": "460e8d7148cc76c597064e167b4afa98ea762e59a666f9c42962f3d2d013e5c1"
+  },
+  "base_model_provenance": {
+    "source": "data/corrosion_database.json",
+    "source_sha256": "bfad8e09ada73900b800c4df262ae70192296e6c7b95cf5fc20943272637d0e6",
+    "binding": "required parameters, material densities, and Cr/Fe/Ni element properties are embedded in data/advanced_corrosion_models.json"
+  },
+  "curated_outputs": {
+    "data/advanced_corrosion_models.json": "a7b8a3d85bc6584a42e36adfbaefe648015a7ad462357b7408de90899c002add",
+    "validation/corrosion/calibration/results/advanced/advanced_case_context.csv": "8c37486472736834de1a373a0662baa272534c61207c94199bccf0df79e961c3",
+    "validation/corrosion/calibration/results/advanced/advanced_validation_summary.csv": "d4ef9fccd8c1a13523f2145722b1896269b4e25ee9bdda818f3f86a5d2a96591",
+    "validation/corrosion/calibration/results/advanced/cpp_parity_cases.csv": "7d2fc2c5e87d101ab08af2f4ff953526d6609a2bc1e5bedee3c73bd891ba2126",
+    "validation/corrosion/calibration/results/advanced/dynamic_network_calibration_stages.csv": "c214d11b9524441cd1f7132f4bbfa3f7a22c2f2e976afe8e2365339a7949149f",
+    "validation/corrosion/calibration/results/advanced/dynamic_network_endpoint_state_audit.csv": "555aa0459f3cddae133abebdf9bbfa604ee395ca75e6044a8b80525fa927d4cf",
+    "validation/corrosion/calibration/results/advanced/dynamic_network_numerical_convergence.csv": "e89eb93b669ffc79e3a915fbb8d57db53638a1d12eae7fd84accfabc80c00396",
+    "validation/corrosion/calibration/results/advanced/dynamic_network_parameters.csv": "90576b98e9c201f268331c6a8c399032890c404841c211900a082412c514d20a",
+    "validation/corrosion/calibration/results/advanced/dynamic_network_parameters.initial.json": "c183a03e276f81440428dc8dcfbf073301ec70767eddc2672b739dfb7af39c80",
+    "validation/corrosion/calibration/results/advanced/dynamic_network_parameters.json": "3ed42782d7ea1a3bb2ee529abadf1b2b476e5b86d9d656ffa20b89936354c20f",
+    "validation/corrosion/calibration/results/advanced/dynamic_network_physics_constraints.csv": "6af9fa957ea97fc2eb425ebb68484b4c3602ed87724cba5a4448d9b01fcc621f",
+    "validation/corrosion/calibration/results/advanced/mechanistic_parameters.csv": "cae80224f94559c06eea7985d3c6c45dda4175c3b7f1837062c668f63014df87",
+    "validation/corrosion/calibration/results/advanced/mechanistic_parameters.json": "5b3bc0f334252db4b21d1c5e5ea3629d3cc1e10f34c83dc175be29cb56e86af4",
+    "validation/corrosion/calibration/results/advanced/mstdb_thermochemistry_checks.json": "171864e61effd1288699f0f58a2f4eae86a3cee32268cba81774dfcfdda9cccd",
+    "validation/corrosion/calibration/results/advanced/thermochemical_comparison_metrics.json": "b779c0a700241b0a4efa9401fef3245802e7cf25288f6313a9fceff8029e5d68",
+    "validation/corrosion/calibration/results/advanced/thermochemical_parameters.csv": "36af3acb6e4306a93a87127890a32ad36e222b21423ab72c9eb2f71b5d4eed19",
+    "validation/corrosion/calibration/results/advanced/thermochemical_parameters.json": "7ff5724f4d65181a443ad08e12c91d9ca39d1ab5831fb88d3ecf7a7d9ad47e4a",
+    "validation/corrosion/calibration/results/advanced/thermochemical_physics_constraints.csv": "fb5c504ce08b06cd176a0f9d955b008e5a843ee63db642e6cb99d16d478dd988",
+    "validation/corrosion/calibration/results/advanced/three_model_comparison_metrics.json": "b5d5c9f83a9a8d3d3bf1dc3a052467b422e9cf3807f9665b7165f1fc33162692"
+  },
+  "target_objective": {
+    "semantics": "relation-aware",
+    "range": "zero inside interval; signed log error to nearest bound outside",
+    "upper": "zero below bound; positive log violation above",
+    "lower": "zero above bound; negative log violation below"
+  },
+  "validation_status": {
+    "in_sample": true,
+    "independent_holdout": false,
+    "native_thermochimica_subq_executed": false,
+    "advanced_mstdb_dridn_metadata_driven_physics": false,
+    "legacy_reduced_comparator_metadata_driven_physics": true,
+    "legacy_reduced_comparator_context_note": "salt_cr_ppm retains the historical experiment_family/source_id MSRE-loop selector and does not consume explicit area_to_salt_mass_cm2_g",
+    "explicit_physical_initial_inventory": true,
+    "explicit_dynamic_activation_switches": true,
+    "moose_calibrated_parity_mode": "legacy irreversible",
+    "affinity_gated_core_mode_validated_by_this_calibration": false,
+    "advanced_input_domain": "finite T>0, flow>0, time>=0; normalized labels and hot/cold geometry are fail-closed",
+    "mstdb_loader_binding": "exact V3.1 filenames and both SHA-256 values; duplicate same-version files and undocumented high-temperature extrapolation are rejected"
+  }
+}

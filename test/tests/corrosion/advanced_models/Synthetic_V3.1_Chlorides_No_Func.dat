@@ -1,0 +1,29 @@
+System synthetic chloride corrosion fixture; not MSTDB-TC data
+1
+Cr_S1(s)
+1 1 1
+2000 0 0 0 0 0 0
+CrCl2_L1(liq)
+1 1 1
+2000 -70000 0 0 0 0 0
+CrCl2_Pnnm_No.58(s)
+1 1 1
+2000 -80000 0 0 0 0 0
+Fe_bcc(s)
+1 1 1
+2000 0 0 0 0 0 0
+FeCl2_L1(liq)
+1 1 1
+2000 -50000 0 0 0 0 0
+FeCl2_R3M_No166(s)
+1 1 1
+2000 -60000 0 0 0 0 0
+Ni_Solid_FCC(s)
+1 1 1
+2000 0 0 0 0 0 0
+NiCl2_L1(liq)
+1 1 1
+2000 -30000 0 0 0 0 0
+NiCl2_R3M_No.166(s)
+1 1 1
+2000 -40000 0 0 0 0 0

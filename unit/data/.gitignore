@@ -1,0 +1,16 @@
+# The repository root ignores CSV, JSON, and DAT outputs by extension. These
+# directories contain frozen unit-test fixtures, so keep the exceptions narrow.
+!advanced/advanced_corrosion_models_legacy_revision.json
+!advanced/corrosion_database_missing_explicit_cr.json
+!advanced/corrosion_database_mstdb_mutated.json
+!advanced/corrosion_database_mutated_element.json
+!dridn/cpp_parity_cases.csv
+!dridn/fitted_parameters.csv
+!mstdb/MSTDB-TC_V0.0_Chlorides_No_Func.dat
+!mstdb/MSTDB-TC_V0.0_Fluorides_No_Func.dat
+!mstdb/MSTDB-TC_V0.0_Malformed_No_Func.dat
+!mstdb/MSTDB-TC_V0.0_SolutionHeader_No_Func.dat
+!mstdb/MSTDB-TC_V0.0_Truncated_No_Func.dat
+!mstdb/MSTDB-TC_V0.1_Chlorides_No_Func.dat
+!mstdb/MSTDB-TC_V0.2_Chlorides_No_Func.dat
+!mstdb/MSTDB-TC_V0.2_Fluorides_No_Func.dat

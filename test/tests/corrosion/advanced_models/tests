@@ -1,0 +1,147 @@
+[Tests]
+  design = 'MSTDBTCCorrosionUserObject.md DRIDNCorrosionUserObject.md '
+           'AdvancedCorrosionModelPostprocessor.md CorrosionPlatingAction.md '
+           'CorrosionPlatingFlowAction.md CorrosionTotalRateAux.md'
+  issues = '#4'
+
+  [synthetic_mstdb_endpoint]
+    type = CSVDiff
+    input = mstdb_synthetic.i
+    csvdiff = mstdb_synthetic_out.csv
+    abs_zero = 1e-12
+    rel_err = 1e-9
+    requirement = 'The MSTDB-TC endpoint UserObject shall strictly bind both external ChemSage '
+                  'files to the parameter database provenance and expose finite, species-resolved '
+                  'endpoint quantities without requiring licensed MSTDB-TC data in the test suite.'
+  []
+
+  [reject_mstdb_hash_mismatch]
+    type = RunException
+    input = mstdb_synthetic.i
+    cli_args = 'Outputs/file_base=mstdb_hash_mismatch '
+               'UserObjects/mstdb_endpoint/fluoride_database='
+               'Synthetic_V3.1_Chlorides_No_Func.dat'
+    expect_err = 'SHA-256 mismatch'
+    requirement = 'The MSTDB-TC endpoint UserObject shall reject an external thermodynamic file '
+                  'whose SHA-256 digest does not match the advanced parameter database.'
+  []
+
+  [dridn_restartable]
+    requirement = 'The DRIDN UserObject shall convert MOOSE seconds to model years, advance and '
+                  'report its 19-state network conservatively, and preserve its state, elapsed '
+                  'time, and integration counters through checkpoint/recovery:'
+
+    [full]
+      type = CSVDiff
+      input = dridn_restartable.i
+      csvdiff = dridn_restartable_out.csv
+      abs_zero = 1e-11
+      rel_err = 2e-8
+      recover = false
+      restep = false
+      detail = 'for an uninterrupted transient;'
+    []
+
+    [half_transient]
+      type = RunApp
+      input = dridn_restartable.i
+      cli_args = 'Outputs/checkpoint=true --test-checkpoint-half-transient'
+      prereq = 'dridn_restartable/full'
+      recover = false
+      restep = false
+      detail = 'while writing a checkpoint after the first half of that transient; and'
+    []
+
+    [recover]
+      type = CSVDiff
+      input = dridn_restartable.i
+      csvdiff = dridn_restartable_out.csv
+      cli_args = '--recover'
+      prereq = 'dridn_restartable/half_transient'
+      delete_output_before_running = false
+      recover = false
+      restep = false
+      abs_zero = 1e-11
+      rel_err = 2e-8
+      detail = 'after restoring the 19-state vector, elapsed time, and integration counters from '
+               'that checkpoint and reproducing the uninterrupted endpoint.'
+    []
+  []
+
+  [reject_dridn_unsafe_schedule]
+    type = RunException
+    input = dridn_restartable.i
+    cli_args = 'Outputs/file_base=dridn_bad_schedule UserObjects/dridn/execute_on=FINAL'
+    expect_err = 'must execute exactly once at TIMESTEP_END'
+    requirement = 'The DRIDN UserObject shall reject an execution schedule that could advance '
+                  'the full timestep zero times, more than once, or at the wrong lifecycle stage.'
+  []
+
+  [mstdb_fe_action_plan]
+    type = RunApp
+    input = mstdb_action_synthetic.i
+    check_input = true
+    expect_out = '(?s)kinetics_model=mstdb_tc_standard_state.*Cr source_fraction=.*planned_rate=.*Fe source_fraction=.*planned_rate=.*Ni source_fraction=.*planned_rate='
+    requirement = 'The CorrosionPlating action shall evaluate a provenance-bound static MSTDB-TC '
+                  'endpoint and seed separate Cr, Fe, and Ni Butler-Volmer currents from their '
+                  'source-resolved shares of the total dissolution-front rate.'
+  []
+
+  [mstdb_fe_action_runtime_shares]
+    type = CSVDiff
+    input = mstdb_action_runtime_synthetic.i
+    csvdiff = mstdb_action_runtime_synthetic_out.csv
+    abs_zero = 1e-12
+    rel_err = 5e-6
+    requirement = 'Starting at the reference concentration, the finite-element CorrosionPlating '
+                  'Action shall execute its generated Cr, Fe, and Ni Butler-Volmer boundaries, '
+                  'recover each source-resolved current and penetration-rate share by conservation, '
+                  'sum the rate shares to the synthetic MSTDB-TC front rate without tripling it, '
+                  'publish that total through corrosion_rate_um_y, and integrate the same total '
+                  'through recession_um.'
+  []
+
+  [mstdb_linearfv_action_plan]
+    type = RunApp
+    input = mstdb_flow_action_synthetic.i
+    check_input = true
+    expect_out = '(?s)kinetics_model=mstdb_tc_standard_state.*Cr -> c_Cr source_fraction=.*planned_rate=.*Fe -> c_Fe source_fraction=.*planned_rate=.*Ni -> c_Ni source_fraction=.*planned_rate='
+    requirement = 'The CorrosionPlatingFlow action shall evaluate a provenance-bound static '
+                  'MSTDB-TC endpoint and seed separate Cr, Fe, and Ni linear-FV wall currents from '
+                  'their source-resolved shares of the total dissolution-front rate.'
+  []
+
+  [reject_partial_mstdb_action_elements]
+    type = RunException
+    input = mstdb_action_synthetic.i
+    check_input = true
+    cli_args = 'CorrosionPlating/elements=Cr'
+    expect_err = "requires exactly 'Cr Fe Ni'"
+    requirement = 'The MSTDB-TC Action path shall reject an element list that would discard a '
+                  'calibrated Cr/Fe/Ni source fraction.'
+  []
+
+  [reject_mstdb_fe_mutated_base_element]
+    type = RunException
+    input = mstdb_action_synthetic.i
+    check_input = true
+    cli_args = 'CorrosionPlating/database=../../../../unit/data/advanced/'
+               'corrosion_database_mutated_element.json'
+    expect_err = "base-model element property 'Cr.valence' does not match provenance"
+    requirement = 'The MSTDB-TC finite-element Action shall reject a base corrosion database whose '
+                  'Cr/Fe/Ni transport or Butler-Volmer properties differ from the calibrated '
+                  'semantic provenance binding.'
+  []
+
+  [reject_mstdb_linearfv_mutated_base_element]
+    type = RunException
+    input = mstdb_flow_action_synthetic.i
+    check_input = true
+    cli_args = 'CorrosionPlatingFlow/database=../../../../unit/data/advanced/'
+               'corrosion_database_mutated_element.json'
+    expect_err = "base-model element property 'Cr.valence' does not match provenance"
+    requirement = 'The MSTDB-TC linear-FV Action shall reject a base corrosion database whose '
+                  'Cr/Fe/Ni transport or Butler-Volmer properties differ from the calibrated '
+                  'semantic provenance binding.'
+  []
+[]

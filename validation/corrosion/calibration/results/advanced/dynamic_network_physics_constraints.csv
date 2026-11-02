@@ -1,0 +1,4 @@
+constraint_id,measurement_id,description,value,required_minimum,residual,constraint_pass
+D-P001,M-030,FLiNaK cold-leg deposit remains Fe-rich relative to Cr,2.7764231728477715,1.0,0.0,True
+D-P002-Fe,M-003,Selective dissolution retains Cr source fraction > Fe,3.9575423298103503,1.05,0.0,True
+D-P002-Ni,M-003,Selective dissolution retains Cr source fraction > Ni,1.0880419996485222,1.05,0.0,True

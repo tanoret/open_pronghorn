@@ -13,14 +13,20 @@
 //*
 
 #include "CorrosionPlatingFlowAction.h"
+#include "CorrosionPlatingActionUtils.h"
 #include "FEProblemBase.h"
 #include "Factory.h"
 
 #include "MoltenSaltCorrosionModel.h"
 #include "CorrosionChemistry.h"
+#include "AdvancedCorrosionModelData.h"
+#include "MSTDBTCData.h"
+#include "MSTDBTCStandardStateCorrosionModel.h"
 
+#include <array>
 #include <cctype>
 #include <cmath>
+#include <set>
 
 registerMooseAction("OpenPronghornApp", CorrosionPlatingFlowAction, "add_variable");
 registerMooseAction("OpenPronghornApp", CorrosionPlatingFlowAction, "add_ic");
@@ -44,12 +50,36 @@ InputParameters
 CorrosionPlatingFlowAction::validParams()
 {
   InputParameters params = Action::validParams();
-  params.addClassDescription("Sets up salt-side molten salt corrosion (linear finite-volume passive "
-                             "scalars plus a Butler-Volmer wall reaction) for a flowing MSR.");
+  params.addClassDescription(
+      "Sets up salt-side molten salt corrosion (linear finite-volume passive scalars plus a "
+      "Butler-Volmer wall reaction) for a flowing MSR.");
 
   params.addParam<DataFileName>("database",
                                 "corrosion_database.json",
-                                "The JSON corrosion database. Defaults to data/corrosion_database.json.");
+                                "The JSON corrosion database. Defaults to "
+                                "data/corrosion_database.json.");
+
+  MooseEnum kinetics_model("reduced_empirical mstdb_tc_standard_state", "reduced_empirical");
+  params.addParam<MooseEnum>(
+      "kinetics_model",
+      kinetics_model,
+      "Static model used to seed the wall Butler-Volmer exchange currents. In MSTDB-TC mode the "
+      "total dissolution-front rate is apportioned among Cr, Fe, and Ni.");
+  params.addParam<DataFileName>(
+      "advanced_database",
+      "Advanced-model closure parameters and mandatory MSTDB-TC edition/SHA-256 binding. "
+      "Required when kinetics_model=mstdb_tc_standard_state.");
+  params.addParam<FileName>(
+      "fluoride_database",
+      "Authorized external MSTDB-TC V3.1 fluoride *_No_Func.dat file. Required in MSTDB mode.");
+  params.addParam<FileName>(
+      "chloride_database",
+      "Authorized external MSTDB-TC V3.1 chloride *_No_Func.dat file. Required in MSTDB mode.");
+  params.addParam<bool>(
+      "allow_extrapolation",
+      false,
+      "Permit Gibbs-function evaluation beyond the last MSTDB-TC interval. This never disables "
+      "the version or SHA-256 checks.");
 
   MultiMooseEnum elements("Cr Fe Ni Mo Nb Tc Ru Ag Sb Te", "Cr Fe Ni");
   params.addParam<MultiMooseEnum>("elements", elements, "The metal elements to track.");
@@ -59,8 +89,9 @@ CorrosionPlatingFlowAction::validParams()
       "One entry per tracked element: the existing variable that element's corrosion is released "
       "into (e.g. the radiolysis-tracked 'Cr_II'), or 'none' for an element that gets its own "
       "c_<El> variable created and transported here. Leave empty to create c_<El> for every "
-      "element. Releasing into a radiolysis cation couples corrosion and radiolysis; that variable's "
-      "transport and chemistry are then owned by the radiolysis action. Example for 'Cr Fe Ni': "
+      "element. Releasing into a radiolysis cation couples corrosion and radiolysis; that "
+      "variable's transport and chemistry are then owned by the radiolysis action. Example for "
+      "'Cr Fe Ni': "
       "'Cr_II none none' feeds chromium into the radiolysis Cr(II) and tracks iron and nickel as "
       "their own c_Fe / c_Ni.");
 
@@ -68,9 +99,25 @@ CorrosionPlatingFlowAction::validParams()
   params.addParam<Real>("reference_temperature",
                         923.15,
                         "Scalar temperature [K] for the kinetics seed and the Arrhenius anchor.");
+  params.addParam<Real>(
+      "reference_cold_temperature",
+      "Reference cold-side salt temperature [K]. Required in MSTDB mode and must not exceed "
+      "reference_temperature.");
+  params.addParam<Real>(
+      "reference_exposure_time",
+      "Reference physical exposure time [s]. Required and nonnegative in MSTDB mode.");
+  params.addParam<Real>(
+      "area_to_salt_mass",
+      "Explicit wetted-area to salt-mass ratio [cm^2/g]. Required and positive in MSTDB mode.");
+  params.addParam<Real>(
+      "inventory_coupling_factor",
+      "Explicit fraction applied only to dissolved inventory in the modeled salt [0,1]. It does "
+      "not scale static cold-capture mass gain. Required in MSTDB mode.");
   params.addParam<bool>("temperature_dependent_kinetics",
                         true,
-                        "Make the exchange current Arrhenius in the local temperature field.");
+                        "Make the exchange current Arrhenius in the local temperature field. In "
+                        "MSTDB mode this is an explicitly reduced post-seed scaling using the base "
+                        "corrosion database activation energy; MSTDB is not reevaluated locally.");
 
   params.addParam<std::string>("material_class", "hastelloy_n", "Alloy class.");
   params.addParam<std::string>("salt_class", "fluoride_fuel", "Salt class.");
@@ -78,19 +125,29 @@ CorrosionPlatingFlowAction::validParams()
   params.addParam<std::string>("position_class", "nominal", "Loop position class.");
   params.addParam<Real>("flow_factor", 1.0, "Circulation/mass-transfer factor.");
   params.addParam<Real>("delta_T_C", 0.0, "Loop thermal gradient [C].");
-  params.addParam<Real>("applied_overpotential", 0.1, "Imposed metal-minus-salt potential [V].");
-  params.addParam<Real>("reference_concentration", 1.0, "Reference concentration c_ref [mol/m^3].");
+  params.addParam<Real>(
+      "applied_overpotential",
+      0.1,
+      "Imposed metal-minus-salt potential difference [V]. The element E0 is subtracted from this "
+      "value both when seeding and when evaluating the Butler-Volmer wall law.");
+  params.addParam<Real>(
+      "reference_concentration",
+      1.0,
+      "Explicit runtime reference concentration c_ref [mol/m^3], replacing the provenance-bound "
+      "base database default without disabling its provenance check.");
 
   params.addRequiredParam<std::vector<BoundaryName>>("reaction_boundary",
                                                      "The corroding wall boundary(ies).");
 
-  params.addParam<UserObjectName>("rhie_chow_user_object",
-                                  "The Rhie-Chow user object for advection by the segregated flow.");
+  params.addParam<UserObjectName>(
+      "rhie_chow_user_object", "The Rhie-Chow user object for advection by the segregated flow.");
   params.addParam<RealVectorValue>("velocity", "A prescribed constant advection velocity.");
   MooseEnum interp("average upwind", "upwind");
   params.addParam<MooseEnum>("advected_interp_method", interp, "Advected interpolation method.");
   params.addParam<MooseFunctorName>(
-      "diffusivity", "Effective (molecular + turbulent) diffusivity functor [m^2/s].");
+      "diffusivity",
+      "Explicit effective (molecular + turbulent) diffusivity functor [m^2/s], replacing the "
+      "provenance-bound base database default without disabling its provenance check.");
 
   params.addParam<std::vector<BoundaryName>>("inlet_boundary", {}, "Inlet boundary(ies).");
   params.addParam<Real>("inlet_concentration", 0.0, "Inlet cation concentration [mol/m^3].");
@@ -108,6 +165,7 @@ CorrosionPlatingFlowAction::CorrosionPlatingFlowAction(const InputParameters & p
   : Action(parameters),
     _temperature(getParam<MooseFunctorName>("temperature")),
     _reference_temperature(getParam<Real>("reference_temperature")),
+    _use_mstdb_tc(getParam<MooseEnum>("kinetics_model") == "mstdb_tc_standard_state"),
     _temperature_dependent(getParam<bool>("temperature_dependent_kinetics")),
     _transient(getParam<bool>("time_derivative"))
 {
@@ -129,14 +187,121 @@ CorrosionPlatingFlowAction::buildPlan()
   features.delta_T_C = getParam<Real>("delta_T_C");
   features.temperature_K = _reference_temperature;
 
-  const Real rate_um_y = model.corrosionRateUmY(features);
+  Real rate_um_y = 0.0;
+  std::array<Real, 3> source_fractions{{1.0, 1.0, 1.0}};
+  std::array<Real, 3> affinities{{0.0, 0.0, 0.0}};
+  std::string calibration_id;
+  std::string mstdb_version;
+  std::string fluoride_sha256;
+  std::string chloride_sha256;
+
+  const auto & elements = getParam<MultiMooseEnum>("elements");
+  if (!_use_mstdb_tc)
+    // Keep the legacy path and its one-total-rate-per-selected-element seeding unchanged.
+    rate_um_y = model.corrosionRateUmY(features);
+  else
+  {
+    const std::set<std::string> required_elements{"Cr", "Fe", "Ni"};
+    std::set<std::string> selected_elements;
+    unsigned int selected_count = 0;
+    for (const auto & element : elements)
+    {
+      selected_elements.insert(canonicalElementToken(element.name()));
+      ++selected_count;
+    }
+    if (selected_count != required_elements.size() || selected_elements != required_elements)
+      paramError("elements",
+                 "kinetics_model=mstdb_tc_standard_state requires exactly 'Cr Fe Ni'. The "
+                 "calibrated source fractions are normalized over those three elements.");
+
+    for (const auto * parameter : {"advanced_database",
+                                   "fluoride_database",
+                                   "chloride_database",
+                                   "reference_cold_temperature",
+                                   "reference_exposure_time",
+                                   "area_to_salt_mass",
+                                   "inventory_coupling_factor"})
+      if (!isParamValid(parameter))
+        paramError(parameter,
+                   "This parameter is required when "
+                   "kinetics_model=mstdb_tc_standard_state.");
+
+    const Real cold_temperature = getParam<Real>("reference_cold_temperature");
+    const Real exposure_time = getParam<Real>("reference_exposure_time");
+    const Real area_to_salt_mass = getParam<Real>("area_to_salt_mass");
+    const Real inventory_coupling = getParam<Real>("inventory_coupling_factor");
+    if (!std::isfinite(_reference_temperature) || _reference_temperature <= 0.0)
+      paramError("reference_temperature", "Must be finite and positive in MSTDB mode.");
+    if (!std::isfinite(cold_temperature) || cold_temperature <= 0.0)
+      paramError("reference_cold_temperature", "Must be finite and positive.");
+    if (cold_temperature > _reference_temperature)
+      paramError("reference_cold_temperature", "Must not exceed reference_temperature.");
+    if (!std::isfinite(exposure_time) || exposure_time < 0.0)
+      paramError("reference_exposure_time", "Must be finite and nonnegative.");
+    if (!std::isfinite(area_to_salt_mass) || area_to_salt_mass <= 0.0)
+      paramError("area_to_salt_mass", "Must be finite and positive.");
+    if (!std::isfinite(inventory_coupling) || inventory_coupling < 0.0 || inventory_coupling > 1.0)
+      paramError("inventory_coupling_factor", "Must be finite and in [0,1].");
+
+    Corrosion::AdvancedCorrosionModelDatabase advanced(getParam<DataFileName>("advanced_database"));
+    advanced.validateBaseModel(db);
+    if (advanced.expectedMSTDBVersion() != "3.1")
+      paramError("advanced_database",
+                 "This action release requires an MSTDB-TC V3.1 calibration binding; found '",
+                 advanced.expectedMSTDBVersion(),
+                 "'. Recalibration and revalidation are required before changing editions.");
+    Corrosion::MSTDBTCPair thermodynamics(getParam<FileName>("fluoride_database"),
+                                          getParam<FileName>("chloride_database"),
+                                          advanced.expectedMSTDBVersion(),
+                                          advanced.expectedFluorideSHA256(),
+                                          advanced.expectedChlorideSHA256(),
+                                          false,
+                                          getParam<bool>("allow_extrapolation"));
+    Corrosion::MSTDBTCStandardStateCorrosionModel mstdb_model(db, advanced, thermodynamics);
+    Corrosion::MSTDBTCCorrosionFeatures mstdb_features;
+    mstdb_features.hot_temperature_K = _reference_temperature;
+    mstdb_features.cold_temperature_K = cold_temperature;
+    mstdb_features.exposure_s = exposure_time;
+    mstdb_features.flow_factor = features.flow_factor;
+    mstdb_features.area_to_salt_mass_cm2_g = area_to_salt_mass;
+    mstdb_features.inventory_coupling_factor = inventory_coupling;
+    mstdb_features.material_class = features.material_class;
+    mstdb_features.salt_class = features.salt_class;
+    mstdb_features.redox_class = features.redox_class;
+
+    const auto endpoint = mstdb_model.evaluate(mstdb_features);
+    if (!std::isfinite(endpoint.front_rate_um_y) || endpoint.front_rate_um_y < 0.0)
+      paramError("advanced_database",
+                 "The MSTDB-TC endpoint produced a nonfinite or negative front rate. Check the "
+                 "calibrated parameters and thermodynamic input range.");
+    Real fraction_sum = 0.0;
+    for (const auto fraction : endpoint.source_fraction)
+    {
+      if (!std::isfinite(fraction) || fraction < 0.0 || fraction > 1.0)
+        paramError("advanced_database",
+                   "The MSTDB-TC endpoint produced a source fraction outside [0,1]. Check the "
+                   "calibrated parameters and thermodynamic input range.");
+      fraction_sum += fraction;
+    }
+    if (std::abs(fraction_sum - 1.0) > 1.0e-10)
+      paramError("advanced_database",
+                 "The MSTDB-TC Cr/Fe/Ni source fractions sum to ",
+                 fraction_sum,
+                 " instead of one.");
+    rate_um_y = endpoint.front_rate_um_y;
+    source_fractions = endpoint.source_fraction;
+    affinities = endpoint.affinity_log_k_over_q;
+    calibration_id = advanced.calibrationId();
+    mstdb_version = thermodynamics.version();
+    fluoride_sha256 = thermodynamics.fluoride().sha256();
+    chloride_sha256 = thermodynamics.chloride().sha256();
+  }
+
   const Real density = db.density(features.material_class);
   const Real eta = getParam<Real>("applied_overpotential");
   const Real c_ref = getParam<Real>("reference_concentration");
   const Real initial = getParam<Real>("initial_concentration");
-  const Real f = Corrosion::faraday / (Corrosion::R_gas * _reference_temperature);
 
-  const auto & elements = getParam<MultiMooseEnum>("elements");
   const auto & release = getParam<std::vector<std::string>>("release_variables");
   if (!release.empty() && release.size() != elements.size())
     paramError("release_variables",
@@ -152,8 +317,7 @@ CorrosionPlatingFlowAction::buildPlan()
     plan.name = canonicalElementToken(el.name());
     // An element owns its own variable when no release target is given (empty list, empty entry, or
     // the explicit sentinel 'none'); otherwise it is released into the named existing variable.
-    plan.owns_variable =
-        release.empty() || release[index].empty() || release[index] == "none";
+    plan.owns_variable = release.empty() || release[index].empty() || release[index] == "none";
     plan.salt_var = plan.owns_variable ? "c_" + plan.name : release[index];
     plan.valence = props.valence;
     plan.molar_mass = props.molar_mass_g_mol;
@@ -163,13 +327,38 @@ CorrosionPlatingFlowAction::buildPlan()
     plan.c_ref = c_ref;
     plan.initial_salt = initial;
 
-    // Seed the exchange current so that, at the applied overpotential and c = c_ref, the
-    // Butler-Volmer current Faradaically equals the calibrated dissolution rate.
+    if (!_use_mstdb_tc)
+      plan.planned_rate_um_y = rate_um_y;
+    else if (plan.name == "Cr")
+      plan.planned_rate_um_y = rate_um_y * source_fractions[0];
+    else if (plan.name == "Fe")
+      plan.planned_rate_um_y = rate_um_y * source_fractions[1];
+    else if (plan.name == "Ni")
+      plan.planned_rate_um_y = rate_um_y * source_fractions[2];
+    else
+      paramError("elements", "Internal error: unsupported MSTDB-TC element '", plan.name, "'.");
+
+    // The input is the metal-minus-salt potential difference.  Match the boundary object's E0
+    // subtraction and clipped exponents so custom nonzero-E0 data reproduce the reference current.
     const Real i_ref_a_m2 =
-        Corrosion::umYToCorrosionCurrent(rate_um_y, plan.valence, plan.molar_mass, density) * 1.0e4;
-    const Real bracket = std::exp(plan.alpha_a * plan.valence * f * eta) -
-                         std::exp(-plan.alpha_c * plan.valence * f * eta);
-    plan.i0 = (std::abs(bracket) > 1.0e-30) ? i_ref_a_m2 / bracket : i_ref_a_m2;
+        Corrosion::umYToCorrosionCurrent(plan.planned_rate_um_y,
+                                         plan.valence,
+                                         plan.molar_mass,
+                                         density) *
+        1.0e4;
+    const Real bracket = Corrosion::ActionKinetics::butlerVolmerSeedBracket(
+        eta, plan.E0, plan.valence, plan.alpha_a, plan.alpha_c, _reference_temperature);
+    if (i_ref_a_m2 > 0.0 && (!std::isfinite(bracket) || bracket <= 1.0e-30))
+      paramError("applied_overpotential",
+                 "The metal-minus-salt potential difference must produce a positive anodic "
+                 "Butler-Volmer bracket for ",
+                 plan.name,
+                 " (applied_overpotential=",
+                 eta,
+                 " V, E0=",
+                 plan.E0,
+                 " V). A positive dissolution-rate seed cannot be represented otherwise.");
+    plan.i0 = i_ref_a_m2 == 0.0 ? 0.0 : i_ref_a_m2 / bracket;
 
     _elements.push_back(plan);
     ++index;
@@ -177,10 +366,35 @@ CorrosionPlatingFlowAction::buildPlan()
 
   if (getParam<bool>("verbose"))
   {
-    _console << "[CorrosionPlatingFlow] reference corrosion rate " << rate_um_y << " um/y; "
-             << _elements.size() << " elements\n";
-    for (const auto & e : _elements)
-      _console << "  " << e.name << " -> " << e.salt_var << "  i0=" << e.i0 << " A/m^2\n";
+    if (!_use_mstdb_tc)
+    {
+      _console << "[CorrosionPlatingFlow] reference corrosion rate " << rate_um_y << " um/y; "
+               << _elements.size() << " elements\n";
+      for (const auto & e : _elements)
+        _console << "  " << e.name << " -> " << e.salt_var << "  i0=" << e.i0 << " A/m^2\n";
+    }
+    else
+    {
+      _console << "[CorrosionPlatingFlow] kinetics_model=mstdb_tc_standard_state"
+               << " calibration=" << calibration_id << " MSTDB-TC=" << mstdb_version << '\n'
+               << "  fluoride_sha256=" << fluoride_sha256 << '\n'
+               << "  chloride_sha256=" << chloride_sha256 << '\n'
+               << "  total front rate=" << rate_um_y << " um/y; hot="
+               << _reference_temperature << " K, cold="
+               << getParam<Real>("reference_cold_temperature") << " K, exposure="
+               << getParam<Real>("reference_exposure_time") << " s, area/salt="
+               << getParam<Real>("area_to_salt_mass") << " cm^2/g, inventory coupling="
+               << getParam<Real>("inventory_coupling_factor") << '\n';
+      for (const auto & element : _elements)
+      {
+        const unsigned int i = element.name == "Cr" ? 0 : (element.name == "Fe" ? 1 : 2);
+        _console << "  " << element.name << " -> " << element.salt_var
+                 << " source_fraction=" << source_fractions[i]
+                 << " affinity_log_K_over_Q=" << affinities[i]
+                 << " planned_rate=" << element.planned_rate_um_y << " um/y"
+                 << " i0=" << element.i0 << " A/m^2\n";
+      }
+    }
     _console << std::flush;
   }
 }
@@ -262,7 +476,8 @@ CorrosionPlatingFlowAction::addKernels()
       params.set<LinearVariableName>("variable") = e.salt_var;
       params.set<UserObjectName>("rhie_chow_user_object") =
           getParam<UserObjectName>("rhie_chow_user_object");
-      params.set<MooseEnum>("advected_interp_method") = getParam<MooseEnum>("advected_interp_method");
+      params.set<MooseEnum>("advected_interp_method") =
+          getParam<MooseEnum>("advected_interp_method");
       maybeAssignBlocks(params);
       _problem->addLinearFVKernel(
           "LinearFVScalarAdvection", "corr_" + e.salt_var + "_advection", params);
@@ -272,7 +487,8 @@ CorrosionPlatingFlowAction::addKernels()
       auto params = _factory.getValidParams("LinearFVAdvection");
       params.set<LinearVariableName>("variable") = e.salt_var;
       params.set<RealVectorValue>("velocity") = getParam<RealVectorValue>("velocity");
-      params.set<MooseEnum>("advected_interp_method") = getParam<MooseEnum>("advected_interp_method");
+      params.set<MooseEnum>("advected_interp_method") =
+          getParam<MooseEnum>("advected_interp_method");
       maybeAssignBlocks(params);
       _problem->addLinearFVKernel("LinearFVAdvection", "corr_" + e.salt_var + "_advection", params);
     }
@@ -318,7 +534,8 @@ CorrosionPlatingFlowAction::addBoundaryConditions()
       params.set<Real>("reference_temperature") = _reference_temperature;
       params.set<Real>("activation_energy") = Ea;
       params.set<MooseFunctorName>("temperature") = _temperature;
-      params.set<MooseFunctorName>("metal_potential") = std::to_string(eta);
+      params.set<MooseFunctorName>("metal_potential") =
+          Corrosion::ActionKinetics::realFunctorName(eta);
       _problem->addLinearFVBC(
           "CorrosionLinearFVButlerVolmerBC", "corr_" + e.salt_var + "_wall", params);
     }
@@ -328,7 +545,7 @@ CorrosionPlatingFlowAction::addBoundaryConditions()
       auto params = _factory.getValidParams("LinearFVAdvectionDiffusionFunctorDirichletBC");
       params.set<LinearVariableName>("variable") = e.salt_var;
       params.set<std::vector<BoundaryName>>("boundary") = inlets;
-      params.set<MooseFunctorName>("functor") = std::to_string(inlet_c);
+      params.set<MooseFunctorName>("functor") = Corrosion::ActionKinetics::realFunctorName(inlet_c);
       _problem->addLinearFVBC(
           "LinearFVAdvectionDiffusionFunctorDirichletBC", "corr_" + e.salt_var + "_inlet", params);
     }

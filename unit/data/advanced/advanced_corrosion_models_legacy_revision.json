@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "calibration_id": "negative-test-only",
+  "model_revision": "mstdb-tc-standard-state-v1",
+  "calibration_data_revision": "negative-test-only",
+  "thermochemical_parameters": {},
+  "dynamic_parameters": {}
+}

@@ -1,0 +1,4 @@
+constraint_id,measurement_id,description,source_doi,value,required_minimum,fit_margin,residual,constraint_pass
+P-001,M-030,FLiNaK cold-leg deposit is Fe-rich: Fe deposit fraction > Cr deposit fraction,10.1016/j.jnucmat.2022.153551,3.07680713494773,1.0,1.01,0.0,True
+P-002-Fe,M-003,Selective Hastelloy-N dissolution: Cr flux fraction > Fe flux fraction,,4.087680334490757,1.05,1.05,0.0,True
+P-002-Ni,M-003,Selective Hastelloy-N dissolution: Cr flux fraction > Ni flux fraction,,1.0956445801662755,1.05,1.05,0.0,True
