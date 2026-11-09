@@ -1,0 +1,13 @@
+[Tests]
+  design = 'NTPHydrogenFluidProperties.md'
+  issues = '#000'
+  [sweep]
+    type = CSVDiff
+    input = 'h2_sweep.i'
+    csvdiff = 'h2_sweep_out_props_0002.csv'
+    rel_err = 1e-10
+    requirement = 'The NTP hydrogen fluid properties shall give the ideal-gas density, NASA-polynomial '
+                  'enthalpy and isobaric specific heat, Sutherland viscosity and Eucken conductivity '
+                  'of hydrogen from 20 to 6000 K.'
+  []
+[]

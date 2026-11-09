@@ -1,0 +1,23 @@
+[Tests]
+  design = 'NTPPackedBedSegregatedFunctorMaterial.md'
+  issues = '#000'
+  [kta]
+    type = CSVDiff
+    input = 'kta_bed_simple.i'
+    csvdiff = 'kta_bed_simple_out.csv'
+    abs_zero = 1e-9
+    max_threads = 1
+    requirement = 'The segregated packed-bed closure material shall give a SIMPLE momentum drag that '
+                  'reproduces the KTA 3102.3 pressure drop of a packed bed to round-off.'
+  []
+  [ergun]
+    type = CSVDiff
+    input = 'kta_bed_simple.i'
+    cli_args = 'model=ergun Outputs/file_base=ergun_bed_simple_out'
+    csvdiff = 'ergun_bed_simple_out.csv'
+    abs_zero = 1e-9
+    max_threads = 1
+    requirement = 'The segregated packed-bed closure material shall give a SIMPLE momentum drag that '
+                  'reproduces the Ergun pressure drop of a packed bed to round-off.'
+  []
+[]

@@ -1,0 +1,20 @@
+[Tests]
+  design = 'NTPSliceUniformityConstraint.md NTPDarcyMassFluxFunctorMaterial.md'
+  issues = '#000'
+  [anchor_coarse]
+    type = CSVDiff
+    input = '../../../../examples/ntp_tutorial/03_ludewig_anchor/anchor.i
+             ../../../../examples/ntp_tutorial/03_ludewig_anchor/continuation.i
+             ../../../../examples/ntp_tutorial/03_ludewig_anchor/orifice_implicit.i'
+    cli_args = 'nz=6 log_chi_order=SIXTH t_design=0.2 Executioner/end_time=0.3 Outputs/exodus=false
+                Outputs/file_base=anchor_coarse_out'
+    csvdiff = 'anchor_coarse_out.csv'
+    rel_err = 1e-5
+    abs_zero = 1e-8
+    max_parallel = 1
+    max_threads = 1
+    requirement = 'The NTP fuel-element model shall design the cold-frit orifice together with the '
+                  'flow and follow the steady state in the power, with conserved mass and energy, '
+                  'on the coarse tutorial mesh.'
+  []
+[]

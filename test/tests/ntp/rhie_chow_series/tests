@@ -1,0 +1,24 @@
+[Tests]
+  design = 'NTPRhieChowMassFlux.md'
+  issues = '#000'
+  [series]
+    type = CSVDiff
+    input = 'two_layer.i'
+    csvdiff = 'two_layer_out.csv'
+    max_threads = 1
+    requirement = 'The series Rhie-Chow face coupling shall give the pressure drop of two porous '
+                  'layers in series, one of them one cell thick with a thousand times the drag, to '
+                  'round-off with the SIMPLE algorithm.'
+  []
+  [base]
+    type = CSVDiff
+    input = 'two_layer.i'
+    cli_args = 'UserObjects/ins_rhie_chow_interpolator/face_coupling=base '
+               'UserObjects/ins_rhie_chow_interpolator/series_pressure_gradient=false '
+               'Outputs/file_base=two_layer_base_out'
+    csvdiff = 'two_layer_base_out.csv'
+    max_threads = 1
+    requirement = 'The linear Rhie-Chow face coupling shall be available for comparison, and shall '
+                  'underpredict the pressure drop of the thin high-drag layer.'
+  []
+[]

@@ -1,0 +1,167 @@
+# Stage 4: the anchor with the segregated Navier-Stokes model
+
+Stage 3 reaches the anchor with the Darcy-Forchheimer model, which, like the one-dimensional
+reference model, reduces the plenum and the chamber to channels with wall friction. Stage 2
+showed that resolving their momentum changes the cold flow split qualitatively: the decelerating
+plenum flow recovers pressure towards the closed end. This stage takes the segregated
+Navier-Stokes model (THEORY.md 6.2) up to the design power with the SIMPLE and PIMPLE algorithms,
+which needs an orifice designed for this model.
+
+**Status.** With an orifice designed on the slice mass flows (`orifice_flow.i`), the segregated
+model reaches the design point in RZ with both SIMPLE and PIMPLE. The designed orifice, frozen, is
+a steady solution but not a stable one: see (d) below.
+
+## Inputs
+
+```bash
+open_pronghorn-opt -i anchor_simple.i orifice_flow.i          # (c) SIMPLE, flow-designed orifice
+open_pronghorn-opt -i anchor_pimple.i orifice_flow.i          # (c) PIMPLE, flow-designed orifice
+open_pronghorn-opt -i anchor_simple.i orifice_flow.i simple_fixed_point=320 orifice_max_updates=200
+                                                              # (d) the orifice frozen after 200 solves
+python3 extract_orifice.py ../03_ludewig_anchor/anchor_out.csv    # orifice of the Newton anchor
+open_pronghorn-opt -i anchor_pimple.i                             # (a) that orifice, ramp to 1 GW
+open_pronghorn-opt -i anchor_pimple.i orifice_lagged.i s_final=0.5 t_ramp=30 t_end=60 \
+                   pimple_steady_state_detection=false            # (b) lagged temperature design
+```
+
+- `anchor_simple.i`: the stage-2 segregated model with the SIMPLE executioner and a fixed-point
+  continuation in the power: one SIMPLE solve per fixed-point iteration, the power stepped from
+  `s_start` to `s_final` over the first `n_ramp` iterations, then held. The density, the friction
+  speed and the orifice are updated between solves. The CSV has one line per solve.
+- `anchor_pimple.i`: the same model with the PIMPLE executioner (`../common/element_pimple.i`). The
+  power ramps in pseudo-time from `s_start` to `s_final` over `t_ramp`. The density, the friction
+  speed and the orifice are lagged by one step.
+- `orifice_flow.i`: the orifice designed on the slice mass flows (`NTPOrificeFlowDesignAux`,
+  THEORY.md 4.5). After every solve each slice's multiplier moves so that the slice carries its
+  power share of the flow, at the geometric mean `exp(orifice_level)`. The slice flows are the exact
+  Rhie-Chow fluxes through the plenum / cold-frit interface (`NTPRhieChowSliceFlow`). With
+  `orifice_share_exponent > 0` the shares are also corrected from the slice outlet temperatures.
+  The design columns are the axial slices (`NTPElementColumnsDivision`); in 3-D,
+  `orifice_sectors = n_theta` splits each slice into azimuthal sectors (stage 5).
+- `orifice_profile.i`: the cold-frit orifice of the Newton anchor, written by
+  `extract_orifice.py`.
+- `orifice_lagged.i`: an orifice designed on the slice outlet temperatures (`NTPOrificeDesignAux`).
+  After every step each slice's multiplier moves towards a uniform outlet temperature, at the
+  geometric mean `exp(orifice_level)`. It is frozen at `orifice_freeze_time`.
+
+## Findings
+
+**(a) The Newton orifice does not fit the Navier-Stokes element.** At the design power, the
+mixed outlet temperature is right (2990 K at the end of the march, by the first law). The middle
+slices are starved, though, and the fuel there overheats without bound: the march ends when the
+enthalpy of a starved cell leaves the range of the hydrogen tables. The Darcy-model orifice was designed for an
+inlet-overfed split. The Navier-Stokes split is U-shaped (stage 2), so the two models need
+different orifices.
+
+**(b) A lagged design tracks the ramp but has no stable fixed point.** With `orifice_level = 4`
+and a damping exponent of 0.3, the march tracks the flow along the ramp. The fuel temperature
+stays close to the gas temperature, and the energy balance converges to 4e-5 at the end of the
+ramp:
+
+| power | mixed gas temperature | largest fuel temperature | inlet pressure | orifice range |
+|---|---|---|---|---|
+| 10 % | 384 K | 414 K | 7.26 MPa | 17.9 – 94 |
+| 25 % | 872 K | 935 K | 7.66 MPa | 21.1 – 84 |
+| 50 % | 1634 K | 1739 K | 8.34 MPa | 24.3 – 77 |
+
+Held at 50 %, the march diverges in two ways:
+
+- **With the design active**, the orifice runs away after about 10 more steps: its largest
+  multiplier grows from 77 to over 300, and the fuel overheats until the march fails.
+- **With the orifice frozen** at its value at the end of the ramp, the march converges, with the
+  energy balance at 2e-7, to a state in which every other slice is starved. Slices 0, 2, 3, 6
+  and 9 carry the flow, and the others overheat. That state is a steady solution of the frozen
+  orifice, not the orificed element.
+
+A smaller damping exponent (0.1) loses the flow earlier in the ramp, at 20 %. The orifice then
+cannot follow the power.
+
+The alternating pattern shows that the slice-by-slice update, lagged by one step, excites a
+mode with one slice of wavelength. The axial slices of the element are hydraulically coupled
+only through the plenum and the chamber, and nothing in the update couples neighbouring slices.
+The Newton design of stage 3 solves the orifice together with the flow and has no such mode.
+
+**(c) An orifice designed on the slice flows reaches the design point.** The temperature design
+(b) closes its loop through the density of the hot gas: a slice that heats up expands, its flow
+falls, and it heats up further before the next update. The flow design acts on a hydraulic
+quantity instead: the flow through a slice falls monotonically with its cold-frit drag, at the
+cold density of the frit, and the targets, the slice power shares, do not depend on the solution.
+At the defaults (`orifice_level = 3`, `orifice_flow_exponent = 0.7`, shares fixed to the power
+shares) both executioners converge to the same state:
+
+| | SIMPLE (`anchor_simple.i`) | PIMPLE (`anchor_pimple.i`) |
+|---|---|---|
+| path | 50 power steps, 150 solves at 1 GW | ramp over 20 s, steady at t = 35.9 s (724 steps) |
+| run time (1 rank) | 112 s | 165 s |
+| mixed gas temperature | 2989.81 K | 2989.81 K |
+| largest fuel temperature | 3167 K | 3167 K |
+| slice outlet temperatures | 2988.9 – 2992.3 K | 2988.9 – 2992.1 K |
+| spread / mean rise | 1.1e-3 | 1.1e-3 |
+| inlet pressure | 8.873 MPa | 8.872 MPa |
+| orifice range | 0.41 – 46.3 | 0.41 – 46.1 |
+| energy balance error | -5e-9 | -7e-11 |
+| mass balance error | 3e-14 | 8e-14 |
+| slice flow / target | within 6e-5 | within 1e-5 |
+
+The mixed outlet temperature is the first-law value: with the power-share targets every slice
+gets the same enthalpy rise. The Newton anchor (stage 3) gives 2989.4 K and 3193 K with the
+Darcy-Forchheimer model and its own orifice. The Navier-Stokes orifice rises monotonically from
+the inlet, 0.41 at the inlet slice to 46 at the closed end. The plenum loses static pressure
+along its length by only 37 kPa, so the cold frit must throttle the downstream slices against a
+chamber whose pressure falls by 800 kPa. In the inlet slice the cold frit carries 0.5 % of the
+1.06 MPa slice pressure drop, in the last one 40 % of 1.83 MPa. Neither the fixed-point
+iterations nor the time steps show the slice-alternating mode of (b) at any power. The ramp
+length matters little: SIMPLE with all the power in the first solve (`n_ramp=1`) reaches the same
+state after 150 solves, through an excursion to 10 000 K in the first few.
+
+Correcting the shares further from the slice outlet temperatures
+(`orifice_share_exponent > 0`) brings the density feedback back. With `gamma = 0.5` (PIMPLE)
+the march settles into a small limit cycle at the design power: spread 0.3 – 2 %, largest fuel
+temperature 3145 – 3193 K, the inlet slice oscillating with a period of about 50 updates. With
+`gamma = 0.15` and the correction applied at every solve (SIMPLE), the inlet-slice multiplier
+oscillates between 0.09 and 1.6 and the fuel reaches 3170 – 3790 K. `gamma = 0.05`, limited to 1 % per solve,
+converges slowly to the same state as the power shares. The power shares are the design, and the
+temperature correction is not needed on this element.
+
+**(d) The designed orifice, frozen, is a steady solution, but an unstable one.** After 200
+designed solves (`orifice_max_updates = 200`) the state is converged, and freezing the orifice
+leaves it unchanged at first: the spread stays at its converged value for 40 – 80 solves. But a
+perturbation grows, by a factor of 1.20 per solve at the design power, whatever the level. A
+slice near the closed end (9 or 10) loses flow, heats up and runs away. Its neighbour takes the
+flow and cools. The same happens at partial power, more slowly at 25 %. PIMPLE behaves the same
+way: frozen at t = 34.7 s, the fuel exceeds 8000 K 2.5 s later.
+
+| frozen at | inlet pressure | growth per solve | after 120 frozen solves: spread, largest fuel temperature |
+|---|---|---|---|
+| level 3, 1 GW | 8.87 MPa | 1.20 | 1.3, 5500 K |
+| level 3.5, 1 GW | 9.10 MPa | 1.20 | 11.8, 36 000 K |
+| level 4, 1 GW | 9.65 MPa | 1.20 | 0.23, 3650 K |
+| level 4.5, 1 GW | 10.56 MPa | 1.20 | 0.014, 3164 K (onset later) |
+| level 3, 75 % / 50 % / 25 % | | 1.19 / 1.18 / 1.13 | runaway |
+| level 3, relaxation 0.15 | 8.87 MPa | 1.06 | runaway after 150 solves |
+
+A higher level only delays the onset. Halving the lagged-state relaxation slows the growth per
+solve without removing it. A growth for any relaxation means the lagged density map itself
+amplifies the mode: the frozen state is a saddle of the iteration, not an artefact of its step.
+This is the behaviour of the flow-excursion instability of heated laminar gas channels in
+parallel: in the hot frit and the bed, the pressure drop at a fixed heat input rises as the flow
+falls, because the gas gets lighter and more viscous. The plenum and the chamber are nearly
+uniform headers here (the plenum loses 37 kPa along the element), so only the cold frit, at the
+cold density, opposes it. That the growth rate does not change between levels 3 and 4.5, which
+raise the cold-frit share of the pressure drop, does not fit that picture well, though. Whether
+the growing mode is that physical instability, or a mode of the lagged-density iteration (the
+segregated pressure equation has no compressibility, so the march is not the physical transient),
+is open. The Newton anchor (stage 3) solves its frozen-orifice state directly, and its stability
+is not tested there. With the design active, the flow loop acts as a flow controller of every
+slice, and the converged state is stable for SIMPLE and PIMPLE.
+
+## Next steps
+
+- **Stability of the frozen orifice.** Separate the physical flow excursion from the iteration:
+  the eigenvalue of the frozen-orifice Newton Jacobian of stage 3, with this orifice, at the
+  design point; and the growth rate as a function of the cold-frit share of the pressure drop
+  (the levels tested, 3 – 4.5, give the same rate).
+- **3-D.** Done in stage 5: the 3-D element needs the design per column (slice and sector), as
+  rings it loses its azimuthal symmetry in a flow excursion between the columns of a slice.
+- **Mesh.** Refine the plenum radially (`n_pl`). With one cell across the 2 mm gap, its axial
+  momentum relies entirely on the duct-friction closure.

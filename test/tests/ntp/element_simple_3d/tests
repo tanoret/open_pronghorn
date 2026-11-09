@@ -1,0 +1,19 @@
+[Tests]
+  design = 'NTPRhieChowMassFlux.md NTPRhieChowFluxIntegral.md'
+  issues = '#000'
+  [element_simple_3d]
+    type = CSVDiff
+    input = '../../../../examples/ntp_tutorial/05_element_3d/element_simple_3d.i'
+    cli_args = 'nz=6 n_theta=8 simple_fixed_point=3 simple_iterations=150 Outputs/exodus=false
+                Outputs/file_base=element_simple_3d_out'
+    csvdiff = 'element_simple_3d_out.csv'
+    rel_err = 1e-5
+    abs_zero = 1e-6
+    min_parallel = 4
+    max_parallel = 4
+    max_threads = 1
+    requirement = 'The segregated SIMPLE model of the NTP fuel element shall solve the cold flow of '
+                  'the three-dimensional half element, started from the plug-flow estimate of the '
+                  'velocity, conserving mass across the porosity jumps.'
+  []
+[]

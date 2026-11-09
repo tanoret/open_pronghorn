@@ -1,0 +1,14 @@
+[Tests]
+  design = 'NTPDarcyAdvection.md NTPDarcyMassFlux.md NTPDarcyFluxIntegral.md'
+  issues = '#000'
+  [heated_element]
+    type = CSVDiff
+    input = 'heated_element.i'
+    csvdiff = 'heated_element_out.csv'
+    rel_err = 1e-6
+    abs_zero = 1e-7
+    requirement = 'The Darcy-Forchheimer mass and enthalpy equations of the NTP fuel element shall '
+                  'carry the imposed inlet flow to the outlet and the heat input to the outlet '
+                  'enthalpy flow, on the conical element mesh.'
+  []
+[]

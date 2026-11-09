@@ -1,0 +1,17 @@
+[Tests]
+  design = 'NTPRhieChowMassFlux.md NTPLinearFVEnthalpyExchange.md NTPRhieChowFluxIntegral.md'
+  issues = '#000'
+  [element_simple]
+    type = CSVDiff
+    input = '../../../../examples/ntp_tutorial/02_element/element_simple_rz.i'
+    cli_args = 'nz=6 s_power=0.05 simple_fixed_point=15 simple_iterations=200 Outputs/exodus=false
+                Outputs/file_base=element_simple_out'
+    csvdiff = 'element_simple_out.csv'
+    rel_err = 1e-5
+    abs_zero = 1e-7
+    max_threads = 1
+    requirement = 'The segregated SIMPLE model of the NTP fuel element shall solve the heated element '
+                  'with the packed-bed, duct-friction and gas-particle closures, conserving mass and '
+                  'energy across the porosity jumps of the element.'
+  []
+[]

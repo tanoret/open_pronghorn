@@ -1,0 +1,18 @@
+[Tests]
+  design = 'NTPOrificeFlowDesignAux.md NTPRhieChowSliceFlow.md'
+  issues = '#000'
+  [orifice_flow]
+    type = CSVDiff
+    input = '../../../../examples/ntp_tutorial/04_navier_stokes/anchor_simple.i'
+    cli_args = '../../../../examples/ntp_tutorial/04_navier_stokes/orifice_flow.i nz=6 s_final=0.1
+                n_ramp=4 simple_fixed_point=25 simple_iterations=100 orifice_verbose=false
+                Outputs/exodus=false Outputs/file_base=orifice_flow_out'
+    csvdiff = 'orifice_flow_out.csv orifice_flow_out_slice_flow_0002.csv'
+    rel_err = 1e-5
+    abs_zero = 1e-7
+    max_threads = 1
+    requirement = 'The segregated SIMPLE model of the NTP fuel element shall design the cold-frit '
+                  'orifice on the exact slice mass flows through the plenum / cold-frit interface '
+                  'during a fixed-point power continuation, conserving mass and energy.'
+  []
+[]
