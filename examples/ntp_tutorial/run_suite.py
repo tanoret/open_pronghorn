@@ -241,6 +241,26 @@ def with_transverse(csv_path, exodus, python):
     return out
 
 
+def stability_metrics(cwd):
+    """stability.i: largest rise of a slice outlet temperature above the anchor after the kick and
+    its e-folding time (from the slice vectors), the peak fuel temperature, the frozen orifice."""
+    import glob
+    rows = read_csv(os.path.join(cwd, "stability_out.csv"))
+    files = sorted(glob.glob(os.path.join(cwd, "stability_out_slice_outlet_*.csv")))
+    t_freeze = 1.05
+    series = []
+    for r, f in zip(rows, files):
+        with open(f) as fh:
+            series.append((r["time"], [float(x["T_fluid"]) for x in csv.DictReader(fh)]))
+    base = min(series, key=lambda x: abs(x[0] - t_freeze))[1]
+    dev = [(t, max(abs(a - b) for a, b in zip(T, base))) for t, T in series if t >= t_freeze]
+    peak_t, peak = max(dev, key=lambda x: x[1])
+    late = [x for x in dev if x[0] > peak_t + 0.1]
+    efold = (late[-1][0] - late[0][0]) / math.log(late[0][1] / late[-1][1]) if len(late) > 1 else float("nan")
+    return dict(peak_rise=peak, efold=efold, T_fuel_peak=max(r["T_fuel_max"] for r in rows if r["time"] >= t_freeze),
+                chi_exit=rows[-1]["chi_exit"])
+
+
 def log_floats(path, pattern):
     with open(path) as f:
         return [float(x) for x in re.findall(pattern, f.read())]
@@ -391,6 +411,12 @@ def job_list(args):
                     mass_error=[below("1e-13", 1e-12, src=S3), below("1e-13", 1e-12, src=R)],
                     power=[doc("26.92", "MW", 1e6, S3)], s_power=[doc("1", src=S3)],
                     run_time=[factor("10", src=S3 + " ('about 10 s, 4 ranks')")]))
+    add("03_stability", "03", moose(args, 4, *a, "orifice_implicit.i", "stability.i"), ranks=4,
+        outputs=["stability_out.csv"], metrics=lambda j: stability_metrics(j["cwd"]),
+        documented="open_pronghorn-opt -i anchor.i continuation.i orifice_implicit.i stability.i",
+        note="frozen orifice in physical time, one slice kicked",
+        checks=dict(peak_rise=[doc("142", "K", src=S3)], efold=[doc("2.0", "s", src=S3)],
+                    T_fuel_peak=[doc("3345", "K", src=S3)], chi_exit=[doc("20.63", src=S3)]))
     add("03_fold_uniform", "03", moose(args, 1, *a, "s_design=0.3", "t_design=0.6", *FOLD_STOP), fold=True,
         outputs=["continuation_out.csv", "continuation_out.e"], metrics=lambda j: newton_metrics(j["csv"]),
         documented="open_pronghorn-opt -i anchor.i continuation.i s_design=0.3 t_design=0.6",

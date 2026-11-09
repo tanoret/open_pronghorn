@@ -16,4 +16,19 @@
                   'the three-dimensional half element, started from the plug-flow estimate of the '
                   'velocity, conserving mass across the porosity jumps.'
   []
+  [coarse_azimuth]
+    type = CSVDiff
+    input = '../../../../examples/ntp_tutorial/05_element_3d/element_simple_3d.i'
+    cli_args = 'nz=6 n_theta=4 simple_fixed_point=1 simple_iterations=150 Outputs/exodus=false
+                Outputs/file_base=coarse_azimuth_out'
+    csvdiff = 'coarse_azimuth_out.csv'
+    rel_err = 1e-5
+    abs_zero = 1e-6
+    min_parallel = 2
+    max_parallel = 2
+    max_threads = 1
+    requirement = 'The segregated SIMPLE model of the NTP fuel element shall converge the cold flow '
+                  'of the three-dimensional half element on a coarse azimuthal mesh (four cells) '
+                  'from the plug-flow start with a uniform velocity floor.'
+  []
 []

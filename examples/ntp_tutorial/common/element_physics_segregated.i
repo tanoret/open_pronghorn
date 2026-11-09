@@ -37,6 +37,9 @@
 
 area_in = ${fparse pi * (r5_in^2 - r4_in^2) * segregated_inlet_fraction}
 lagged_state_relaxation = 0.3
+# uniform axial velocity added to the plug-flow start [m/s]: every cell then has an advection
+# diagonal in the first momentum solve (needed on coarse azimuthal 3-D meshes)
+segregated_start_floor = 5
 
 [Problem]
   linear_sys_names = '${segregated_momentum_systems} pressure_system energy_system
@@ -104,9 +107,11 @@ lagged_state_relaxation = 0.3
 
 [Functions]
   # plug-flow estimate of the cold axial velocity, a start for SIMPLE: the inlet speed in the
-  # plenum falling linearly to zero at the closed end, and the chamber speed rising linearly from
-  # zero to the speed of the cold gas at the outlet. Started from rest, the first momentum solve
-  # sees only the gas viscosity in the free channels; in 3-D the iterations then diverge.
+  # plenum falling linearly to zero at the closed end, the chamber speed rising linearly from zero
+  # to the speed of the cold gas at the outlet, plus a uniform floor segregated_start_floor in
+  # every cell. Started from rest, the first momentum solve sees only the gas viscosity in the
+  # free channels, and in 3-D the iterations diverge; a cell left at zero (the beds, without the
+  # floor) does the same on coarse azimuthal meshes (n_theta <= 5).
   [segregated_plug_velocity]
     type = ParsedFunction
     # cold gas (ideal gas at p_out, T_in) through the inlet annulus and the outlet of the chamber
@@ -116,7 +121,7 @@ lagged_state_relaxation = 0.3
                   rho := ${p_out} * 2.01588e-3 / (8.3144598 * ${T_in});
                   u_in := ${mdot} / (pi * (${r5_in}^2 - ${r4_in}^2) * ${segregated_inlet_fraction} * rho);
                   u_out := ${mdot} / (pi * ${r1_out}^2 * ${segregated_inlet_fraction} * rho);
-                  if(r > r4, u_in * (1 - f), if(r < r1, u_out * f, 0))'
+                  ${segregated_start_floor} + if(r > r4, u_in * (1 - f), if(r < r1, u_out * f, 0))'
   []
 []
 

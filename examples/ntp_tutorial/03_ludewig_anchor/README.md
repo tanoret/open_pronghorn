@@ -6,6 +6,8 @@ power continuation. The cold-frit orifice is designed together with the flow.
 
 ```bash
 open_pronghorn-opt -i anchor.i continuation.i orifice_implicit.i     # about 10 s, 4 ranks
+open_pronghorn-opt -i anchor.i continuation.i orifice_implicit.i stability.i
+                                     # the frozen orifice in physical time, about 15 s, 4 ranks
 ```
 
 The inputs are:
@@ -19,6 +21,8 @@ The inputs are:
   - 0 (cold flow), then
   - 5 % up to `t_design`, then
   - a linear ramp to 1 at `t = 1`.
+- `stability.i`: after the anchor, the orifice is frozen and the element is marched in physical
+  time (see below).
 - `orifice_implicit.i`: the orifice `chi_j = exp(lambda_j)` of each axial slice is a scalar
   unknown of the Newton system (`NTPSliceUniformityConstraint`). Its equations make every slice's
   gas outlet temperature equal to the mean over the slices, with the mean of `lambda` fixed at
@@ -66,6 +70,27 @@ taught three lessons, each reflected in the inputs:
   Jacobian is then wrong in the exchange terms, by 93 % (relative Frobenius norm) in one of our
   tests. `NTPDarcyMassFluxFunctorMaterial`
   computes it as an AD functor, which makes the Jacobian exact to finite-difference precision.
+
+## Is the designed orifice stable?
+
+The design makes every slice's outlet temperature equal at the design point, but a real orifice is
+fixed: does the element return to that state when disturbed? `stability.i` answers it in physical
+time. After the anchor (held at the design point until `t_freeze = 1.05`), it freezes the orifice
+(`d lambda/dt = 0` instead of the design equations), switches on the time derivatives of the gas
+mass, the gas energy and the particles, and gives the realistic particle heat capacity
+(`rho_s cp_s = 2.5e6 J/(m³ K)`; the continuation uses a pseudo value). For 0.1 s the power of the
+middle slice is raised by 10 %.
+
+The element is stable. The kicked slice's gas outlet rises 142 K above the anchor, the largest
+fuel temperature to 3345 K. After the kick both decay monotonically back to the anchor, with an
+e-folding time of 2.0 s, the thermal time constant of the particles. The flow excursion of the
+uniform frits is a turning point of the steady branch (above); a designed orifice moves the
+operating point away from it, and the frozen design is a stable steady state at the design power.
+
+The segregated model of stage 4 behaves differently: frozen, the same kind of designed state
+drifts away in its iterations. Its pressure equation has no gas compressibility and its density
+is lagged, so its pseudo-time march is not this physical transient. That drift is a property of
+the iteration, not of the element.
 
 ## Mesh
 

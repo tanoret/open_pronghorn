@@ -41,8 +41,9 @@ are in [THEORY.md](THEORY.md).
   model reaches the design point in RZ with SIMPLE and with PIMPLE: 2989.8 K mixed outlet, slice
   outlet temperatures within 0.1 % of the rise, fuel at most 3167 K, energy balance to 1e-8.
   A design on the slice temperatures has no stable fixed point (a slice-alternating mode), and the
-  Newton orifice does not fit the Navier-Stokes split. Frozen, the designed orifice is a steady
-  but unstable solution of the segregated iterations (stage 4).
+  Newton orifice does not fit the Navier-Stokes split. Frozen, the designed orifice drifts away in
+  the segregated iterations (stage 4), but in physical time it is stable: kicked, the Newton
+  element returns to the design point with a 2 s time constant (stage 3, `stability.i`).
 - **3-D.** The 3-D model reproduces the 2-D anchor (fuel temperature within 0.12 %). A transverse
   power tilt of ±5 % across the element amplifies to a +47 % / −24 % spread of the gas
   temperature rise and limits the element to 18 % of the design power. The axially designed

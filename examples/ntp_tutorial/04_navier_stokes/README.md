@@ -8,8 +8,8 @@ Navier-Stokes model (THEORY.md 6.2) up to the design power with the SIMPLE and P
 which needs an orifice designed for this model.
 
 **Status.** With an orifice designed on the slice mass flows (`orifice_flow.i`), the segregated
-model reaches the design point in RZ with both SIMPLE and PIMPLE. The designed orifice, frozen, is
-a steady solution but not a stable one: see (d) below.
+model reaches the design point in RZ with both SIMPLE and PIMPLE. Frozen, the designed orifice is
+not held by the segregated iterations, although it is physically stable: see (d) below.
 
 ## Inputs
 
@@ -123,7 +123,7 @@ oscillates between 0.09 and 1.6 and the fuel reaches 3170 – 3790 K. `gamma = 0
 converges slowly to the same state as the power shares. The power shares are the design, and the
 temperature correction is not needed on this element.
 
-**(d) The designed orifice, frozen, is a steady solution, but an unstable one.** After 200
+**(d) The designed orifice, frozen, is a steady solution the iterations do not hold.** After 200
 designed solves (`orifice_max_updates = 200`) the state is converged, and freezing the orifice
 leaves it unchanged at first: the spread stays at its converged value for 40 – 80 solves. But a
 perturbation grows, by a factor of 1.20 per solve at the design power, whatever the level. A
@@ -141,26 +141,21 @@ way: frozen at t = 34.7 s, the fuel exceeds 8000 K 2.5 s later.
 | level 3, relaxation 0.15 | 8.87 MPa | 1.06 | runaway after 150 solves |
 
 A higher level only delays the onset. Halving the lagged-state relaxation slows the growth per
-solve without removing it. A growth for any relaxation means the lagged density map itself
-amplifies the mode: the frozen state is a saddle of the iteration, not an artefact of its step.
-This is the behaviour of the flow-excursion instability of heated laminar gas channels in
-parallel: in the hot frit and the bed, the pressure drop at a fixed heat input rises as the flow
-falls, because the gas gets lighter and more viscous. The plenum and the chamber are nearly
-uniform headers here (the plenum loses 37 kPa along the element), so only the cold frit, at the
-cold density, opposes it. That the growth rate does not change between levels 3 and 4.5, which
-raise the cold-frit share of the pressure drop, does not fit that picture well, though. Whether
-the growing mode is that physical instability, or a mode of the lagged-density iteration (the
-segregated pressure equation has no compressibility, so the march is not the physical transient),
-is open. The Newton anchor (stage 3) solves its frozen-orifice state directly, and its stability
-is not tested there. With the design active, the flow loop acts as a flow controller of every
-slice, and the converged state is stable for SIMPLE and PIMPLE.
+solve without removing it: the lagged density map amplifies the mode. Is it the flow-excursion
+instability of heated parallel channels, or a mode of the iteration? The segregated pressure
+equation has no compressibility, so its march is not the physical transient. Stage 3 answers it
+with the Newton model, which has the gas mass storage: frozen at the design point and kicked, the
+element returns to its steady state with a 2.0 s time constant (`../03_ludewig_anchor/stability.i`).
+The growing mode here is therefore a mode of the lagged-density iteration, not of the element.
+With the design active, the flow loop acts as a flow controller of every slice, and the converged
+state is stable for SIMPLE and PIMPLE.
 
 ## Next steps
 
-- **Stability of the frozen orifice.** Separate the physical flow excursion from the iteration:
-  the eigenvalue of the frozen-orifice Newton Jacobian of stage 3, with this orifice, at the
-  design point; and the growth rate as a function of the cold-frit share of the pressure drop
-  (the levels tested, 3 – 4.5, give the same rate).
+- **A frozen orifice in the segregated iterations.** The frozen design is physically stable
+  (stage 3, `stability.i`), but the lagged-density iteration does not converge to it. A pressure
+  equation with the compressibility of the gas (a weakly compressible PIMPLE) would make the
+  march a physical transient.
 - **3-D.** Done in stage 5: the 3-D element needs the design per column (slice and sector), as
   rings it loses its azimuthal symmetry in a flow excursion between the columns of a slice.
 - **Mesh.** Refine the plenum radially (`n_pl`). With one cell across the 2 mm gap, its axial
