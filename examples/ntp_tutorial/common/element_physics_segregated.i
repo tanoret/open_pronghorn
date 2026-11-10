@@ -134,6 +134,13 @@ segregated_start_floor = 5
   []
 []
 
+[FVInterpolationMethods]
+  # face conductivity of the particle conduction (THEORY.md 4.3)
+  [particle_conductivity_interpolation]
+    type = FVHarmonicAverage
+  []
+[]
+
 [LinearFVKernels]
   # gas side of the particle-to-gas exchange, consistent with the enthalpy unknown; the particle
   # response of the cell is eliminated (solid_conductivity), which makes the gas-particle
@@ -148,11 +155,15 @@ segregated_start_floor = 5
     solid_conductivity = kappa_s
     block = 'cold_frit fuel_bed hot_frit'
   []
-  # particles
+  # particles. The face conductivity between two cells is their harmonic mean, as in the Newton
+  # model (FVAnisotropicDiffusion). Evaluated directly on the face, the conductivity between the
+  # cold frit and the bed (129 and 13 W/(m K)) would be the frit's, and the bed would heat the
+  # cold frit's gas to twice the temperature of the Newton model.
   [particle_conduction]
     type = LinearFVAnisotropicDiffusion
     variable = T_solid
     diffusion_tensor = kappa_s
+    coeff_interp_method = particle_conductivity_interpolation
   []
   [fission_heat]
     type = LinearFVSource

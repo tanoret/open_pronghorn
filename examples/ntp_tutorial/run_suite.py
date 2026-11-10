@@ -392,8 +392,8 @@ def job_list(args):
         outputs=["element_simple_rz_out.csv", "element_simple_rz_out.e"],
         metrics=lambda j: segregated_metrics(j["csv"]),
         documented="open_pronghorn-opt -i element_simple_rz.i s_power=0.05 simple_fixed_point=40",
-        checks=dict(T_mixed=[doc("218.9", "K", src=S2)], energy_error=[doc("-5e-8", src=S2)],
-                    T_fuel_max=[doc("1085", "K", src=S2)]))
+        checks=dict(T_mixed=[doc("218.9", "K", src=S2)], energy_error=[doc("-4e-8", src=S2)],
+                    T_fuel_max=[doc("1003", "K", src=S2)]))
     add("02_compare_cold_flow", "02", [*py, "compare_cold_flow.py"], needs=["02_newton_cold", "02_simple_cold"],
         outputs=["cold_flow.png"], exodus_reader=True, documented="python3 compare_cold_flow.py")
 
@@ -447,21 +447,21 @@ def job_list(args):
         documented="open_pronghorn-opt -i anchor_simple.i orifice_flow.i",
         note="(c) SIMPLE, orifice designed on the slice flows",
         checks=dict(T_mixed=[doc("2989.81", "K", src=S4), doc("2989.8", "K", src=R)],
-                    T_fuel_max=[doc("3167", "K", src=S4), doc("3167", "K", src=R)],
-                    p_in=[doc("8.873", "MPa", 1e6, S4)], chi_min=[doc("0.41", src=S4)],
-                    chi_max=[doc("46.3", src=S4)], T_slice_spread=[doc("1.1e-3", src=S4)],
-                    energy_error=[below("-5e-9", 1e-8, src=S4)], mass_error=[below("3e-14", 1e-12, src=S4)],
-                    s_power=[doc("1", src=S4)], run_time=[factor("112", src=S4 + " (1 rank)")]))
+                    T_fuel_max=[doc("3185", "K", src=S4), doc("3185", "K", src=R)],
+                    p_in=[doc("8.875", "MPa", 1e6, S4)], chi_min=[doc("1.18", src=S4)],
+                    chi_max=[doc("130", src=S4)], T_slice_spread=[doc("1.2e-3", src=S4)],
+                    energy_error=[below("-2e-8", 1e-7, src=S4)], mass_error=[below("2e-13", 1e-12, src=S4)],
+                    s_power=[doc("1", src=S4)], run_time=[factor("95", src=S4 + " (1 rank)")]))
     add("04_pimple_flow", "04", moose(args, 1, "-i", "anchor_pimple.i", "orifice_flow.i", "orifice_verbose=false",
                                       "Outputs/file_base=anchor_pimple_out"),
         outputs=["anchor_pimple_out.csv", "anchor_pimple_out.e"], metrics=seg,
         documented="open_pronghorn-opt -i anchor_pimple.i orifice_flow.i",
         note="(c) PIMPLE, orifice designed on the slice flows",
-        checks=dict(T_mixed=[doc("2989.81", "K", src=S4)], T_fuel_max=[doc("3167", "K", src=S4)],
-                    p_in=[doc("8.872", "MPa", 1e6, S4)], chi_min=[doc("0.41", src=S4)],
-                    chi_max=[doc("46.1", src=S4)], T_slice_spread=[doc("1.1e-3", src=S4)],
-                    energy_error=[below("-7e-11", 1e-8, src=S4)], mass_error=[below("8e-14", 1e-12, src=S4)],
-                    s_power=[doc("1", src=S4)], run_time=[factor("165", src=S4 + " (1 rank)")]))
+        checks=dict(T_mixed=[doc("2989.81", "K", src=S4)], T_fuel_max=[doc("3185", "K", src=S4)],
+                    p_in=[doc("8.874", "MPa", 1e6, S4)], chi_min=[doc("1.2", src=S4)],
+                    chi_max=[doc("129", src=S4)], T_slice_spread=[doc("1.1e-3", src=S4)],
+                    energy_error=[below("-5e-10", 1e-8, src=S4)], mass_error=[below("6e-14", 1e-12, src=S4)],
+                    s_power=[doc("1", src=S4)], run_time=[factor("157", src=S4 + " (1 rank)")]))
     add("04_extract_orifice", "04", [*py, "extract_orifice.py", "../03_ludewig_anchor/anchor_out.csv"],
         needs=["03_anchor"], outputs=["orifice_profile.i"], metrics=lambda j: extract_orifice_metrics(j["log"]),
         documented="python3 extract_orifice.py ../03_ludewig_anchor/anchor_out.csv",
@@ -471,7 +471,7 @@ def job_list(args):
         needs=["04_extract_orifice"], outputs=["anchor_pimple_newton_out.csv"], metrics=seg, runaway=True,
         documented="open_pronghorn-opt -i anchor_pimple.i",
         note="(a) finding: the Newton orifice starves the middle slices (README)",
-        checks=dict(T_mixed=[doc("2990", "K", src=S4)], T_fuel_peak=[above("1e4", 1e4, "K", src=S4)]))
+        checks=dict(T_fuel_peak=[above("1e4", 1e4, "K", src=S4)]))
     lag = lambda j: dict(segregated_metrics(j["csv"]),  # noqa: E731
                          **at_power(j["csv"], (0.10, 0.25, 0.50), ("T_mixed", "T_fuel_max", "p_in", "chi_min",
                                                                    "chi_max")))
@@ -483,12 +483,12 @@ def job_list(args):
                    "pimple_steady_state_detection=false",
         note="(b) finding: lagged temperature design along the ramp to 50 %",
         checks={"T_mixed@10%": [doc("384", "K", src=S4)], "T_mixed@25%": [doc("872", "K", src=S4)],
-                "T_mixed@50%": [doc("1634", "K", src=S4)], "T_fuel_max@10%": [doc("414", "K", src=S4)],
-                "T_fuel_max@25%": [doc("935", "K", src=S4)], "T_fuel_max@50%": [doc("1739", "K", src=S4)],
-                "p_in@10%": [doc("7.26", "MPa", 1e6, S4)], "p_in@25%": [doc("7.66", "MPa", 1e6, S4)],
-                "p_in@50%": [doc("8.34", "MPa", 1e6, S4)], "chi_min@10%": [doc("17.9", src=S4)],
-                "chi_max@10%": [doc("94", src=S4)], "chi_min@50%": [doc("24.3", src=S4)],
-                "chi_max@50%": [doc("77", src=S4)], "T_fuel_peak": [above("1e4", 1e4, "K", src=S4)]})
+                "T_mixed@50%": [doc("1634", "K", src=S4)], "T_fuel_max@10%": [doc("432", "K", src=S4)],
+                "T_fuel_max@25%": [doc("948", "K", src=S4)], "T_fuel_max@50%": [doc("1751", "K", src=S4)],
+                "p_in@10%": [doc("7.20", "MPa", 1e6, S4)], "p_in@25%": [doc("7.49", "MPa", 1e6, S4)],
+                "p_in@50%": [doc("7.97", "MPa", 1e6, S4)], "chi_min@10%": [doc("2.1", src=S4)],
+                "chi_max@10%": [doc("152", src=S4)], "chi_min@50%": [doc("0.86", src=S4)],
+                "chi_max@50%": [doc("140", src=S4)], "T_fuel_peak": [above("1e4", 1e4, "K", src=S4)]})
 
     # ---- 05 3-D
     t3 = ["-i", "anchor_3d.i", "../03_ludewig_anchor/continuation.i", "../03_ludewig_anchor/orifice_implicit.i",
@@ -551,11 +551,11 @@ def job_list(args):
         documented="mpirun -n 8 open_pronghorn-opt -i anchor_simple_3d.i ../04_navier_stokes/orifice_flow.i "
                    "orifice_sectors=8",
         note="SIMPLE, column orifice (12 slices x 8 sectors)",
-        checks=dict(T_mixed=[doc("2989.42", "K", src=S5)], T_fuel_max=[doc("3170", "K", src=S5)],
-                    p_in=[doc("8.900", "MPa", 1e6, S5)], T_slice_spread=[doc("1.1e-3", src=S5)],
-                    energy_error=[below("1e-8", 1e-7, src=S5)], mass_error=[below("6e-12", 1e-10, src=S5)],
+        checks=dict(T_mixed=[doc("2989.42", "K", src=S5)], T_fuel_max=[doc("3188", "K", src=S5)],
+                    p_in=[doc("8.902", "MPa", 1e6, S5)], T_slice_spread=[doc("1.1e-3", src=S5)],
+                    energy_error=[below("1e-8", 1e-7, src=S5)], mass_error=[below("5e-13", 1e-10, src=S5)],
                     asymmetry=[below("2e-7", 1e-6, src=S5)], s_power=[doc("1", src=S5)],
-                    run_time=[factor("300", src=S5 + " (8 ranks)")]))
+                    run_time=[factor("250", src=S5 + " (8 ranks)")]))
     add("05_pimple_3d", "long", moose(args, 8, "-i", "anchor_pimple_3d.i", "../04_navier_stokes/orifice_flow.i",
                                       "orifice_sectors=8", "orifice_verbose=false",
                                       "Outputs/file_base=anchor_pimple_3d_out"), ranks=8,
@@ -563,10 +563,10 @@ def job_list(args):
         documented="mpirun -n 8 open_pronghorn-opt -i anchor_pimple_3d.i ../04_navier_stokes/orifice_flow.i "
                    "orifice_sectors=8",
         note="PIMPLE from rest, column orifice",
-        checks=dict(T_mixed=[doc("2989.42", "K", src=S5)], T_fuel_max=[doc("3170", "K", src=S5)],
-                    p_in=[doc("8.899", "MPa", 1e6, S5)], T_slice_spread=[doc("1.0e-3", src=S5)],
+        checks=dict(T_mixed=[doc("2989.42", "K", src=S5)], T_fuel_max=[doc("3188", "K", src=S5)],
+                    p_in=[doc("8.901", "MPa", 1e6, S5)], T_slice_spread=[doc("1.1e-3", src=S5)],
                     energy_error=[below("1e-8", 1e-7, src=S5)], asymmetry=[below("2e-7", 1e-6, src=S5)],
-                    s_power=[doc("1", src=S5)], run_time=[factor("470", src=S5 + " (8 ranks)")]))
+                    s_power=[doc("1", src=S5)], run_time=[factor("450", src=S5 + " (8 ranks)")]))
     add("05_pimple_3d_rings", "long", moose(args, 8, "-i", "anchor_pimple_3d.i",
                                             "../04_navier_stokes/orifice_flow.i", "t_end=10",
                                             "pimple_steady_state_detection=false", "orifice_verbose=false",
@@ -575,7 +575,7 @@ def job_list(args):
         documented="mpirun -n 8 open_pronghorn-opt -i anchor_pimple_3d.i ../04_navier_stokes/orifice_flow.i "
                    "t_end=10 pimple_steady_state_detection=false",
         note="ring orifice: the azimuthal flow excursion",
-        checks=dict(asymmetry=[above("1", 1.0, src=S5)], T_fuel_peak=[above("1e4", 1e4, "K", src=S5)]))
+        checks=dict(asymmetry=[above("1", 1.0, src=S5)], T_fuel_peak=[above("5000", 5000, "K", src=S5)]))
     add("05_plot_3d", "long", [*py, "plot_3d.py", "anchor_3d_out.e:no tilt", "anchor_3d_tilt_out.e:tilt 0.05"],
         needs=["05_anchor_3d", "05_tilt_005"], outputs=["transverse.png"], exodus_reader=True,
         documented='python3 plot_3d.py anchor_3d_out.e:"no tilt" anchor_3d_tilt_out.e:"tilt 0.05"')

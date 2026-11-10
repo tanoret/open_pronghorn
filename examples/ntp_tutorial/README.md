@@ -39,7 +39,7 @@ are in [THEORY.md](THEORY.md).
   model, omits this.
 - **Navier-Stokes at power.** With an orifice designed on the slice mass flows, the segregated
   model reaches the design point in RZ with SIMPLE and with PIMPLE: 2989.8 K mixed outlet, slice
-  outlet temperatures within 0.1 % of the rise, fuel at most 3167 K, energy balance to 1e-8.
+  outlet temperatures within 0.1 % of the rise, fuel at most 3185 K, energy balance to 1e-8.
   A design on the slice temperatures has no stable fixed point (a slice-alternating mode), and the
   Newton orifice does not fit the Navier-Stokes split. Frozen, the designed orifice drifts away in
   the segregated iterations (stage 4), but in physical time it is stable: kicked, the Newton
@@ -51,7 +51,7 @@ are in [THEORY.md](THEORY.md).
 - **Segregated model in 3-D.** The segregated SIMPLE and PIMPLE models reach the design point in
   3-D as well, but only with the orifice designed per column (axial slice and azimuthal sector).
   With rings, a perturbation around the element at round-off grows into a flow excursion between
-  the columns of a slice past 37 % power. SIMPLE needs a flowing start in 3-D (a plug-flow
+  the columns of a slice past about 44 % power. SIMPLE needs a flowing start in 3-D (a plug-flow
   estimate); PIMPLE starts from rest.
 
 ## Running

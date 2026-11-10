@@ -70,8 +70,8 @@ python3 compare_cold_flow.py       # cold_flow.png, from newton_cold.e and simpl
 | cold: inlet pressure − 7 MPa | 16.2 kPa | 11.6 kPa |
 | cold: mass balance (out − in)/in | −9e-7 | 5e-13 |
 | 5 %: mixed outlet temperature | 218.9 K | 218.9 K |
-| 5 %: energy balance error | 8e-8 | −5e-8 |
-| 5 %: largest fuel temperature (uniform frits) | 325 K | 1085 K |
+| 5 %: energy balance error | 8e-8 | −4e-8 |
+| 5 %: largest fuel temperature (uniform frits) | 325 K | 1003 K |
 
 ![cold flow](cold_flow.png)
 

@@ -260,6 +260,10 @@ Seven points are specific to the particle-bed element:
    ```
 
    This is exact at convergence for any `beta`. The pair then converges at the rate `G/(alpha V)`.
+   The particle conduction takes the harmonic mean of the two cells' conductivities at a face, as
+   the Newton model does. Next to the fuel bed the cold frit conducts ten times better (an
+   effective 129 against 13 W/(m K)); taken on the face directly, that conductivity lets the bed
+   heat the cold-frit gas to twice the temperature of the Newton model.
 5. **Cell mass flux.** The cell mass flux for the closures (`|u|` in (4.1) and in `Nu`) is
    reconstructed from the face fluxes (6.3), here from those of the Rhie-Chow object
    (`NTPRhieChowMassFluxAux`).

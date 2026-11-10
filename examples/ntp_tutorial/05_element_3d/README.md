@@ -107,14 +107,16 @@ rising from zero). PIMPLE starts from rest: its time derivative bounds the momen
 3-D element loses its symmetry on the way up in power. A perturbation around the element, at
 round-off (1e-7) at the start, grows by a factor of 5 to 12 per second of pseudo-time, faster as
 the power rises. It is a `cos 2 theta` mode: the columns next to the symmetry planes lose their
-flow, the column at 90° takes it. At 37 % power it becomes visible, and at 50 % the starved columns
-exceed 10 000 K, the radial flux through their cold frit falls from 7 to 0.1 kg/(m² s), and
-the slice outlet temperatures spread by about twice the mean rise. The growth starts from
-round-off, so the run-to-run detail of the runaway differs (the suite checks the threshold). This is the flow excursion of
-stage 4 (the frozen orifice), now between the columns of a ring: within a slice they share one
-multiplier, so the design cannot hold their flows apart. The Newton model shows the same limit as
-a turning point, at a power that falls with the size of the azimuthal imperfection (the tilt table
-above: 51 % for a ±1 % tilt).
+flow, the column at 90° takes it. Past about 44 % power it becomes visible, and at 50 % the
+starved columns exceed 5000 K, their cold frit carries almost no flow, and the slice outlet
+temperatures spread by more than the mean rise. The growth starts from round-off, so the
+run-to-run detail of the runaway differs (the suite checks the threshold). Within a slice the
+columns share one multiplier, so the design cannot hold their flows apart; the growth itself is
+the drift of a fixed orifice in the segregated iterations (stage 4, finding (d)), here between the
+columns of a ring. The Newton model, whose transient is physical, shows the limit as a turning
+point instead, at a power that falls with the size of the azimuthal imperfection (the tilt table
+above: 51 % for a ±1 % tilt). Either way, a ring orifice cannot take the element to the design
+power once the power varies around it.
 
 **A column orifice reaches the design point.** With `orifice_sectors = 8` the design acts on every
 column of the cold frit, 12 slices times 8 sectors (`NTPElementColumnsDivision`), each designed
@@ -124,15 +126,15 @@ power:
 | | RZ, SIMPLE (stage 4) | 3-D, SIMPLE | 3-D, PIMPLE |
 |---|---|---|---|
 | mixed outlet gas temperature | 2989.81 K | 2989.42 K | 2989.42 K |
-| largest fuel temperature | 3167 K | 3170.3 K | 3170.1 K |
-| inlet pressure | 8.873 MPa | 8.900 MPa | 8.899 MPa |
-| slice outlet spread / mean rise | 1.1e-3 | 1.1e-3 | 1.0e-3 |
-| asymmetry around the element (fuel) | — | 1.7e-7 | 1.7e-7 |
-| orifice range | 0.41 – 46.3 | 0.34 – 47.2 | 0.34 – 47.1 |
-| energy balance error | -5e-9 | 6e-9 | -1e-10 |
-| mass balance error | 3e-14 | -9e-12 | -1e-11 |
-| path | 50 power steps, 200 solves | 50 power steps, 200 solves | ramp over 20 s, steady at t = 36.1 s |
-| run time | 112 s, 1 rank | 295 s, 8 ranks | 459 s, 8 ranks |
+| largest fuel temperature | 3185 K | 3188.2 K | 3188.2 K |
+| inlet pressure | 8.875 MPa | 8.902 MPa | 8.901 MPa |
+| slice outlet spread / mean rise | 1.2e-3 | 1.1e-3 | 1.1e-3 |
+| asymmetry around the element (fuel) | — | 2.1e-7 | 2.1e-7 |
+| orifice range | 1.18 – 130 | 1.01 – 132 | 1.02 – 131 |
+| energy balance error | -2e-8 | -1e-8 | -4e-10 |
+| mass balance error | 2e-13 | 5e-13 | -2e-12 |
+| path | 50 power steps, 200 solves | 50 power steps, 200 solves | ramp over 20 s, steady at t = 34.1 s |
+| run time | 95 s, 1 rank | 250 s, 8 ranks | 450 s, 8 ranks |
 
 The 3-D element reproduces the axisymmetric one: the fuel temperature to 0.1 %, the inlet
 pressure to 0.3 %. The mixed outlet temperature is 0.4 K lower because the 3-D element receives

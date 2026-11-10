@@ -27,7 +27,12 @@
 # 0.1 % of the rise; the temperature correction re-introduces the density feedback and, with
 # gamma >= 0.15, a slow oscillation of the inlet slice (README.md).
 
-orifice_level = 3
+# The level (the logarithm of the geometric mean of chi) must leave the inlet slice room to be
+# opened: the plenum recovers static pressure towards the closed end, so the inlet slice needs the
+# least cold-frit resistance. At level 3 its multiplier goes to 1e-5, at the bound of the design;
+# at level 4 every multiplier stays between 1 and 130. Above about 4.5 the uniform starting
+# orifice throttles the cold start too hard and the first solves diverge.
+orifice_level = 4
 orifice_flow_exponent = 0.7
 orifice_max_change = 1.5
 orifice_share_exponent = 0

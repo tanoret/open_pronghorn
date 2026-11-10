@@ -46,11 +46,10 @@ open_pronghorn-opt -i anchor_pimple.i orifice_lagged.i s_final=0.5 t_ramp=30 t_e
 
 ## Findings
 
-**(a) The Newton orifice does not fit the Navier-Stokes element.** At the design power, the
-mixed outlet temperature is right (2990 K at the end of the march, by the first law). The middle
-slices are starved, though, and the fuel there overheats without bound: the march ends when the
-enthalpy of a starved cell leaves the range of the hydrogen tables. The Darcy-model orifice was designed for an
-inlet-overfed split. The Navier-Stokes split is U-shaped (stage 2), so the two models need
+**(a) The Newton orifice does not fit the Navier-Stokes element.** At the design power the mixed
+outlet temperature stays near the first-law value (it oscillates around 2980 – 3000 K), but the
+middle slices are starved and the fuel there overheats without bound, to several 1e5 K. The
+Darcy-model orifice was designed for an inlet-overfed split. The Navier-Stokes split is U-shaped (stage 2), so the two models need
 different orifices.
 
 **(b) A lagged design tracks the ramp but has no stable fixed point.** With `orifice_level = 4`
@@ -60,18 +59,20 @@ ramp:
 
 | power | mixed gas temperature | largest fuel temperature | inlet pressure | orifice range |
 |---|---|---|---|---|
-| 10 % | 384 K | 414 K | 7.26 MPa | 17.9 – 94 |
-| 25 % | 872 K | 935 K | 7.66 MPa | 21.1 – 84 |
-| 50 % | 1634 K | 1739 K | 8.34 MPa | 24.3 – 77 |
+| 10 % | 384 K | 432 K | 7.20 MPa | 2.1 – 152 |
+| 25 % | 872 K | 948 K | 7.49 MPa | 0.90 – 147 |
+| 50 % | 1634 K | 1751 K | 7.97 MPa | 0.86 – 140 |
 
-Held at 50 %, the march diverges in two ways:
+The command freezes the orifice at the end of the ramp (`orifice_freeze_time = t_ramp`). Held at
+50 %, the frozen march then loses one slice about 3 s later, and its fuel runs away (above
+10 000 K at t = 34 s): the drift of a fixed orifice in the segregated iterations, finding (d).
+With the previous face value of the particle conductivity, two more observations were made:
 
-- **With the design active**, the orifice runs away after about 10 more steps: its largest
-  multiplier grows from 77 to over 300, and the fuel overheats until the march fails.
-- **With the orifice frozen** at its value at the end of the ramp, the march converges, with the
-  energy balance at 2e-7, to a state in which every other slice is starved. Slices 0, 2, 3, 6
-  and 9 carry the flow, and the others overheat. That state is a steady solution of the frozen
-  orifice, not the orificed element.
+- **With the design kept active**, the orifice ran away after about 10 more steps: its largest
+  multiplier grew from 77 to over 300, and the fuel overheated.
+- **With the orifice frozen**, the march converged, with the energy balance at 2e-7, to a state
+  in which every other slice was starved (slices 0, 2, 3, 6 and 9 carried the flow): a steady
+  solution of the frozen orifice, not the orificed element.
 
 A smaller damping exponent (0.1) loses the flow earlier in the ramp, at 20 %. The orifice then
 cannot follow the power.
@@ -86,33 +87,39 @@ The Newton design of stage 3 solves the orifice together with the flow and has n
 falls, and it heats up further before the next update. The flow design acts on a hydraulic
 quantity instead: the flow through a slice falls monotonically with its cold-frit drag, at the
 cold density of the frit, and the targets, the slice power shares, do not depend on the solution.
-At the defaults (`orifice_level = 3`, `orifice_flow_exponent = 0.7`, shares fixed to the power
+At the defaults (`orifice_level = 4`, `orifice_flow_exponent = 0.7`, shares fixed to the power
 shares) both executioners converge to the same state:
 
 | | SIMPLE (`anchor_simple.i`) | PIMPLE (`anchor_pimple.i`) |
 |---|---|---|
-| path | 50 power steps, 150 solves at 1 GW | ramp over 20 s, steady at t = 35.9 s (724 steps) |
-| run time (1 rank) | 112 s | 165 s |
+| path | 50 power steps, 150 solves at 1 GW | ramp over 20 s, steady at t = 33.9 s (685 steps) |
+| run time (1 rank) | 95 s | 157 s |
 | mixed gas temperature | 2989.81 K | 2989.81 K |
-| largest fuel temperature | 3167 K | 3167 K |
-| slice outlet temperatures | 2988.9 – 2992.3 K | 2988.9 – 2992.1 K |
-| spread / mean rise | 1.1e-3 | 1.1e-3 |
-| inlet pressure | 8.873 MPa | 8.872 MPa |
-| orifice range | 0.41 – 46.3 | 0.41 – 46.1 |
-| energy balance error | -5e-9 | -7e-11 |
-| mass balance error | 3e-14 | 8e-14 |
-| slice flow / target | within 6e-5 | within 1e-5 |
+| largest fuel temperature | 3185 K | 3185 K |
+| slice outlet temperatures | 2989.0 – 2992.4 K | 2989.0 – 2992.3 K |
+| spread / mean rise | 1.2e-3 | 1.1e-3 |
+| inlet pressure | 8.875 MPa | 8.874 MPa |
+| orifice range | 1.18 – 130 | 1.2 – 129 |
+| energy balance error | -2e-8 | -5e-10 |
+| mass balance error | 2e-13 | 6e-14 |
+| slice flow / target | within 4e-5 | within 4e-8 |
 
 The mixed outlet temperature is the first-law value: with the power-share targets every slice
 gets the same enthalpy rise. The Newton anchor (stage 3) gives 2989.4 K and 3193 K with the
 Darcy-Forchheimer model and its own orifice. The Navier-Stokes orifice rises monotonically from
-the inlet, 0.41 at the inlet slice to 46 at the closed end. The plenum loses static pressure
+the inlet, 1.2 at the inlet slice to 130 at the closed end. The plenum loses static pressure
 along its length by only 37 kPa, so the cold frit must throttle the downstream slices against a
-chamber whose pressure falls by 800 kPa. In the inlet slice the cold frit carries 0.5 % of the
-1.06 MPa slice pressure drop, in the last one 40 % of 1.83 MPa. Neither the fixed-point
+chamber whose pressure falls by 800 kPa: the slice pressure drop grows from 1.06 MPa at the inlet
+to 1.83 MPa at the closed end, most of it across the cold frit there.
+
+The level matters. The inlet slice needs the least cold-frit resistance, so the level must leave
+it room to be opened: at `orifice_level = 3` its multiplier falls to 1e-5, at the bound of the
+design, and the fuel overshoots to 3840 K during the ramp. Level 4 keeps every multiplier between
+1 and 130 at an inlet pressure only 2 kPa higher. Above about 4.5 the uniform starting orifice
+throttles the cold start too hard and the first solves diverge. Neither the fixed-point
 iterations nor the time steps show the slice-alternating mode of (b) at any power. The ramp
 length matters little: SIMPLE with all the power in the first solve (`n_ramp=1`) reaches the same
-state after 150 solves, through an excursion to 10 000 K in the first few.
+state after 150 solves, through a large fuel temperature excursion in the first few.
 
 Correcting the shares further from the slice outlet temperatures
 (`orifice_share_exponent > 0`) brings the density feedback back. With `gamma = 0.5` (PIMPLE)
@@ -139,6 +146,10 @@ way: frozen at t = 34.7 s, the fuel exceeds 8000 K 2.5 s later.
 | level 4.5, 1 GW | 10.56 MPa | 1.20 | 0.014, 3164 K (onset later) |
 | level 3, 75 % / 50 % / 25 % | | 1.19 / 1.18 / 1.13 | runaway |
 | level 3, relaxation 0.15 | 8.87 MPa | 1.06 | runaway after 150 solves |
+| level 4, harmonic particle conduction (the defaults) | 8.88 MPa | 1.18 | 9.5, 30 000 K |
+
+The rows above the last were computed before the face conductivity of the particle conduction was
+made harmonic (THEORY.md 6.2); the last row, with the current inputs, shows the same drift.
 
 A higher level only delays the onset. Halving the lagged-state relaxation slows the growth per
 solve without removing it: the lagged density map amplifies the mode. Is it the flow-excursion
