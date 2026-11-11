@@ -105,4 +105,33 @@ specificSurface(Real eps, Real d)
 {
   return 6 * (1 - eps) / d;
 }
+
+/**
+ * Radiative conductivity of a packed bed of grey particles (Zehner, Bauer and Schluender,
+ * simplified as in VDI Heat Atlas D6.3): k_rad = 4 sigma e / (2 - e) d T^3 [W/(m K)], e the
+ * particle emissivity, d the particle diameter, T the particle temperature. Added to the particle
+ * conductivity of the bed; it grows with T^3, to about 6 W/(m K) for 0.5 mm particles at 3000 K.
+ */
+template <typename T>
+T
+radiativeConductivity(const T & temperature, Real emissivity, Real d)
+{
+  constexpr Real sigma = 5.670374419e-8;
+  return 4 * sigma * emissivity / (2 - emissivity) * d * temperature * temperature * temperature;
+}
+
+/**
+ * Thermal dispersion conductivity of the gas in a packed bed (Yagi and Kunii; Bauer):
+ * k_disp = C Pe k, Pe = G cp d / k the particle Peclet number, G the superficial mass flux. For
+ * the radial (transverse) dispersion C ~ 0.1, for the axial (longitudinal) C ~ 0.5. With an
+ * isotropic gas conduction the transverse value applies to the radial flow of a particle-bed
+ * element.
+ */
+template <typename T>
+T
+dispersionConductivity(const T & mass_flux, const T & cp, Real d, Real coefficient)
+{
+  using std::abs;
+  return coefficient * abs(mass_flux) * cp * d;
+}
 }

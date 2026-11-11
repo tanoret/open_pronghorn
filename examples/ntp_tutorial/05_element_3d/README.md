@@ -148,3 +148,33 @@ planar. The finite-volume kernels use the exact cell volume; the first-order ele
 `nz = 6` and 1.5e-4 at `nz = 12`. The segregated postprocessors therefore integrate the power and
 the bed volume with `NTPFVCellIntegral`, the sum over the finite-volume cells. With the quadrature
 integrals the energy balance error was -1.5e-4 at every power, that volume difference exactly.
+
+**Turbulent channels in 3-D.** The turbulent model of stage 4 (finding (e)) runs on the half
+element with `../common/channel_turbulence_3d.i`, here with 4 cells across the plenum and the
+chamber (cold, 4 cells give an inlet pressure 11 % below 16 cells) and the energy closures of the
+beds:
+
+```bash
+mpirun -n 12 open_pronghorn-opt -i anchor_simple_3d.i ../04_navier_stokes/orifice_flow.i \
+    ../common/channel_turbulence.i ../common/channel_turbulence_3d.i orifice_sectors=8 \
+    n_ch=4 n_pl=4 n_ramp=30 simple_fixed_point=200 simple_iterations=600 \
+    bed_emissivity=0.8 bed_dispersion=0.1 segregated_static_outputs=csv
+```
+
+| | 3-D, laminar, 1 cell | 3-D, turbulent, 4 cells, bed radiation and dispersion |
+|---|---|---|
+| mixed outlet (stagnation / static) | 2989.42 K / — | 2989.42 K / 2975.1 K |
+| largest fuel temperature | 3188.2 K | 3186 K |
+| inlet pressure | 8.902 MPa | 8.876 MPa |
+| slice outlet spread / rise | 1.1e-3 | 9e-4 |
+| orifice range (96 columns) | 1.01 – 132 | 3.8 – 112 |
+| energy balance error | -1e-8 | -2e-8 |
+| run time | 250 s, 8 ranks | 58 min, 12 ranks |
+
+The 3-D turbulent element reproduces the axisymmetric one of stage 4 (finding (e), with the same
+closures): the fuel temperature to 4 K (3182 K), the inlet pressure to 25 kPa (8.851 MPa).
+Its 96-column orifice converges more slowly than the 12 rings: the largest fuel temperature, one
+cell, settles over the last 60 of the 200 solves (3185.8 +- 0.3 K over the last 20), while the
+outlet temperatures, the inlet pressure and the balances are steady earlier. The element stays
+symmetric around its axis (7e-6).
+

@@ -98,4 +98,19 @@
     old_block = '0 1 2 3 4'
     new_block = 'chamber hot_frit fuel_bed cold_frit plenum'
   []
+  # the porous interfaces of the free channels (boundaries of the channel turbulence)
+  [plenum_frit]
+    type = SideSetsBetweenSubdomainsGenerator
+    input = names
+    primary_block = plenum
+    paired_block = cold_frit
+    new_boundary = plenum_frit
+  []
+  [chamber_frit]
+    type = SideSetsBetweenSubdomainsGenerator
+    input = plenum_frit
+    primary_block = chamber
+    paired_block = hot_frit
+    new_boundary = chamber_frit
+  []
 []

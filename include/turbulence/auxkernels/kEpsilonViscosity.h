@@ -50,6 +50,10 @@ protected:
   /// z-velocity
   const Moose::Functor<Real> * _w_var;
 
+  /// Coordinate system of the blocks and, in RZ, the radial coordinate (for the hoop strain)
+  Moose::CoordinateSystemType _coord_sys;
+  unsigned int _rz_radial_coord;
+
   /// Turbulent kinetic energy
   const Moose::Functor<Real> & _k;
   /// Turbulent kinetic energy dissipation rate

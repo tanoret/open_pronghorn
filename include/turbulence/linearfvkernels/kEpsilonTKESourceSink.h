@@ -62,6 +62,10 @@ protected:
   /// z-velocity (may be null in 1D/2D)
   const Moose::Functor<Real> * _w_var;
 
+  /// Coordinate system of the blocks and, in RZ, the radial coordinate (for the hoop strain)
+  Moose::CoordinateSystemType _coord_sys;
+  unsigned int _rz_radial_coord;
+
   /// Dissipation rate epsilon (TKED)
   const Moose::Functor<Real> & _epsilon;
 

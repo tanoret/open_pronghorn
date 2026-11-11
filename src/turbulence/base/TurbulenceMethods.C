@@ -18,20 +18,21 @@ computeStrainRotationInvariants(const Moose::Functor<Real> & u,
                                 const Moose::Functor<Real> * v,
                                 const Moose::Functor<Real> * w,
                                 const Moose::ElemArg & elem_arg,
-                                const Moose::StateArg & state)
+                                const Moose::StateArg & state,
+                                const Real hoop_strain)
 {
   // Reuse the common gradient builder
   const RankTwoTensor grad_vel = computeVelocityGradient(u, v, w, elem_arg, state);
 
-  // Divergence = tr(grad u)
-  const Real div_u = grad_vel(0, 0) + grad_vel(1, 1) + grad_vel(2, 2);
+  // Divergence = tr(grad u), plus u_r / r in RZ
+  const Real div_u = grad_vel(0, 0) + grad_vel(1, 1) + grad_vel(2, 2) + hoop_strain;
 
   // Symmetric strain-rate tensor and anti-symmetric rotation tensor
   const RankTwoTensor S = 0.5 * (grad_vel + grad_vel.transpose());
   const RankTwoTensor W = 0.5 * (grad_vel - grad_vel.transpose());
 
-  // Invariants: S2 = 2 S_ij S_ij, W2 = 2 W_ij W_ij
-  const Real S2 = 2.0 * S.doubleContraction(S);
+  // Invariants: S2 = 2 S_ij S_ij, W2 = 2 W_ij W_ij; in RZ the hoop strain S_thetatheta = u_r / r
+  const Real S2 = 2.0 * S.doubleContraction(S) + 2.0 * hoop_strain * hoop_strain;
   const Real W2 = 2.0 * W.doubleContraction(W);
 
   StrainRotationInvariants out;
@@ -39,6 +40,22 @@ computeStrainRotationInvariants(const Moose::Functor<Real> & u,
   out.W2 = W2;
   out.div_u = div_u;
   return out;
+}
+
+Real
+computeHoopStrain(const Moose::Functor<Real> & u,
+                  const Moose::Functor<Real> * v,
+                  const Moose::ElemArg & elem_arg,
+                  const Moose::StateArg & state,
+                  const Moose::CoordinateSystemType coord_sys,
+                  const unsigned int rz_radial_coord)
+{
+  if (coord_sys != Moose::COORD_RZ)
+    return 0;
+  const auto & radial = rz_radial_coord == 0 ? u : *v;
+  const Real r = elem_arg.elem->vertex_average()(rz_radial_coord);
+  mooseAssert(r > 0, "An axisymmetric cell centroid should not sit on the axis");
+  return radial(elem_arg, state) / r;
 }
 
 Real

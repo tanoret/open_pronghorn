@@ -130,6 +130,8 @@ kEpsilonViscosity::kEpsilonViscosity(const InputParameters & params)
         params.isParamValid("wall_distance") ? &(getFunctor<Real>("wall_distance")) : nullptr),
     _has_wall_distance(params.isParamValid("wall_distance"))
 {
+  _coord_sys = getBlockCoordSystem();
+  _rz_radial_coord = _coord_sys == Moose::COORD_RZ ? _subproblem.getAxisymmetricRadialCoord() : 0;
   if (_dim >= 2 && !_v_var)
     paramError("v", "In two or more dimensions, the v velocity must be supplied.");
   if (_dim >= 3 && !_w_var)
@@ -199,9 +201,11 @@ kEpsilonViscosity::kEpsilonViscosity(const InputParameters & params)
                             "Parameter 'Ca3' is only applicable when 'k_epsilon_variant' is "
                             "'Realizable' or 'RealizableTwoLayer'.");
 
-  // Error if using cylindrical coordinates - gradients won't be correct
-  if (getBlockCoordSystem() == Moose::COORD_RZ)
-    mooseError(name(), " is not valid on blocks that use an RZ coordinate system.");
+  // Axisymmetric (RZ) blocks: the strain invariants and the divergence get the hoop strain u_r / r
+  // (NS::computeHoopStrain). The nonlinear constitutive relations and the curvature correction use
+  // the Cartesian velocity gradient only.
+  if (_coord_sys == Moose::COORD_RZ && !_v_var)
+    paramError("v", "RZ blocks need both in-plane velocity components");
 
   // Realizable variant needs velocity gradients for strain/rotation invariants
   if (_variant == NS::KEpsilonVariant::Realizable ||
@@ -357,7 +361,18 @@ kEpsilonViscosity::computeValue()
     else if (_variant == NS::KEpsilonVariant::Realizable ||
              _variant == NS::KEpsilonVariant::RealizableTwoLayer)
     {
-      auto inv = NS::computeStrainRotationInvariants(_u_var, _v_var, _w_var, elem_arg, state);
+      auto inv = NS::computeStrainRotationInvariants(
+        _u_var,
+        _v_var,
+        _w_var,
+        elem_arg,
+        state,
+        NS::computeHoopStrain(_u_var,
+                              _v_var,
+                              elem_arg,
+                              state,
+                              _coord_sys,
+                              _rz_radial_coord));
       Cmu_eff = NS::Cmu_realizable(_Ca0, _Ca1, _Ca2, _Ca3, inv.S2, inv.W2, k, std::max(eps, 1e-20));
     }
 

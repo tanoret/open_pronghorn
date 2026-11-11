@@ -1,0 +1,33 @@
+[Tests]
+  design = 'NTPLinearFVViscousStressCorrection.md NTPChannelVelocity.md kEpsilonTKESourceSink.md'
+  issues = '#000'
+  [channel_turbulence_rz]
+    type = CSVDiff
+    input = '../../../../examples/ntp_tutorial/02_element/element_simple_rz.i'
+    cli_args = '../../../../examples/ntp_tutorial/common/channel_turbulence.i
+                ../../../../examples/ntp_tutorial/common/channel_turbulence_rz.i
+                nz=6 n_ch=4 n_pl=4 simple_fixed_point=3 simple_iterations=200 Outputs/exodus=false
+                Outputs/file_base=channel_turbulence_rz_out'
+    csvdiff = 'channel_turbulence_rz_out.csv'
+    rel_err = 1e-5
+    abs_zero = 1e-6
+    max_threads = 1
+    requirement = 'The segregated SIMPLE model of the NTP fuel element shall solve the cold flow '
+                  'with k-epsilon turbulence resolved in the free channels, with wall functions '
+                  'on their solid walls and permeable frit interfaces, conserving mass.'
+  []
+  [energy_closures_rz]
+    type = CSVDiff
+    input = '../../../../examples/ntp_tutorial/02_element/element_simple_rz.i'
+    cli_args = 'nz=6 s_power=0.05 simple_fixed_point=15 simple_iterations=200 bed_emissivity=0.8
+                bed_dispersion=0.1 segregated_static_outputs=csv Outputs/exodus=false
+                Outputs/file_base=energy_closures_rz_out'
+    csvdiff = 'energy_closures_rz_out.csv'
+    rel_err = 1e-5
+    abs_zero = 1e-7
+    max_threads = 1
+    requirement = 'The segregated SIMPLE model of the NTP fuel element shall include the radiative '
+                  'conductivity and the thermal dispersion of the packed beds and report the static '
+                  'outlet temperature, conserving mass and energy.'
+  []
+[]

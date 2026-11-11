@@ -22,6 +22,13 @@ python3 extract_orifice.py ../03_ludewig_anchor/anchor_out.csv    # orifice of t
 open_pronghorn-opt -i anchor_pimple.i                             # (a) that orifice, ramp to 1 GW
 open_pronghorn-opt -i anchor_pimple.i orifice_lagged.i s_final=0.5 t_ramp=30 t_end=60 \
                    pimple_steady_state_detection=false            # (b) lagged temperature design
+
+# (e) turbulent free channels, resolved by 8 cells across, and the energy closures of the beds
+open_pronghorn-opt -i anchor_simple.i orifice_flow.i ../common/channel_turbulence.i \
+                   ../common/channel_turbulence_rz.i n_ch=8 n_pl=8 simple_iterations=600
+open_pronghorn-opt -i anchor_simple.i orifice_flow.i ../common/channel_turbulence.i \
+                   ../common/channel_turbulence_rz.i n_ch=8 n_pl=8 simple_iterations=600 \
+                   bed_emissivity=0.8 bed_dispersion=0.1 segregated_static_outputs=csv
 ```
 
 - `anchor_simple.i`: the stage-2 segregated model with the SIMPLE executioner and a fixed-point
@@ -43,6 +50,13 @@ open_pronghorn-opt -i anchor_pimple.i orifice_lagged.i s_final=0.5 t_ramp=30 t_e
 - `orifice_lagged.i`: an orifice designed on the slice outlet temperatures (`NTPOrificeDesignAux`).
   After every step each slice's multiplier moves towards a uniform outlet temperature, at the
   geometric mean `exp(orifice_level)`. It is frozen at `orifice_freeze_time`.
+- `../common/channel_turbulence.i` with `../common/channel_turbulence_rz.i`: the plenum and the
+  chamber resolved radially (`n_pl`, `n_ch`), with the `k`-`epsilon` model of OpenPronghorn, wall
+  functions on their solid walls, the full compressible viscous stress, and no body-force duct
+  friction (THEORY.md 4.4 and 6.3).
+- `bed_emissivity`, `bed_dispersion`: the radiative conductivity and the thermal dispersion of the
+  packed beds (THEORY.md 4.3); `segregated_static_outputs = csv` writes the static outlet
+  temperature `T_mixed_static` next to the stagnation one `T_mixed`.
 
 ## Findings
 
@@ -161,6 +175,41 @@ The growing mode here is therefore a mode of the lagged-density iteration, not o
 With the design active, the flow loop acts as a flow controller of every slice, and the converged
 state is stable for SIMPLE and PIMPLE.
 
+**(e) Turbulent free channels.** With one cell across the plenum (2 mm) and the chamber, every
+channel cell touches a wall and a `k`-`epsilon` model has no bulk to act on; their wall shear is
+the duct-friction closure. Resolved by 8 cells across, the channels carry the `k`-`epsilon` model of
+OpenPronghorn with wall functions (`common/channel_turbulence.i`, THEORY.md 6.3). Three things had
+to be right for it to converge:
+
+- the strain rate of the channel flow, without the jump of the superficial velocity into the
+  porous cells (`NTPChannelVelocity`): with it, `mu_t` ran to its limiter;
+- turbulent diffusion of momentum and enthalpy on every block with harmonic faces: restricted to
+  the channels, it injected four to eight times the fission power into the gas;
+- the flowing start (`segregated_plug_velocity`), in RZ too.
+
+Cold, the inlet pressure converges with the radial mesh: 3.60, 3.82 and 4.03 kPa above the outlet
+for 4, 8 and 16 cells across (one cell with the duct friction: 11.6 kPa), mass conserved to 1e-9.
+At the design power the solves settle from 550 iterations during the ramp to 180, and the state is
+steady over the last 20 of 200 solves (fuel within 0.1 K):
+
+| | laminar, 1 cell, duct friction | turbulent, 8 cells | turbulent + bed radiation and dispersion |
+|---|---|---|---|
+| mixed outlet (stagnation) | 2989.81 K | 2989.81 K | 2989.81 K |
+| mixed outlet (static) | 2976.3 K | — | 2976.1 K |
+| largest fuel temperature | 3184.8 K | 3185 K | 3182 K |
+| inlet pressure | 8.875 MPa | 8.811 MPa | 8.851 MPa |
+| slice outlet spread / rise | 1.2e-3 | 1.1e-3 | 8e-4 |
+| orifice range | 1.18 – 130 | 1.21 – 129 | 4.0 – 112 |
+| energy balance error | -2e-8 | -4e-9 | -1e-8 |
+| run time (1 rank) | 95 s | 28 min | 34 min |
+
+The turbulent channels leave the fuel temperature unchanged and lower the inlet pressure by
+64 kPa: the turbulent wall shear of the resolved plenum is below the duct friction of the one-cell
+closure (`f = 0.02`). The bed radiation and dispersion lower the fuel temperature by 2.9 K and make
+the slice outlets more uniform (THEORY.md 4.3); the orifice then needs less range (4.0 – 112), at
+40 kPa more inlet pressure. The kinetic energy of the gas leaving at 700 m/s is 13.5 K of the outlet
+temperature.
+
 ## Next steps
 
 - **A frozen orifice in the segregated iterations.** The frozen design is physically stable
@@ -169,5 +218,6 @@ state is stable for SIMPLE and PIMPLE.
   march a physical transient.
 - **3-D.** Done in stage 5: the 3-D element needs the design per column (slice and sector), as
   rings it loses its azimuthal symmetry in a flow excursion between the columns of a slice.
-- **Mesh.** Refine the plenum radially (`n_pl`). With one cell across the 2 mm gap, its axial
-  momentum relies entirely on the duct-friction closure.
+- **Cost of the turbulent model.** At power each SIMPLE solve stops on the pressure tolerance
+  (1e-8), after 180 – 550 iterations; the fixed-point loop does not need that much. A looser
+  tolerance during the ramp would shorten the 30-minute run.

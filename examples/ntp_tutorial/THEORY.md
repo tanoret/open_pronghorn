@@ -108,6 +108,25 @@ kappa_s = [(1 - eps) k_s + eps k] (chi_r, chi_z)                                
 
 `chi_r` and `chi_z` are the bed anisotropy multipliers of the table in Section 1 (1 in the frits).
 
+Two optional terms (both models, `bed_emissivity` and `bed_dispersion`, off by default):
+
+- **Radiation** between the particles, a conductivity growing as `T_s^3` (Zehner, Bauer and
+  Schlünder, simplified as in VDI Heat Atlas D6.3), added to `kappa_s`:
+
+  ```
+  k_rad = 4 sigma e / (2 - e) d T_s^3                                                     (4.2a)
+  ```
+
+  With the emissivity `e = 0.8` and 0.5 mm particles it is about 2 W/(m K) at 3000 K, against the
+  13 W/(m K) of the bed.
+- **Thermal dispersion** of the gas: the flow through the bed mixes the gas across the streamlines,
+  `k_disp = C Pe k = C |G| cp d` (Yagi and Kunii; Bauer), added to the gas conduction `eps k`. The
+  coefficient is `C = 0.1` for the transverse dispersion and `0.5` for the longitudinal one; the gas
+  conduction is isotropic in the models, and the flow through the bed is radial, so the transverse
+  value applies.
+
+At the anchor both lower the largest fuel temperature by 2.7 K, radiation by 2.6 K of it.
+
 ### 4.4 Free-channel wall friction
 
 The plenum and chamber are a few millimetres wide and are resolved by one or a few cells across.
@@ -117,6 +136,18 @@ hydraulic diameter `D_h` (twice the gap of the plenum annulus, the diameter of t
 ```
 F_wall = (32 mu / D_h^2 + f rho |u| / (2 D_h)) u_z e_z,     f = 0.02                      (4.3)
 ```
+
+With several cells across the channels the segregated model resolves their turbulence instead
+(`common/channel_turbulence.i`, Section 6.2): the plenum is turbulent at `Re ~ 1e5 - 1e6`, the
+chamber at `Re ~ 1e5 - 5e5` with the gas a hundred times lighter than at the inlet and a Mach
+number up to 0.2. The `k`-`epsilon` model of OpenPronghorn is solved in them, with wall functions
+on their solid walls (the plenum outer wall and the closed ends) and the compressible production
+and dilatational dissipation; the duct friction (4.3) is then off and the walls carry the shear.
+The frit interfaces are permeable: `k` and `epsilon` leave the plenum with the gas, and enter the
+chamber from the hot frit at the pore scale (an intensity of 5 % of the frit jet speed, the hot-frit
+particle diameter as length scale). Cold hydrogen at 7 MPa is so thin (`nu ~ 2e-8 m^2/s`) that the
+log layer starts 0.5 um from the plenum wall: the first cell sits at `y+ ~ 1e3 - 1e4`, still in the
+log layer of a channel of `Re_tau ~ 5e4`, where the wall function holds.
 
 ### 4.5 Orificing
 
@@ -277,10 +308,49 @@ Seven points are specific to the particle-bed element:
    columns of a slice are parallel heated channels behind one throttle, and the flow excursion
    of the frozen orifice (stage 4) grows between them around the element.
 
+### 6.3 Turbulent free channels (segregated, `common/channel_turbulence.i`)
+
+With several cells across the plenum and the chamber (`n_pl`, `n_ch`, e.g. 8) the segregated model
+solves the `k`-`epsilon` equations in them (Section 4.4) and the full stress of the gas,
+
+```
+tau = mu_eff (grad u + grad u^T - 2/3 (div u) I),     mu_eff = mu + mu_t                (6.4)
+```
+
+with `-2/3 rho k I` absorbed in the pressure. Four points are specific to the element:
+
+1. **Strain rate of the channel flow** (`NTPChannelVelocity`). Next to a porous region the
+   superficial velocity drops by orders of magnitude over one cell (20 m/s in the chamber against
+   0.04 m/s in the hot frit); the cell gradient reads this jump as a shear of thousands of 1/s, 50
+   to 160 times the strain of the channel flow, and the `k`-`epsilon` production then runs away.
+   The turbulence closures and the stress (6.4) take the strain rate of the channel flow instead: a
+   Green-Gauss gradient in which a face towards a porous cell carries the cell's own value.
+2. **Conservative turbulent diffusion**. The turbulent diffusion of momentum (`mu_t grad u`) and
+   enthalpy (`k_t / cp`, `k_t = mu_t cp / Pr_t`) act on every block, with `mu_t = 0` in the packed
+   beds and harmonic face coefficients: no turbulent flux crosses a porous interface, and every
+   face flux enters its two cells with opposite signs. A diffusion kernel restricted to the channel
+   blocks, of a variable defined on all blocks, adds the flux of an interface face to the channel
+   cell only: a source, which in a first version put four to eight times the fission power into
+   the gas.
+3. **Transpose and dilatation stress** (`NTPLinearFVViscousStressCorrection`): `mu_eff (grad u^T -
+   2/3 div u I) . n` on the faces between channel cells, explicit; in RZ the hoop term of the radial
+   momentum gets its `2/3 div u` part. With the molecular viscosity alone it changes the anchor by
+   less than 0.01 %; it matters with `mu_t`.
+4. **RZ** turbulence. The strain invariants and the divergence of the OpenPronghorn `k`-`epsilon`
+   objects include the hoop strain `u_r / r` on axisymmetric blocks.
+
+The resolved channels need the flowing (plug-flow) start in RZ as well. The `k` and `epsilon`
+equations converge slowest in the nearly still corner at the closed end of the plenum; their
+tolerance is 1e-6 (the inlet pressure no longer changes).
+
 ## 7. Figures of merit
 
 - `T_mixed`: mixed-mean outlet gas temperature, from the outlet enthalpy flow,
-  `T(h = H_out / mdot)`.
+  `T(h = H_out / mdot)`. The energy equation carries the enthalpy without the kinetic energy of the
+  gas, and the first law conserves `h + |u|^2/2`: `T_mixed` is the mixed stagnation temperature.
+  The segregated model also gives the static one, `T_mixed_static`, from `H_out` minus the kinetic
+  energy flow of the outlet face fluxes (`segregated_static_outputs = csv`); it is 13.5 K lower at
+  the anchor (700 m/s at the outlet).
 - `T_fuel,max`: largest particle temperature in the fuel bed.
 - `p_in`: inlet pressure; `p_in - p_out` is the element pressure drop.
 - `chi_max`: largest orifice multiplier.

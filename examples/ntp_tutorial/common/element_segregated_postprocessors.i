@@ -2,6 +2,9 @@
 # Rhie-Chow object). The 3-D mesh is a fraction 'segregated_inlet_fraction' of the element; the
 # flows are scaled to the whole element.
 
+# the static outlet temperature is computed; it is written with segregated_static_outputs = 'csv'
+segregated_static_outputs = none
+
 [Postprocessors]
   [mdot_in]
     type = NTPRhieChowFluxIntegral
@@ -76,6 +79,35 @@
     mass_flow = mdot_out
     pressure = ${p_out}
     execute_on = 'timestep_end'
+  []
+  # The energy equation carries the enthalpy without the kinetic energy of the gas: the first law
+  # conserves h + |u|^2 / 2, so T_mixed is the mixed stagnation temperature. The static one removes
+  # the kinetic energy flow through the outlet, from the exact outlet face fluxes (about 15 K at
+  # 700 m/s).
+  [K_out]
+    type = NTPRhieChowFluxIntegral
+    boundary = outlet
+    rhie_chow_user_object = ins_rhie_chow_interpolator
+    normal_kinetic_energy = true
+    rho = rho
+    execute_on = 'timestep_end'
+    outputs = none
+  []
+  [H_out_static]
+    type = ParsedPostprocessor
+    pp_names = 'H_out K_out'
+    expression = 'H_out - K_out'
+    execute_on = 'timestep_end'
+    outputs = none
+  []
+  [T_mixed_static]
+    type = NTPMixedTemperature
+    fp = h2
+    enthalpy_flow = H_out_static
+    mass_flow = mdot_out
+    pressure = ${p_out}
+    execute_on = 'timestep_end'
+    outputs = ${segregated_static_outputs}
   []
   [T_fuel_max]
     type = ElementExtremeValue

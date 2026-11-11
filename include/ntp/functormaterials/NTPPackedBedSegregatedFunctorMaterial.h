@@ -58,6 +58,11 @@ protected:
   const Real _k_solid;
   const Real _k_axial_mult;
   const Real _k_radial_mult;
+  /// Particle emissivity (0: no radiative conductivity) and the particle temperature
+  const Real _emissivity;
+  const Moose::Functor<Real> * const _T_solid;
+  /// Coefficient of the gas thermal dispersion conductivity (0: none)
+  const Real _dispersion;
   const Real _Re_floor;
 
   const Moose::Functor<Real> & _rho;

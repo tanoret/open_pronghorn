@@ -12,12 +12,14 @@ Groups (--only takes one or more, comma separated):
   02    element: mesh and mesh.png, Newton and SIMPLE cold and 5 % power, cold_flow.png
   03    anchor: 1 GW anchor (continuation + implicit orifice), uniform-frit flow-excursion folds
   04    segregated Navier-Stokes (linear FV) at 1 GW in RZ: SIMPLE and PIMPLE with the orifice
-        designed on the slice flows; extract_orifice.py. The findings runs (a) Newton orifice and
-        (b) lagged temperature design run only with --placeholders
+        designed on the slice flows; extract_orifice.py; the turbulent channels, cold. The
+        findings runs (a) Newton orifice and (b) lagged temperature design run only with
+        --placeholders
   05    3-D: mesh, uniform Newton anchor, segregated SIMPLE cold flow
   long  3-D: Newton power tilts 0.01, 0.05 and 0.15 and transverse.png; segregated SIMPLE and
         PIMPLE anchors with the column orifice, and the ring orifice that loses the flow around
-        the element (minutes on 8 ranks each); run with --long or --only long
+        the element (minutes on 8 ranks each); the turbulent anchors, RZ (30 min, 1 rank each) and
+        3-D (about an hour, 12 ranks); run with --long or --only long
 The default runs 01-05 without 'long'. Each run records its jobs' status in suite_logs/state.json;
 the report covers every job recorded there, so a partial run (e.g. --only 04 --placeholders)
 updates its rows of the full table and leaves the others as last run.
@@ -339,8 +341,9 @@ def job_list(args):
     py, J = shlex.split(args.python), []
 
     def add(name, group, cmd, ranks=1, needs=(), outputs=(), metrics=None, checks=None, fold=False,
-            placeholder=False, documented=None, note="", exodus_reader=False, runaway=False):
-        J.append(dict(name=name, group=group, cwd=os.path.join(HERE, STAGE_DIRS[group]), cmd=cmd,
+            placeholder=False, documented=None, note="", exodus_reader=False, runaway=False, stage=None):
+        # 'stage' sets the working directory when it is not the group's (long jobs of stage 4)
+        J.append(dict(name=name, group=group, cwd=os.path.join(HERE, STAGE_DIRS[stage or group]), cmd=cmd,
                       ranks=ranks, needs=list(needs), outputs=list(outputs), metrics=metrics,
                       checks=checks or {}, fold=fold, placeholder=placeholder,
                       documented=documented, note=note, exodus_reader=exodus_reader, runaway=runaway))
@@ -462,6 +465,38 @@ def job_list(args):
                     chi_max=[doc("129", src=S4)], T_slice_spread=[doc("1.1e-3", src=S4)],
                     energy_error=[below("-5e-10", 1e-8, src=S4)], mass_error=[below("6e-14", 1e-12, src=S4)],
                     s_power=[doc("1", src=S4)], run_time=[factor("157", src=S4 + " (1 rank)")]))
+    tu_rz = ["../common/channel_turbulence.i", "../common/channel_turbulence_rz.i"]
+    add("04_turbulent_cold", "04", moose(args, 1, "-i", "../02_element/element_simple_rz.i", *tu_rz,
+                                         "n_ch=8", "n_pl=8", "simple_fixed_point=20",
+                                         "simple_iterations=600", "Outputs/file_base=turbulent_cold_out"),
+        outputs=["turbulent_cold_out.csv"], metrics=seg,
+        documented="open_pronghorn-opt -i ../02_element/element_simple_rz.i ../common/channel_turbulence.i "
+                   "../common/channel_turbulence_rz.i n_ch=8 n_pl=8",
+        note="(e) turbulent channels, cold, 8 cells across",
+        checks=dict(dp_in=[doc("3.82", "kPa", 1e3, S4)], mass_error=[below("1e-9", 1e-8, src=S4)]))
+    add("04_turbulent_anchor", "long", moose(args, 1, "-i", "anchor_simple.i", "orifice_flow.i", *tu_rz,
+                                             "n_ch=8", "n_pl=8", "simple_iterations=600", "orifice_verbose=false",
+                                             "Outputs/file_base=turbulent_anchor_out"),
+        stage="04",
+        outputs=["turbulent_anchor_out.csv"], metrics=seg,
+        documented="open_pronghorn-opt -i anchor_simple.i orifice_flow.i ../common/channel_turbulence.i "
+                   "../common/channel_turbulence_rz.i n_ch=8 n_pl=8 simple_iterations=600",
+        note="(e) turbulent channels at 1 GW",
+        checks=dict(T_mixed=[doc("2989.81", "K", src=S4)], T_fuel_max=[doc("3185", "K", src=S4)],
+                    p_in=[doc("8.811", "MPa", 1e6, S4)], T_slice_spread=[doc("1.1e-3", src=S4)],
+                    energy_error=[below("-4e-9", 1e-8, src=S4)]))
+    add("04_turbulent_energy", "long", moose(args, 1, "-i", "anchor_simple.i", "orifice_flow.i", *tu_rz,
+                                             "n_ch=8", "n_pl=8", "simple_iterations=600", "bed_emissivity=0.8",
+                                             "bed_dispersion=0.1", "segregated_static_outputs=csv",
+                                             "orifice_verbose=false", "Outputs/file_base=turbulent_energy_out"),
+        stage="04",
+        outputs=["turbulent_energy_out.csv"], metrics=seg,
+        documented="open_pronghorn-opt -i anchor_simple.i orifice_flow.i ../common/channel_turbulence.i "
+                   "../common/channel_turbulence_rz.i n_ch=8 n_pl=8 simple_iterations=600 bed_emissivity=0.8 "
+                   "bed_dispersion=0.1 segregated_static_outputs=csv",
+        note="(e) turbulent channels and bed energy closures at 1 GW",
+        checks=dict(T_mixed=[doc("2989.81", "K", src=S4)], T_fuel_max=[doc("3182", "K", src=S4)],
+                    p_in=[doc("8.851", "MPa", 1e6, S4)], energy_error=[below("1e-8", 1e-7, src=S4)]))
     add("04_extract_orifice", "04", [*py, "extract_orifice.py", "../03_ludewig_anchor/anchor_out.csv"],
         needs=["03_anchor"], outputs=["orifice_profile.i"], metrics=lambda j: extract_orifice_metrics(j["log"]),
         documented="python3 extract_orifice.py ../03_ludewig_anchor/anchor_out.csv",
@@ -576,6 +611,20 @@ def job_list(args):
                    "t_end=10 pimple_steady_state_detection=false",
         note="ring orifice: the azimuthal flow excursion",
         checks=dict(asymmetry=[above("1", 1.0, src=S5)], T_fuel_peak=[above("5000", 5000, "K", src=S5)]))
+    add("05_turbulent_3d", "long", moose(args, 12, "-i", "anchor_simple_3d.i", "../04_navier_stokes/orifice_flow.i",
+                                         "../common/channel_turbulence.i", "../common/channel_turbulence_3d.i",
+                                         "orifice_sectors=8", "n_ch=4", "n_pl=4", "n_ramp=30",
+                                         "simple_fixed_point=200", "simple_iterations=600", "bed_emissivity=0.8",
+                                         "bed_dispersion=0.1", "segregated_static_outputs=csv",
+                                         "orifice_verbose=false", "Outputs/file_base=turbulent_3d_out"), ranks=12,
+        outputs=["turbulent_3d_out.csv", "turbulent_3d_out.e"], metrics=seg3,
+        documented="mpirun -n 12 open_pronghorn-opt -i anchor_simple_3d.i ../04_navier_stokes/orifice_flow.i "
+                   "../common/channel_turbulence.i ../common/channel_turbulence_3d.i orifice_sectors=8 n_ch=4 "
+                   "n_pl=4 n_ramp=30 simple_fixed_point=200 simple_iterations=600 bed_emissivity=0.8 "
+                   "bed_dispersion=0.1 segregated_static_outputs=csv",
+        note="turbulent channels in 3-D, column orifice",
+        checks=dict(T_mixed=[doc("2989.42", "K", src=S5)], T_fuel_max=[doc("3186", "K", src=S5)],
+                    p_in=[doc("8.876", "MPa", 1e6, S5)], energy_error=[below("1e-8", 1e-7, src=S5)]))
     add("05_plot_3d", "long", [*py, "plot_3d.py", "anchor_3d_out.e:no tilt", "anchor_3d_tilt_out.e:tilt 0.05"],
         needs=["05_anchor_3d", "05_tilt_005"], outputs=["transverse.png"], exodus_reader=True,
         documented='python3 plot_3d.py anchor_3d_out.e:"no tilt" anchor_3d_tilt_out.e:"tilt 0.05"')

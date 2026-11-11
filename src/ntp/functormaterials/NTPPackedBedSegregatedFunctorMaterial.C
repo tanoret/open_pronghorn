@@ -44,6 +44,22 @@ NTPPackedBedSegregatedFunctorMaterial::validParams()
   params.addParam<Real>("axial_conductivity_multiplier", 1, "Multiplier on the axial conductivity");
   params.addParam<Real>(
       "radial_conductivity_multiplier", 1, "Multiplier on the radial conductivity");
+  params.addRangeCheckedParam<Real>(
+      "particle_emissivity",
+      0,
+      "particle_emissivity >= 0 & particle_emissivity < 2",
+      "Emissivity of the particles; > 0 adds the radiative conductivity of the bed "
+      "4 sigma e / (2 - e) d T_s^3 to the particle conductivity");
+  params.addParam<MooseFunctorName>(
+      "solid_temperature", "T_solid", "Particle temperature (for the radiative conductivity)");
+  params.addRangeCheckedParam<Real>(
+      "dispersion_coefficient",
+      0,
+      "dispersion_coefficient >= 0",
+      "Coefficient C of the gas thermal dispersion conductivity C Pe k = C |G| cp d (about 0.1 "
+      "transverse, 0.5 longitudinal); 0 switches it off");
+  params.addParam<MooseFunctorName>(
+      "dispersion_name", "k_dispersion", "Name of the gas thermal dispersion conductivity");
   params.addParam<Real>(
       "minimum_reynolds", 1e-3, "Floor on the Reynolds numbers used in the correlations");
 
@@ -84,6 +100,9 @@ NTPPackedBedSegregatedFunctorMaterial::NTPPackedBedSegregatedFunctorMaterial(
     _k_solid(getParam<Real>("solid_conductivity")),
     _k_axial_mult(getParam<Real>("axial_conductivity_multiplier")),
     _k_radial_mult(getParam<Real>("radial_conductivity_multiplier")),
+    _emissivity(getParam<Real>("particle_emissivity")),
+    _T_solid(_emissivity > 0 ? &getFunctor<Real>("solid_temperature") : nullptr),
+    _dispersion(getParam<Real>("dispersion_coefficient")),
     _Re_floor(getParam<Real>("minimum_reynolds")),
     _rho(getFunctor<Real>(NS::density)),
     _mu(getFunctor<Real>(NS::mu)),
@@ -140,9 +159,21 @@ NTPPackedBedSegregatedFunctorMaterial::NTPPackedBedSegregatedFunctorMaterial(
       getParam<MooseFunctorName>("kappa_name"),
       [this](const auto & r, const auto & t) -> RealVectorValue
       {
-        const Real k = (1 - _eps) * _k_solid + _eps * _k_fluid(r, t);
+        Real k = (1 - _eps) * _k_solid + _eps * _k_fluid(r, t);
+        if (_T_solid)
+          k += NTPPackedBed::radiativeConductivity((*_T_solid)(r, t), _emissivity, _d);
         return RealVectorValue(_k_radial_mult * k, _k_axial_mult * k, _k_radial_mult * k);
       });
+
+  // gas thermal dispersion, C |G| cp d
+  addFunctorProperty<Real>(getParam<MooseFunctorName>("dispersion_name"),
+                           [this](const auto & r, const auto & t) -> Real
+                           {
+                             if (_dispersion == 0)
+                               return 0;
+                             return NTPPackedBed::dispersionConductivity(
+                                 speed(r, t) * _rho(r, t), _cp(r, t), _d, _dispersion);
+                           });
 }
 
 template <typename Space, typename Time>

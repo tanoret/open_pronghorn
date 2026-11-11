@@ -22,6 +22,11 @@ solve the same closure equations.
   [W/(m$^3$ K)].
 - `kappa_name` (vector) is the particle conductivity
   $[(1-\varepsilon) k_s + \varepsilon k_f]\,(\chi_r, \chi_z, \chi_r)$, with $y$ the element axis.
+  With `particle_emissivity` > 0 it includes the radiative conductivity of the bed, as in
+  [NTPPackedBedFunctorMaterial](NTPPackedBedFunctorMaterial.md).
+- `dispersion_name` is the thermal dispersion conductivity of the gas $C |\mathbf{G}| c_p d$
+  (`dispersion_coefficient` $C$, 0 by default), as in
+  [NTPPackedBedFunctorMaterial](NTPPackedBedFunctorMaterial.md).
 - `speed_name` is the superficial speed used in the correlations.
 
 By default the speed is $\sqrt{u^2 + v^2}$ from the velocity functors `u` and `v`. There is no

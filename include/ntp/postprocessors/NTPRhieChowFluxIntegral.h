@@ -22,6 +22,11 @@ class RhieChowMassFlux;
  * the extrapolated value of an outflow), which is what the advection kernels transport. These are
  * the fluxes the discrete balances see, so the mass flow rate and, with the enthalpy as carried
  * quantity, the enthalpy flow rate of a boundary are exact.
+ *
+ * With 'normal_kinetic_energy' the carried quantity is the kinetic energy of the face velocity
+ * normal to the boundary, u_n^2 / 2 with u_n = mdot_f / rho_f, from the exact face flux and the
+ * density 'rho' at the face: the kinetic energy flow through an outlet. The cell velocities of the
+ * segregated solvers next to a porosity jump are not a reliable alternative.
  */
 class NTPRhieChowFluxIntegral : public SideIntegralPostprocessor
 {
@@ -40,4 +45,7 @@ protected:
   const RhieChowMassFlux * _rc;
   /// Quantity carried by the mass flux
   const Moose::Functor<Real> & _q;
+  /// Carry the kinetic energy of the normal face velocity instead, with this density
+  const bool _normal_ke;
+  const Moose::Functor<Real> * const _rho;
 };

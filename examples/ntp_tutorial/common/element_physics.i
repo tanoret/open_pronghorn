@@ -28,6 +28,11 @@
 # the flow through that fraction. The inlet mass flux uses the area of the inlet of the mesh (in 3-D
 # the faceted annulus is smaller than the circular one), so that mdot enters exactly.
 
+# energy closures of the packed beds (THEORY.md 4.3): particle emissivity of the radiative
+# conductivity (0: off) and the coefficient of the gas thermal dispersion (0: off)
+bed_emissivity = 0
+bed_dispersion = 0
+
 [Variables]
   [pressure]
     type = MooseVariableFVReal
@@ -229,11 +234,18 @@
     functor_names = 'h'
     expression = 'h - ${h_in}'
   []
+  # gas thermal dispersion of the packed beds (0 in the free channels)
+  [k_disp]
+    type = ADPiecewiseByBlockFunctorMaterial
+    prop_name = k_disp
+    subdomain_to_prop_value = 'chamber 0 plenum 0 cold_frit k_disp_cold_frit fuel_bed k_disp_fuel_bed
+                               hot_frit k_disp_hot_frit'
+  []
   [gas_conduction]
     type = ADParsedFunctorMaterial
     property_name = eps_k
-    functor_names = 'porosity k'
-    expression = 'porosity * k'
+    functor_names = 'porosity k k_disp'
+    expression = 'porosity * k + k_disp'
   []
 
   # ---- free channels: plenum and chamber
@@ -269,6 +281,9 @@
     orifice_multiplier = ${cold_frit_multiplier}
     solid_conductivity = ${k_cf}
     kappa_name = kappa_s
+    particle_emissivity = ${bed_emissivity}
+    dispersion_coefficient = ${bed_dispersion}
+    dispersion_name = k_disp_cold_frit
   []
   [fuel_bed]
     type = NTPPackedBedFunctorMaterial
@@ -284,6 +299,9 @@
     axial_conductivity_multiplier = ${kz_bed}
     radial_conductivity_multiplier = ${kr_bed}
     kappa_name = kappa_s
+    particle_emissivity = ${bed_emissivity}
+    dispersion_coefficient = ${bed_dispersion}
+    dispersion_name = k_disp_fuel_bed
   []
   [hot_frit]
     type = NTPPackedBedFunctorMaterial
@@ -297,6 +315,9 @@
     heat_transfer_model = kta
     solid_conductivity = ${k_hf}
     kappa_name = kappa_s
+    particle_emissivity = ${bed_emissivity}
+    dispersion_coefficient = ${bed_dispersion}
+    dispersion_name = k_disp_hot_frit
   []
   # pseudo heat capacity of the particles: only shapes the path to the steady state
   [solid_inertia]

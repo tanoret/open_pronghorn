@@ -37,6 +37,13 @@
 
 area_in = ${fparse pi * (r5_in^2 - r4_in^2) * segregated_inlet_fraction}
 lagged_state_relaxation = 0.3
+# energy closures of the packed beds (THEORY.md 4.3): particle emissivity of the radiative
+# conductivity (0: off) and the coefficient of the gas thermal dispersion (0: off)
+bed_emissivity = 0
+bed_dispersion = 0
+# wall friction of the free channels as a body force (one cell across them); a model that resolves
+# the channels (channel_turbulence.i) switches it off and sets f_ann = 0
+channel_wall_friction = true
 # uniform axial velocity added to the plug-flow start [m/s]: every cell then has an advection
 # diagonal in the first momentum solve (needed on coarse azimuthal 3-D meshes)
 segregated_start_floor = 5
@@ -275,6 +282,7 @@ segregated_start_floor = 5
     temperature = T_fluid
     density_name = rho_current
     viscosity_name = mu_current
+    speed_of_sound_name = speed_of_sound_current
   []
   [inlet_velocity]
     type = ParsedFunctorMaterial
@@ -289,11 +297,18 @@ segregated_start_floor = 5
     subdomain_to_prop_value = 'chamber 1 plenum 1 cold_frit ${eps_cf} fuel_bed ${eps_bed}
                                hot_frit ${eps_hf}'
   []
+  # gas thermal dispersion of the packed beds (0 in the free channels)
+  [k_disp]
+    type = PiecewiseByBlockFunctorMaterial
+    prop_name = k_disp
+    subdomain_to_prop_value = 'chamber 0 plenum 0 cold_frit k_disp_cold_frit fuel_bed k_disp_fuel_bed
+                               hot_frit k_disp_hot_frit'
+  []
   [eps_k]
     type = ParsedFunctorMaterial
     property_name = eps_k
-    functor_names = 'porosity k'
-    expression = 'porosity * k'
+    functor_names = 'porosity k k_disp'
+    expression = 'porosity * k + k_disp'
   []
   # ---- free channels: duct friction along the axis
   [Dh]
@@ -312,6 +327,7 @@ segregated_start_floor = 5
     block = 'chamber plenum'
     hydraulic_diameter = Dh
     friction_factor = ${f_ann}
+    laminar_term = ${channel_wall_friction}
     speed = speed_duct
     drag_name = drag_duct
   []
@@ -332,6 +348,9 @@ segregated_start_floor = 5
     alpha_name = alpha_cf
     kappa_name = kappa_cf
     speed_name = speed_cf
+    particle_emissivity = ${bed_emissivity}
+    dispersion_coefficient = ${bed_dispersion}
+    dispersion_name = k_disp_cold_frit
   []
   [fuel_bed]
     type = NTPPackedBedSegregatedFunctorMaterial
@@ -350,6 +369,9 @@ segregated_start_floor = 5
     alpha_name = alpha_bed
     kappa_name = kappa_bed
     speed_name = speed_bed
+    particle_emissivity = ${bed_emissivity}
+    dispersion_coefficient = ${bed_dispersion}
+    dispersion_name = k_disp_fuel_bed
   []
   [hot_frit]
     type = NTPPackedBedSegregatedFunctorMaterial
@@ -366,6 +388,9 @@ segregated_start_floor = 5
     alpha_name = alpha_hf
     kappa_name = kappa_hf
     speed_name = speed_hf
+    particle_emissivity = ${bed_emissivity}
+    dispersion_coefficient = ${bed_dispersion}
+    dispersion_name = k_disp_hot_frit
   []
   [alpha]
     type = PiecewiseByBlockFunctorMaterial

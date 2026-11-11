@@ -65,6 +65,11 @@ protected:
   const Real _k_solid;
   const Real _k_axial_mult;
   const Real _k_radial_mult;
+  /// Particle emissivity (0: no radiative conductivity) and the particle temperature
+  const Real _emissivity;
+  const Moose::Functor<ADReal> * const _T_solid;
+  /// Coefficient of the gas thermal dispersion conductivity (0: none)
+  const Real _dispersion;
   /// Smallest Reynolds number used in the correlations
   const Real _Re_floor;
 

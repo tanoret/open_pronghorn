@@ -24,9 +24,9 @@ InputParameters
 NTPGasPropertiesFunctorMaterialTempl<is_ad>::validParams()
 {
   InputParameters params = FunctorMaterial::validParams();
-  params.addClassDescription("Gas density, viscosity, specific heat and thermal conductivity from "
-                             "fluid properties at given pressure and temperature functors, under "
-                             "chosen names.");
+  params.addClassDescription("Gas density, viscosity, specific heat, thermal conductivity and speed "
+                             "of sound from fluid properties at given pressure and temperature "
+                             "functors, under chosen names.");
   params.addRequiredParam<UserObjectName>(NS::fluid, "Fluid properties");
   params.addRequiredParam<MooseFunctorName>(NS::pressure, "Pressure functor");
   params.addRequiredParam<MooseFunctorName>("temperature", "Temperature functor");
@@ -35,6 +35,8 @@ NTPGasPropertiesFunctorMaterialTempl<is_ad>::validParams()
   params.addParam<MooseFunctorName>(
       "specific_heat_name", NS::cp, "Name of the isobaric specific heat");
   params.addParam<MooseFunctorName>("conductivity_name", NS::k, "Name of the thermal conductivity");
+  params.addParam<MooseFunctorName>(
+      "speed_of_sound_name", "speed_of_sound", "Name of the speed of sound");
   return params;
 }
 
@@ -59,6 +61,9 @@ NTPGasPropertiesFunctorMaterialTempl<is_ad>::NTPGasPropertiesFunctorMaterialTemp
   addFunctorProperty<T>(getParam<MooseFunctorName>("conductivity_name"),
                         [this](const auto & r, const auto & t) -> T
                         { return _fp.k_from_p_T(_p(r, t), _T(r, t)); });
+  addFunctorProperty<T>(getParam<MooseFunctorName>("speed_of_sound_name"),
+                        [this](const auto & r, const auto & t) -> T
+                        { return _fp.c_from_p_T(_p(r, t), _T(r, t)); });
 }
 
 template class NTPGasPropertiesFunctorMaterialTempl<false>;

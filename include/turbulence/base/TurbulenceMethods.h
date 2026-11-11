@@ -98,6 +98,10 @@ struct StrainRotationInvariants
 /**
  * Compute the strain / rotation invariants and divergence from the velocity functors.
  *
+ * In axisymmetric (RZ) coordinates pass hoop_strain = u_r / r: the strain tensor then has the
+ * out-of-plane component S_thetatheta = u_r / r, which adds 2 (u_r / r)^2 to S2 and u_r / r to the
+ * divergence (the rotation tensor has no such component). It is 0 in Cartesian coordinates.
+ *
  * This function is dimension-agnostic:
  *  - v == nullptr implies 1D,
  *  - w == nullptr and v != nullptr implies 2D,
@@ -107,7 +111,20 @@ StrainRotationInvariants computeStrainRotationInvariants(const Moose::Functor<Re
                                                          const Moose::Functor<Real> * v,
                                                          const Moose::Functor<Real> * w,
                                                          const Moose::ElemArg & elem_arg,
-                                                         const Moose::StateArg & state);
+                                                         const Moose::StateArg & state,
+                                                         const Real hoop_strain = 0);
+
+/**
+ * Hoop strain rate u_r / r of an axisymmetric (RZ) cell, for computeStrainRotationInvariants:
+ * the radial velocity component (u for an RZ axis along y, v for an axis along x) at the cell
+ * centroid divided by its radius. 0 in other coordinate systems.
+ */
+Real computeHoopStrain(const Moose::Functor<Real> & u,
+                       const Moose::Functor<Real> * v,
+                       const Moose::ElemArg & elem_arg,
+                       const Moose::StateArg & state,
+                       const Moose::CoordinateSystemType coord_sys,
+                       const unsigned int rz_radial_coord);
 
 /**
  * Small helper to compute the two-layer constant c_l from C_mu.

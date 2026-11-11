@@ -15,6 +15,12 @@ advection kernels transport. Because these are the fluxes the discrete balances 
 rate ($q = 1$) and, with the enthalpy as carried quantity, the enthalpy flow rate of a boundary
 are exact.
 
+With `normal_kinetic_energy = true` the carried quantity is the kinetic energy of the normal face
+velocity, $q_f = u_n^2/2$ with $u_n = \dot{m}_f / \rho_f$ from the exact face flux and the density
+`rho` at the face: the kinetic energy flow through an outlet. It gives the static mixed outlet
+temperature of a model whose energy equation carries the enthalpy without the kinetic energy. The
+cell velocities of the segregated solvers next to a porosity jump are not reliable for this.
+
 !syntax parameters /Postprocessors/NTPRhieChowFluxIntegral
 
 !syntax inputs /Postprocessors/NTPRhieChowFluxIntegral

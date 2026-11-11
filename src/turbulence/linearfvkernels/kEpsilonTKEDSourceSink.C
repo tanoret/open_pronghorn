@@ -151,6 +151,8 @@ kEpsilonTKEDSourceSink::kEpsilonTKEDSourceSink(const InputParameters & params)
         getParam<MooseEnum>("nonlinear_model").getEnum<NS::NonlinearConstitutiveRelation>()),
     _curvature_model(getParam<MooseEnum>("curvature_model").getEnum<NS::CurvatureCorrectionModel>())
 {
+  _coord_sys = getBlockCoordSystem();
+  _rz_radial_coord = _coord_sys == Moose::COORD_RZ ? _subproblem.getAxisymmetricRadialCoord() : 0;
   if (_dim >= 2 && !_v_var)
     paramError("v", "In two or more dimensions, the v velocity must be supplied.");
   if (_dim >= 3 && !_w_var)
@@ -234,9 +236,17 @@ kEpsilonTKEDSourceSink::kEpsilonTKEDSourceSink(const InputParameters & params)
                  "Parameter 'speed_of_sound' is only applicable when use_compressibility = true.");
   }
 
-  // Error if using cylindrical coordinates - gradients won't be correct
-  if (getBlockCoordSystem() == Moose::COORD_RZ)
-    mooseError(name(), " is not valid on blocks that use an RZ coordinate system.");
+  // Axisymmetric (RZ) blocks: the strain invariants and the divergence get the hoop strain u_r / r
+  // (NS::computeHoopStrain). The nonlinear constitutive relations and the curvature correction use
+  // the Cartesian velocity gradient only.
+  if (_coord_sys == Moose::COORD_RZ &&
+      (getParam<MooseEnum>("nonlinear_model") != "none" ||
+       getParam<MooseEnum>("curvature_model") != "none"))
+    mooseError(name(),
+               ": the nonlinear constitutive relations and the curvature correction are not "
+               "valid on blocks that use an RZ coordinate system.");
+  if (_coord_sys == Moose::COORD_RZ && !_v_var)
+    paramError("v", "RZ blocks need both in-plane velocity components");
 
   // Strain / rotation invariants require velocity gradients
   if (_u_var.wrapsType<MooseLinearVariableFV<Real>>())
@@ -471,7 +481,18 @@ kEpsilonTKEDSourceSink::computeBulkPe(const Moose::ElemArg & elem_arg,
   const Real eps = _var.getElemValue(*_current_elem_info, state);
 
   // Invariants of strain, rotation and divergence
-  auto inv = NS::computeStrainRotationInvariants(_u_var, _v_var, _w_var, elem_arg, state);
+  auto inv = NS::computeStrainRotationInvariants(
+        _u_var,
+        _v_var,
+        _w_var,
+        elem_arg,
+        state,
+        NS::computeHoopStrain(_u_var,
+                              _v_var,
+                              elem_arg,
+                              state,
+                              _coord_sys,
+                              _rz_radial_coord));
 
   // Shear production G_k
   Real Gk = NS::computeGk(mu_t,

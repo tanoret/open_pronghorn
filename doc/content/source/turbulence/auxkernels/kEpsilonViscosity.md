@@ -198,6 +198,13 @@ If a required functor is missing, the kernel throws an error during construction
 
 This object must therefore be included in every k–$\epsilon$ turbulence simulation.
 
+## Axisymmetric (RZ) coordinates
+
+On RZ blocks the strain invariants and the divergence include the hoop strain rate
+$S_{\theta\theta} = u_r / r$ (`NS::computeHoopStrain`), which adds $2 (u_r/r)^2$ to $S^2$ and
+$u_r/r$ to $\nabla \cdot \mathbf{u}$. The nonlinear constitutive relations and the curvature
+correction use the Cartesian velocity gradient only and are not available in RZ.
+
 !syntax parameters /AuxKernels/kEpsilonViscosity
 
 !syntax inputs /AuxKernels/kEpsilonViscosity

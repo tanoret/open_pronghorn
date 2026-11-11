@@ -53,6 +53,13 @@ are in [THEORY.md](THEORY.md).
   With rings, a perturbation around the element at round-off grows into a flow excursion between
   the columns of a slice past about 44 % power. SIMPLE needs a flowing start in 3-D (a plug-flow
   estimate); PIMPLE starts from rest.
+- **Turbulent channels.** With the plenum and the chamber resolved by several cells across, the
+  segregated model solves the `k`-`epsilon` model of OpenPronghorn in them, with wall functions,
+  the compressible production and the full compressible viscous stress, in RZ and 3-D. It reaches
+  the design point with the same fuel temperature as the duct-friction closure and an inlet
+  pressure 64 kPa lower. The packed beds optionally include radiation and thermal dispersion
+  (a few kelvin at the anchor), and the static outlet temperature is 13.5 K below the stagnation
+  one (stages 4 and 5).
 
 ## Running
 
@@ -82,6 +89,7 @@ The tutorial uses these objects of OpenPronghorn (`src/ntp`, documented under `d
 | `NTPLinearFVEnthalpyExchange` | gas-particle exchange for the enthalpy, with partial elimination |
 | `NTPOrificeFlowDesignAux`, `NTPRhieChowSliceFlow`, `NTPElementColumnsDivision` | orifice designed on the column mass flows, column flows from the Rhie-Chow fluxes, columns (slices x sectors) of the element (segregated) |
 | `NTPFVCellIntegral` | volume integrals with the finite-volume cell volumes (the power the source kernels deposit) |
+| `NTPChannelVelocity`, `NTPLinearFVViscousStressCorrection` | strain rate of the free-channel flow without the porous neighbours; transpose and dilatation part of the compressible viscous stress (segregated) |
 | `NTPOrificeDesignAux` | lagged orifice design on the slice temperatures (segregated) |
 
 Regression tests are in `test/tests/ntp` and unit tests in `unit/src/NTP*`.

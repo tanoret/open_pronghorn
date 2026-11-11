@@ -352,6 +352,13 @@ The same function is used for both the extra production term and the destruction
 damping in the low-Re model.
 
 
+## Axisymmetric (RZ) coordinates
+
+On RZ blocks the strain invariants and the divergence include the hoop strain rate
+$S_{\theta\theta} = u_r / r$ (`NS::computeHoopStrain`), which adds $2 (u_r/r)^2$ to $S^2$ and
+$u_r/r$ to $\nabla \cdot \mathbf{u}$. The nonlinear constitutive relations and the curvature
+correction use the Cartesian velocity gradient only and are not available in RZ.
+
 !syntax parameters /LinearFVKernels/kEpsilonTKEDSourceSink
 
 !syntax inputs /LinearFVKernels/kEpsilonTKEDSourceSink

@@ -84,6 +84,21 @@
     input = axis
     boundary_names = 'bottom top'
   []
+  # the porous interfaces of the free channels (boundaries of the channel turbulence)
+  [plenum_frit]
+    type = SideSetsBetweenSubdomainsGenerator
+    input = single_names
+    primary_block = plenum
+    paired_block = cold_frit
+    new_boundary = plenum_frit
+  []
+  [chamber_frit]
+    type = SideSetsBetweenSubdomainsGenerator
+    input = plenum_frit
+    primary_block = chamber
+    paired_block = hot_frit
+    new_boundary = chamber_frit
+  []
   coord_type = RZ
   rz_coord_axis = Y
 []
